@@ -49,7 +49,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
-  int _barIndex = 0;
+  int _curScreen = 0;
 
   void _incrementCounter() {
     setState(() {
@@ -113,7 +113,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ), // This trailing comma makes auto-formatting nicer for build methods.
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
-        currentIndex: _barIndex, // TODO: Change
+        currentIndex: _curScreen, // TODO: Change
         backgroundColor: Theme.of(context).primaryColor,
         selectedItemColor: Theme.of(context).colorScheme.onPrimary,
         unselectedItemColor: Theme.of(context).colorScheme.onPrimary.withOpacity(.6),
@@ -121,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
         unselectedFontSize: 14,
         onTap: (value) {
           // Respond to item press.
-          setState(() => {_barIndex = value});
+          setState(() => {_curScreen = value});
         },
         items: const [
           BottomNavigationBarItem(
