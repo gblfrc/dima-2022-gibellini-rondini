@@ -49,6 +49,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  int _barIndex = 0;
 
   void _incrementCounter() {
     setState(() {
@@ -110,6 +111,37 @@ class _MyHomePageState extends State<MyHomePage> {
         tooltip: 'Increment',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _barIndex, // TODO: Change
+        backgroundColor: Theme.of(context).primaryColor,
+        selectedItemColor: Theme.of(context).colorScheme.onPrimary,
+        unselectedItemColor: Theme.of(context).colorScheme.onPrimary.withOpacity(.6),
+        selectedFontSize: 14,
+        unselectedFontSize: 14,
+        onTap: (value) {
+          // Respond to item press.
+          setState(() => {_barIndex = value});
+        },
+        items: const [
+          BottomNavigationBarItem(
+            label: 'Home',
+            icon: Icon(Icons.home),
+          ),
+          BottomNavigationBarItem(
+            label: 'Search',
+            icon: Icon(Icons.search),
+          ),
+          BottomNavigationBarItem(
+            label: 'Friends',
+            icon: Icon(Icons.people),
+          ),
+          BottomNavigationBarItem(
+            label: 'Account',
+            icon: Icon(Icons.person),
+          ),
+        ],
+      ),
     );
   }
 }
