@@ -270,7 +270,7 @@ class SearchPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Center( // TODO: Return Scaffold with AppBar (title + tabs) and Body (and not directly the body itself)
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
@@ -300,11 +300,48 @@ class FriendsPage extends StatelessWidget {
         ),
         body: TabBarView(
           children: [
-            Text("todo"),
+            ListView(
+              children: [
+                Card(
+                  child: InkWell(
+                    onTap: () => print("Card tap"),
+                    child: Column(
+                      children: [
+                        FractionallySizedBox(widthFactor: 1),
+                        ListTile(
+                          title: Text("Proposed session at Parco Suardi"),
+                          subtitle: Text("Shared with friends"),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                  Text("03/21/2023 16:30"),
+                                ],
+                              ),
+                              ElevatedButton(
+                                  onPressed: () => print("Pressed"),
+                                  child: Text("Join training"),
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
             Center(
               child: ListView(
                 children: <Widget>[
-                  Padding(padding: EdgeInsets.all(16)),
+                  Padding(padding: EdgeInsets.all(10)),
                   ListTile(
                     leading: Icon(Icons.account_circle, size: 60),
                     title: Text("Luca Rondini"),
