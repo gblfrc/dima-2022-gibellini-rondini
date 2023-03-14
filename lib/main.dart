@@ -189,6 +189,66 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ),
+        Card(
+          child: InkWell(
+            onTap: () => print("Card tap"),
+            child: Column(
+              children: [
+                FractionallySizedBox(widthFactor: 1),
+                ListTile(
+                  title: Text("Session of 03/15/2023"),
+                  subtitle: Text("Private"),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          Text("0h 49m"),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.route,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          Text("1.53km"),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        ListTile(
+          title: Text("My goals"),
+        ),
+        Card(
+          child: InkWell(
+            onTap: () => print("Card tap"),
+            child: Column(
+              children: [
+                FractionallySizedBox(widthFactor: 1),
+                ListTile(
+                  title: Text("Run for at least 5km"),
+                  subtitle: Text("In progress"),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(16),
+                  child: LinearProgressIndicator(value: 3.53/5, backgroundColor: Theme.of(context).focusColor,),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -230,6 +290,10 @@ class FriendsPage extends StatelessWidget {
             title: Text("Federico Gibellini"),
             onTap: () => print("Ciao"),
           ),
+          Divider(),
+          const Center(
+            child: Text("Use the Search section to find friends to add.")
+          )
         ],
       ),
     );
