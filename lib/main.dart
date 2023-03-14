@@ -50,7 +50,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
   int _curScreen = 0;
-  var screens = [HomePage(), SearchPage()];
+  var screens = [HomePage(), SearchPage(), FriendsPage()];
 
   void _incrementCounter() { // TODO: This can be removed, it is not used anymore
     setState(() {
@@ -134,10 +134,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      // Center is a layout widget. It takes a single child and positions it
-      // in the middle of the parent.
-      child: Column(
+    return Column(
         // Column is also a layout widget. It takes a list of children and
         // arranges them vertically. By default, it sizes itself to fit its
         // children horizontally, and tries to be as tall as its parent.
@@ -152,7 +149,7 @@ class _HomePageState extends State<HomePage> {
         // center the children vertically; the main axis here is the vertical
         // axis because Columns are vertical (the cross axis would be
         // horizontal).
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           const Text(
             'You have pushed the button this many times:',
@@ -163,10 +160,32 @@ class _HomePageState extends State<HomePage> {
           ),
           ElevatedButton(
               onPressed: _incrementCounter,
-              child: const Text("Increment"))
+              child: const Text("Increment")
+          ),
+          ListTile(title: Text("Latest sessions"),),
+          Card(
+            child: Column(
+              children: [
+                FractionallySizedBox(widthFactor: 1),
+                ListTile(title: Text("Session of 03/14/2023"), subtitle: Text("Private"),),
+                Padding(padding: EdgeInsets.all(16), child: Row(children: [
+                  Row(children: [
+                    Icon(Icons.access_time, color: Theme.of(context).primaryColor,),
+                    Text("1h 23m"),
+                  ],),
+                  Row(children: [
+                    Icon(Icons.run_circle, color: Theme.of(context).primaryColor,),
+                    Text("2km"),
+                  ],),
+                ],),
+                ),
+
+                Text("This is a card."),
+              ],
+            ),
+          )
         ],
-      ),
-    );
+      );
   }
 }
 
@@ -180,6 +199,23 @@ class SearchPage extends StatelessWidget {
         children: <Widget>[
           const Text(
             'Welcome to the search page!',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class FriendsPage extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          const Text(
+            'Welcome to the friends page!',
           ),
         ],
       ),
