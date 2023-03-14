@@ -80,8 +80,8 @@ class _MyHomePageState extends State<MyHomePage> {
       body: screens[_curScreen],
       floatingActionButton: FloatingActionButton( // TODO: Change onPressed callback: this is not doing anything at the moment
         onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        tooltip: 'New session',
+        child: const Icon(Icons.directions_run),
       ), // This trailing comma makes auto-formatting nicer for build methods.
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -134,58 +134,63 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-        // Column is also a layout widget. It takes a list of children and
-        // arranges them vertically. By default, it sizes itself to fit its
-        // children horizontally, and tries to be as tall as its parent.
-        //
-        // Invoke "debug painting" (press "p" in the console, choose the
-        // "Toggle Debug Paint" action from the Flutter Inspector in Android
-        // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-        // to see the wireframe for each widget.
-        //
-        // Column has various properties to control how it sizes itself and
-        // how it positions its children. Here we use mainAxisAlignment to
-        // center the children vertically; the main axis here is the vertical
-        // axis because Columns are vertical (the cross axis would be
-        // horizontal).
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          const Text(
-            'You have pushed the button this many times:',
-          ),
-          Text(
-            '$_counter',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          ElevatedButton(
-              onPressed: _incrementCounter,
-              child: const Text("Increment")
-          ),
-          ListTile(title: Text("Latest sessions"),),
-          Card(
+    return ListView(
+      children: <Widget>[
+        // const Text(
+        //   'You have pushed the button this many times:',
+        // ),
+        // Text(
+        //   '$_counter',
+        //   style: Theme.of(context).textTheme.headlineMedium,
+        // ),
+        // ElevatedButton(
+        //     onPressed: _incrementCounter,
+        //     child: const Text("Increment")
+        // ),
+        ListTile(
+          title: Text("Latest sessions"),
+        ),
+        Card(
+          child: InkWell(
+            onTap: () => print("Card tap"),
             child: Column(
               children: [
                 FractionallySizedBox(widthFactor: 1),
-                ListTile(title: Text("Session of 03/14/2023"), subtitle: Text("Private"),),
-                Padding(padding: EdgeInsets.all(16), child: Row(children: [
-                  Row(children: [
-                    Icon(Icons.access_time, color: Theme.of(context).primaryColor,),
-                    Text("1h 23m"),
-                  ],),
-                  Row(children: [
-                    Icon(Icons.run_circle, color: Theme.of(context).primaryColor,),
-                    Text("2km"),
-                  ],),
-                ],),
+                ListTile(
+                  title: Text("Session of 03/14/2023"),
+                  subtitle: Text("Private"),
                 ),
-
-                Text("This is a card."),
+                Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          Text("1h 23m"),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.route,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          Text("2km"),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-          )
-        ],
-      );
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -211,11 +216,19 @@ class FriendsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: ListView(
         children: <Widget>[
-          const Text(
-            'Welcome to the friends page!',
+          Padding(padding: EdgeInsets.all(16)),
+          ListTile(
+            leading: Icon(Icons.account_circle, size: 60),
+            title: Text("Luca Rondini"),
+            onTap: () => print("Ciao"),
+          ),
+          Divider(),
+          ListTile(
+            leading: Icon(Icons.account_circle, size: 60),
+            title: Text("Federico Gibellini"),
+            onTap: () => print("Ciao"),
           ),
         ],
       ),
