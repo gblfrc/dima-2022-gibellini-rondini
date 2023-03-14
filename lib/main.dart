@@ -72,17 +72,12 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
+      //appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: screens[_curScreen],
-      floatingActionButton: FloatingActionButton( // TODO: Change onPressed callback: this is not doing anything at the moment
-        onPressed: _incrementCounter,
-        tooltip: 'New session',
-        child: const Icon(Icons.directions_run),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        //title: Text(widget.title),
+      //),
+      body: screens[_curScreen], // The actual body of the Scaffold depends on the currently selected tab in bottom navigation
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _curScreen,
@@ -92,8 +87,7 @@ class _MyHomePageState extends State<MyHomePage> {
         selectedFontSize: 14,
         unselectedFontSize: 14,
         onTap: (value) {
-          // Respond to item press.
-          setState(() => {_curScreen = value});
+          setState(() => {_curScreen = value}); // The current screen is changed
         },
         items: const [
           BottomNavigationBarItem(
@@ -119,13 +113,13 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class HomePage extends StatefulWidget {
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   var _counter = 0;
+
   void _incrementCounter() {
     setState(() {
       _counter++;
@@ -134,122 +128,140 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: <Widget>[
-        // const Text(
-        //   'You have pushed the button this many times:',
-        // ),
-        // Text(
-        //   '$_counter',
-        //   style: Theme.of(context).textTheme.headlineMedium,
-        // ),
-        // ElevatedButton(
-        //     onPressed: _incrementCounter,
-        //     child: const Text("Increment")
-        // ),
-        ListTile(
-          title: Text("Latest sessions"),
-        ),
-        Card(
-          child: InkWell(
-            onTap: () => print("Card tap"),
-            child: Column(
-              children: [
-                FractionallySizedBox(widthFactor: 1),
-                ListTile(
-                  title: Text("Session of 03/14/2023"),
-                  subtitle: Text("Private"),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.access_time,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                          Text("1h 23m"),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.route,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                          Text("2km"),
-                        ],
-                      ),
-                    ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Home page"),
+      ),
+      body: ListView(
+        children: <Widget>[
+          // const Text(
+          //   'You have pushed the button this many times:',
+          // ),
+          // Text(
+          //   '$_counter',
+          //   style: Theme.of(context).textTheme.headlineMedium,
+          // ),
+          // ElevatedButton(
+          //     onPressed: _incrementCounter,
+          //     child: const Text("Increment")
+          // ),
+          ListTile(
+            // Widget that allows to insert a title and (optionally) a sub-title
+            title: Text("Latest sessions"),
+          ),
+          Card(
+            child: InkWell(
+              // This widget creates a feedback animation when the user taps on the card
+              onTap: () => print("Card tap"),
+              // TODO: The callback should show details about the session
+              child: Column(
+                children: [
+                  FractionallySizedBox(widthFactor: 1),
+                  // The box should take the entire width of the screen
+                  ListTile(
+                    title: Text("Session of 03/14/2023"),
+                    subtitle: Text("Private"),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Card(
-          child: InkWell(
-            onTap: () => print("Card tap"),
-            child: Column(
-              children: [
-                FractionallySizedBox(widthFactor: 1),
-                ListTile(
-                  title: Text("Session of 03/15/2023"),
-                  subtitle: Text("Private"),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.access_time,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                          Text("0h 49m"),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.route,
-                            color: Theme.of(context).primaryColor,
-                          ),
-                          Text("1.53km"),
-                        ],
-                      ),
-                    ],
+                  Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            Text("1h 23m"),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.route,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            Text("2km"),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-        ListTile(
-          title: Text("My goals"),
-        ),
-        Card(
-          child: InkWell(
-            onTap: () => print("Card tap"),
-            child: Column(
-              children: [
-                FractionallySizedBox(widthFactor: 1),
-                ListTile(
-                  title: Text("Run for at least 5km"),
-                  subtitle: Text("In progress"),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(16),
-                  child: LinearProgressIndicator(value: 3.53/5, backgroundColor: Theme.of(context).focusColor,),
-                ),
-              ],
+          Card(
+            child: InkWell(
+              onTap: () => print("Card tap"),
+              child: Column(
+                children: [
+                  FractionallySizedBox(widthFactor: 1),
+                  ListTile(
+                    title: Text("Session of 03/15/2023"),
+                    subtitle: Text("Private"),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            Text("0h 49m"),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.route,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            Text("1.53km"),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+          ListTile(
+            title: Text("My goals"),
+          ),
+          Card(
+            child: InkWell(
+              onTap: () => print("Card tap"),
+              child: Column(
+                children: [
+                  FractionallySizedBox(widthFactor: 1),
+                  ListTile(
+                    title: Text("Run for at least 5km"),
+                    subtitle: Text("In progress"),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(16),
+                    child: LinearProgressIndicator(
+                      value: 3.53 / 5,
+                      backgroundColor: Theme.of(context).focusColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        // TODO: Change onPressed callback: this is not doing anything at the moment
+        onPressed: _incrementCounter,
+        tooltip: 'New session',
+        child: const Icon(Icons.directions_run),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
@@ -272,29 +284,47 @@ class SearchPage extends StatelessWidget {
 }
 
 class FriendsPage extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: ListView(
-        children: <Widget>[
-          Padding(padding: EdgeInsets.all(16)),
-          ListTile(
-            leading: Icon(Icons.account_circle, size: 60),
-            title: Text("Luca Rondini"),
-            onTap: () => print("Ciao"),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Friends"),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: "Trainings"),
+              Tab(text: "Friend list"),
+            ],
           ),
-          Divider(),
-          ListTile(
-            leading: Icon(Icons.account_circle, size: 60),
-            title: Text("Federico Gibellini"),
-            onTap: () => print("Ciao"),
-          ),
-          Divider(),
-          const Center(
-            child: Text("Use the Search section to find friends to add.")
-          )
-        ],
+        ),
+        body: TabBarView(
+          children: [
+            Text("todo"),
+            Center(
+              child: ListView(
+                children: <Widget>[
+                  Padding(padding: EdgeInsets.all(16)),
+                  ListTile(
+                    leading: Icon(Icons.account_circle, size: 60),
+                    title: Text("Luca Rondini"),
+                    onTap: () => print("Ciao"),
+                  ),
+                  Divider(),
+                  ListTile(
+                    leading: Icon(Icons.account_circle, size: 60),
+                    title: Text("Federico Gibellini"),
+                    onTap: () => print("Ciao"),
+                  ),
+                  Divider(),
+                  const Center(
+                      child: Text(
+                          "Use the Search section to find friends to add."))
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
