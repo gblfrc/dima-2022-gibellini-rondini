@@ -159,7 +159,7 @@ class _HomePageState extends State<HomePage> {
                   FractionallySizedBox(widthFactor: 1),
                   // The box should take the entire width of the screen
                   ListTile(
-                    title: Text("Session of 03/14/2023"),
+                    title: Text("Session of Mar 14, 2023"),
                     subtitle: Text("Private"),
                   ),
                   Padding(
@@ -169,10 +169,10 @@ class _HomePageState extends State<HomePage> {
                         Row(
                           children: [
                             Icon(
-                              Icons.access_time,
+                              Icons.timer,
                               color: Theme.of(context).primaryColor,
                             ),
-                            Text("1h 23m"),
+                            Text("1 h 23 min"),
                           ],
                         ),
                         Row(
@@ -181,7 +181,7 @@ class _HomePageState extends State<HomePage> {
                               Icons.route,
                               color: Theme.of(context).primaryColor,
                             ),
-                            Text("2km"),
+                            Text("5.98 km"),
                           ],
                         ),
                       ],
@@ -198,7 +198,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   FractionallySizedBox(widthFactor: 1),
                   ListTile(
-                    title: Text("Session of 03/15/2023"),
+                    title: Text("Session of Mar 15, 2023"),
                     subtitle: Text("Private"),
                   ),
                   Padding(
@@ -208,10 +208,10 @@ class _HomePageState extends State<HomePage> {
                         Row(
                           children: [
                             Icon(
-                              Icons.access_time,
+                              Icons.timer,
                               color: Theme.of(context).primaryColor,
                             ),
-                            Text("0h 49m"),
+                            Text("0 h 49 min"),
                           ],
                         ),
                         Row(
@@ -220,7 +220,7 @@ class _HomePageState extends State<HomePage> {
                               Icons.route,
                               color: Theme.of(context).primaryColor,
                             ),
-                            Text("1.53km"),
+                            Text("4.20 km"),
                           ],
                         ),
                       ],
@@ -240,13 +240,13 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   FractionallySizedBox(widthFactor: 1),
                   ListTile(
-                    title: Text("Run for at least 5km"),
+                    title: Text("Run for at least 20 km"),
                     subtitle: Text("In progress"),
                   ),
                   Padding(
                     padding: EdgeInsets.all(16),
                     child: LinearProgressIndicator(
-                      value: 3.53 / 5,
+                      value: 10.18 / 20,
                       backgroundColor: Theme.of(context).focusColor,
                     ),
                   ),
@@ -322,7 +322,7 @@ class FriendsPage extends StatelessWidget {
                                     Icons.calendar_today,
                                     color: Theme.of(context).primaryColor,
                                   ),
-                                  Text("03/21/2023 16:30"),
+                                  Text("Mar 21, 2023 16:30"),
                                 ],
                               ),
                               ElevatedButton(
