@@ -26,7 +26,7 @@ class SearchPage extends StatelessWidget {
             ),
             body: TabBarView(
               children: [
-                Column( // TODO: make this column a reusable element
+                ListView( // TODO: make this column a reusable element
                   children: [
                     Center(
                         child: Container(

@@ -1,37 +1,28 @@
 import 'package:flutter/material.dart';
+import '../components/contact_card.dart';
 
 class AccountPage extends StatelessWidget {
   const AccountPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    var containerWidth = MediaQuery
+        .of(context)
+        .size
+        .width / 3;
+    var padding = containerWidth / 8;
+    containerWidth = containerWidth - 2 * padding;
+
     return Scaffold(
         appBar: AppBar(title: const Text('My account')),
         body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(30),
-                  child: const Icon(
-                    Icons.account_circle,
-                    size: 50,
-                  ),
-                ),
-                Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const[
-                      Text('Federico Gibellini',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          )),
-                      Text("23 years old"),
-                    ]
-                )
-              ],
-            ),
+            ContactCard(
+                'https://cdn.vox-cdn.com/thumbor/s0kqMLJlv5TMYQpSe3DAr0KUFBU=/1400x1400/filters:format(jpeg)/cdn.vox-cdn.com/uploads/chorus_asset/file/24422421/1245495880.jpg',
+                'Nickeil Alexander-Walker',
+                "Professional basketball player for the Minnesota T'Wolves according to my Wikipedia page."),
             const ListTile(
               // Widget that allows to insert a title and (optionally) a sub-title
               title: Text("Latest sessions"),
@@ -54,7 +45,9 @@ class AccountPage extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.timer,
-                                color: Theme.of(context).primaryColor,
+                                color: Theme
+                                    .of(context)
+                                    .primaryColor,
                               ),
                               const Text("1 h 23 min"),
                             ],
@@ -63,7 +56,9 @@ class AccountPage extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.route,
-                                color: Theme.of(context).primaryColor,
+                                color: Theme
+                                    .of(context)
+                                    .primaryColor,
                               ),
                               const Text("12 km"),
                             ],
@@ -93,7 +88,9 @@ class AccountPage extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.timer,
-                                color: Theme.of(context).primaryColor,
+                                color: Theme
+                                    .of(context)
+                                    .primaryColor,
                               ),
                               const Text("24 min"),
                             ],
@@ -102,7 +99,9 @@ class AccountPage extends StatelessWidget {
                             children: [
                               Icon(
                                 Icons.route,
-                                color: Theme.of(context).primaryColor,
+                                color: Theme
+                                    .of(context)
+                                    .primaryColor,
                               ),
                               const Text("4.25 km"),
                             ],
@@ -115,7 +114,6 @@ class AccountPage extends StatelessWidget {
               ),
             ),
           ],
-        )
-    );
+        ));
   }
 }
