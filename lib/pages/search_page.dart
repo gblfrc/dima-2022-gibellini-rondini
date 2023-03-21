@@ -53,10 +53,10 @@ class SearchPage extends StatelessWidget {
                         child: ListView(
                           children: [
                             Tile(Icons.account_circle, "Antonio", "ciao",
-                                print("Ok")),
+                                print),
                             // TODO: find a finer way to implement the list without dividers, maybe with space between objects
                             Tile(Icons.account_circle, "Roberto", "ciao2",
-                                print("Ok2")),
+                                print),
                           ],
                         ),
                       )
@@ -83,9 +83,9 @@ class SearchPage extends StatelessWidget {
                       Expanded(
                         child: ListView(
                           children: [
-                            Tile(Icons.place, "A place", "", print("Place1")),
+                            Tile(Icons.place, "A place", "", print),
                             // TODO: find a finer way to implement the list without dividers, maybe with space between objects
-                            Tile(Icons.place, "Another place", "", print("Place2")),
+                            Tile(Icons.place, "Another place", "", print),
                           ],
                         ),
                       )

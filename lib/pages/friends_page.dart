@@ -31,8 +31,8 @@ class FriendsPage extends StatelessWidget {
               child: ListView(
                 children: <Widget>[
                   Padding(padding: EdgeInsets.all(10)),
-                  Tile(Icons.account_circle, "Luca Rondini", "", print("User1")),
-                  Tile(Icons.account_circle, "Federico Gibellini", "", print("User2")),
+                  Tile(Icons.account_circle, "Luca Rondini", "", print),
+                  Tile(Icons.account_circle, "Federico Gibellini", "", print),
                   const Center(
                       child: Text(
                           "Use the Search section to find friends to add."))

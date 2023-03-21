@@ -4,7 +4,7 @@ class Tile extends StatelessWidget {
   IconData icon = Icons.account_circle;
   String title = "";
   String subtitle = "";
-  void callback;
+  Function callback;
 
   Tile(this.icon, this.title, this.subtitle, this.callback, {super.key});
 
@@ -21,7 +21,7 @@ class Tile extends StatelessWidget {
           leading: Icon(icon, size: 60),
           title: Text(title),
           subtitle: subtitleComponent,
-          onTap: () => callback,
+          onTap: () => callback("Ciao"),
         ),
         const Divider(),
       ],
