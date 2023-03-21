@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 
+import '../components/search_bar.dart';
 import '../components/tiles.dart';
 
 class SearchPage extends StatelessWidget {
   const SearchPage({super.key});
 
-
   // TODO: search bar --> make more intelligent, showing suggestions...
   // TODO:            --> fix, do not let it move with the tabs
+  // TODO: introduce function to de-select search bar
 
   @override
   Widget build(BuildContext context) {
+    var padding = MediaQuery
+        .of(context)
+        .size
+        .width / 20;
+
     return DefaultTabController(
         length: 3,
         child: Scaffold(
@@ -26,51 +32,65 @@ class SearchPage extends StatelessWidget {
             ),
             body: TabBarView(
               children: [
-                ListView( // TODO: make this column a reusable element
-                  children: [
-                    Center(
-                        child: Container(
-                            color: const Color(0xffd6d6d6),
-                            width: 380, //TODO: make relative
-                            margin: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                            child: Row(
-                              //TODO: make beautiful
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Icon(Icons.search),
-                                Text('Search'),
-                                Icon(Icons.close),
-                              ],
-                            ))),
-                    const Padding(padding: EdgeInsets.all(10)),
-                    Tile(Icons.account_circle, "Antonio", "ciao", print("Ok")),
-                    // TODO: find a finer way to implement the list without dividers, maybe with space between objects
-                    Tile(Icons.account_circle, "Roberto", "ciao2", print("Ok2")),
-                  ],
+                Padding(padding: EdgeInsets.all(padding),
+                  child: Column(
+                    // TODO: make this column a reusable element
+                    // mainAxisAlignment: MainAxisAlignment.start,
+                    // crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Flex(
+                        direction: Axis.horizontal,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(0,0,0,padding),
+                              child: const SearchBar(),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            Tile(Icons.account_circle, "Antonio", "ciao",
+                                print("Ok")),
+                            // TODO: find a finer way to implement the list without dividers, maybe with space between objects
+                            Tile(Icons.account_circle, "Roberto", "ciao2",
+                                print("Ok2")),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
-                Column(
-                  children: [
-                    Center(
-                        child: Container(
-                            color: const Color(0xffd6d6d6),
-                            width: 380, //TODO: make relative
-                            margin: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-                            child: Row(
-                              //TODO: make beautiful
-                              mainAxisSize: MainAxisSize.max,
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Icon(Icons.search),
-                                Text('Search'),
-                                Icon(Icons.close),
-                              ],
-                            ))),
-                    const Padding(padding: EdgeInsets.all(10)),
-                    Tile(Icons.place, "A place", "", print("Place1")),
-                    // TODO: find a finer way to implement the list without dividers, maybe with space between objects
-                    Tile(Icons.place, "Another place", "", print("Place2")),
-                  ],
+                Padding(padding: EdgeInsets.all(padding),
+                  child: Column(
+                    // TODO: make this column a reusable element
+                    // mainAxisAlignment: MainAxisAlignment.start,
+                    // crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Flex(
+                        direction: Axis.horizontal,
+                        children: [
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.fromLTRB(0,0,0,padding),
+                              child: const SearchBar(),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            Tile(Icons.place, "A place", "", print("Place1")),
+                            // TODO: find a finer way to implement the list without dividers, maybe with space between objects
+                            Tile(Icons.place, "Another place", "", print("Place2")),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
                 ),
                 Column(
                   children: [
@@ -82,8 +102,7 @@ class SearchPage extends StatelessWidget {
                             border: Border.all(color: Colors.black),
                           ),
                           child: const Text('THIS IS NOT A MAP'),
-                        )
-                    ),
+                        )),
                     const Padding(padding: EdgeInsets.all(10)),
                     ListTile(
                       leading: const Icon(Icons.place, size: 60),
@@ -103,8 +122,6 @@ class SearchPage extends StatelessWidget {
                   ],
                 )
               ],
-            )
-        )
-    );
+            )));
   }
 }
