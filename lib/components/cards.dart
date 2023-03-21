@@ -5,14 +5,16 @@ class SessionCard extends StatelessWidget {
   String dateString;
   int duration;
   double distance;
+
   // TODO: Add callback or info about session ID
 
   SessionCard(this.type, this.dateString, this.duration, this.distance, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    DateTime dateTime = DateTime.parse(dateString);
-    String formattedDate = "${dateTime.month}/${dateTime.day}, ${dateTime.year}"; // TODO: Print month name instead of number
+    DateTime dateTime = DateTime.parse(dateString).toLocal();
+    String formattedDate =
+        "${dateTime.month}/${dateTime.day}, ${dateTime.year}"; // TODO: Print month name instead of number
     return Card(
       child: InkWell(
         // This widget creates a feedback animation when the user taps on the card
@@ -33,9 +35,7 @@ class SessionCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.timer,
-                        color: Theme
-                            .of(context)
-                            .primaryColor,
+                        color: Theme.of(context).primaryColor,
                       ),
                       Text("${duration ~/ 60} h ${duration % 60} min"),
                     ],
@@ -44,9 +44,7 @@ class SessionCard extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.route,
-                        color: Theme
-                            .of(context)
-                            .primaryColor,
+                        color: Theme.of(context).primaryColor,
                       ),
                       Text("$distance km"),
                     ],
@@ -66,6 +64,7 @@ class GoalCard extends StatelessWidget {
   bool isCompleted;
   double targetValue;
   double currentValue;
+
   // TODO: Add callback or info about goal ID
 
   GoalCard(this.title, this.isCompleted, this.targetValue, this.currentValue, {super.key});
@@ -73,10 +72,9 @@ class GoalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String status;
-    if(isCompleted) {
+    if (isCompleted) {
       status = "Completed";
-    }
-    else {
+    } else {
       status = "In progress";
     }
     return Card(
@@ -94,6 +92,57 @@ class GoalCard extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: currentValue / targetValue,
                 backgroundColor: Theme.of(context).focusColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class TrainingProposalCard extends StatelessWidget {
+  String locationName;
+  String type;
+  String dateString;
+
+  // TODO: Add ID or callback
+
+  TrainingProposalCard(this.locationName, this.type, this.dateString, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    DateTime dateTime = DateTime.parse(dateString).toLocal();
+    String formattedDate =
+        "${dateTime.month}/${dateTime.day}, ${dateTime.year} ${dateTime.hour}:${dateTime.minute}"; // TODO: Print month name instead of number
+    return Card(
+      child: InkWell(
+        onTap: () => print("Card tap"),
+        child: Column(
+          children: [
+            const FractionallySizedBox(widthFactor: 1),
+            ListTile(
+              title: Text("Proposed session at $locationName"),
+              subtitle: Text(type),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      Text(formattedDate),
+                    ],
+                  ),
+                  ElevatedButton(
+                    onPressed: () => print("Pressed"),
+                    child: const Text("Join training"),
+                  )
+                ],
               ),
             ),
           ],

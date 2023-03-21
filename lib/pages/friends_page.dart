@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../components/tiles.dart';
+import '../components/cards.dart';
 
 class FriendsPage extends StatelessWidget {
   const FriendsPage({super.key});
@@ -23,40 +24,7 @@ class FriendsPage extends StatelessWidget {
           children: [
             ListView(
               children: [
-                Card(
-                  child: InkWell(
-                    onTap: () => print("Card tap"),
-                    child: Column(
-                      children: [
-                        const FractionallySizedBox(widthFactor: 1),
-                        const ListTile(
-                          title: Text("Proposed session at Parco Suardi"),
-                          subtitle: Text("Shared with friends"),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.calendar_today,
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                  Text("Mar 21, 2023 16:30"),
-                                ],
-                              ),
-                              ElevatedButton(
-                                onPressed: () => print("Pressed"),
-                                child: Text("Join training"),
-                              )
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                TrainingProposalCard("Parco Suardi", "Shared", "2023-03-21T15:30:00Z"),
               ],
             ),
             Center(
