@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:progetto/pages/session_info_page.dart';
 
 class SessionCard extends StatelessWidget {
   String type;
@@ -18,7 +19,11 @@ class SessionCard extends StatelessWidget {
     return Card(
       child: InkWell(
         // This widget creates a feedback animation when the user taps on the card
-        onTap: () => print("Card tap"),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SessionInfoPage("dkcsmfkak24"),
+          ),
+        ),
         // TODO: The callback should show details about the session
         child: Column(
           children: [
