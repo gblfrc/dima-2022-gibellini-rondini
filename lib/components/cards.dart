@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:progetto/pages/session_info_page.dart';
+
+import '../pages/session_info_page.dart';
+import '../pages/goal_info_page.dart';
 
 class SessionCard extends StatelessWidget {
   String type;
@@ -9,7 +11,8 @@ class SessionCard extends StatelessWidget {
 
   // TODO: Add callback or info about session ID
 
-  SessionCard(this.type, this.dateString, this.duration, this.distance, {super.key});
+  SessionCard(this.type, this.dateString, this.duration, this.distance,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +30,8 @@ class SessionCard extends StatelessWidget {
         // TODO: The callback should show details about the session
         child: Column(
           children: [
-            const FractionallySizedBox(widthFactor: 1), // The box should take the entire width of the screen
+            const FractionallySizedBox(widthFactor: 1),
+            // The box should take the entire width of the screen
             ListTile(
               title: Text("Session of $formattedDate"),
               subtitle: Text(type),
@@ -72,7 +76,8 @@ class GoalCard extends StatelessWidget {
 
   // TODO: Add callback or info about goal ID
 
-  GoalCard(this.title, this.isCompleted, this.targetValue, this.currentValue, {super.key});
+  GoalCard(this.title, this.isCompleted, this.targetValue, this.currentValue,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +89,11 @@ class GoalCard extends StatelessWidget {
     }
     return Card(
       child: InkWell(
-        onTap: () => print("Card tap"),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => GoalInfoPage("dkcsmfkak24"),
+          ),
+        ),
         child: Column(
           children: [
             const FractionallySizedBox(widthFactor: 1),
@@ -113,7 +122,8 @@ class TrainingProposalCard extends StatelessWidget {
 
   // TODO: Add ID or callback
 
-  TrainingProposalCard(this.locationName, this.type, this.dateString, {super.key});
+  TrainingProposalCard(this.locationName, this.type, this.dateString,
+      {super.key});
 
   @override
   Widget build(BuildContext context) {
