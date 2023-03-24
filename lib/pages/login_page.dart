@@ -10,7 +10,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  bool _register = false;
+  bool _isLogin = true;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               child: Padding(
                   padding: EdgeInsets.all(padding),
-                  child: !_register
+                  child: _isLogin
                       ? LoginForm(
                     width: formWidth,
                     toggle: _toggleRegister,
@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _toggleRegister() {
     setState(() {
-      _register = !_register;
+      _isLogin = !_isLogin;
     });
   }
 

@@ -1,10 +1,36 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../app_logic/auth.dart';
 
-class LoginForm extends StatelessWidget {
+class LoginForm extends StatefulWidget {
   final double width;
   final Function toggle;
 
   const LoginForm({super.key, required this.width, required this.toggle});
+
+  @override
+  State<LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<LoginForm> {
+  final TextEditingController _controllerEmail = TextEditingController();
+  final TextEditingController _controllerPassword = TextEditingController();
+  String? errorMessage = '';
+
+  Future<void> signInWithEmailAndPassword() async {
+    try {
+      await Auth().signInWithEmailAndPassword(
+        email: _controllerEmail.text,
+        password: _controllerPassword.text,
+      );
+    } on FirebaseAuthException catch (e) {
+      print('C\'è stato un errore');
+      print(e.message);
+      // setState(() {
+      //   errorMessage = e.message;
+      // });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,21 +43,23 @@ class LoginForm extends StatelessWidget {
             children: [
               CustomFormField(
                 text: 'Username',
-                width: width,
+                width: widget.width,
+                controller: _controllerEmail,
               ),
               const SizedBox(
                 height: 8,
               ),
               CustomFormField(
                 text: 'Password',
-                width: width,
+                width: widget.width,
+                controller: _controllerPassword,
               ),
               const SizedBox(
                 height: 6,
               ),
-              const ElevatedButton(
-                onPressed: null,
-                child: Text(
+              ElevatedButton(
+                onPressed: signInWithEmailAndPassword,
+                child: const Text(
                   'LOGIN',
                   style: TextStyle(
                     color: Colors.white,
@@ -48,7 +76,9 @@ class LoginForm extends StatelessWidget {
                     style: TextStyle(color: Colors.grey[700]),
                   ),
                   TextButton(
-                    onPressed: () {toggle();},
+                    onPressed: () {
+                      widget.toggle();
+                    },
                     style: TextButton.styleFrom(
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -77,8 +107,8 @@ class LoginForm extends StatelessWidget {
                 ),
               ),
               Container(
-                height: width / 4,
-                width: width / 4,
+                height: widget.width / 4,
+                width: widget.width / 4,
                 padding: EdgeInsets.zero,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4),
@@ -97,9 +127,33 @@ class LoginForm extends StatelessWidget {
   }
 }
 
+class RegistrationForm extends LoginForm {
+  const RegistrationForm(
+      {super.key, required super.width, required super.toggle});
 
-class RegistrationForm extends LoginForm{
-  const RegistrationForm({super.key, required super.width, required super.toggle});
+  @override
+  State<RegistrationForm> createState() => _RegistrationFormState();
+}
+
+class _RegistrationFormState extends State<RegistrationForm> {
+  final TextEditingController _controllerEmail = TextEditingController();
+  final TextEditingController _controllerPassword = TextEditingController();
+  String? errorMessage = '';
+
+  Future<void> createUserWithEmailAndPassword() async {
+    try {
+      await Auth().createUserWithEmailAndPassword(
+        email: _controllerEmail.text,
+        password: _controllerPassword.text,
+      );
+    } on FirebaseAuthException catch (e) {
+      // setState(() {
+      //   errorMessage = e.message;
+      // });
+      print('C\'è stato un errore');
+      print(e.message);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,49 +166,55 @@ class RegistrationForm extends LoginForm{
             children: [
               CustomFormField(
                 text: 'Email',
-                width: width,
+                width: widget.width,
+                controller: _controllerEmail,
               ),
               const SizedBox(
                 height: 8,
               ),
               CustomFormField(
                 text: 'Username',
-                width: width,
+                width: widget.width,
+                controller: null,
               ),
               const SizedBox(
                 height: 8,
               ),
               CustomFormField(
                 text: 'Password',
-                width: width,
+                width: widget.width,
+                controller: _controllerPassword,
               ),
               const SizedBox(
                 height: 8,
               ),
               CustomFormField(
                 text: 'Name',
-                width: width,
+                width: widget.width,
+                controller: null,
               ),
               const SizedBox(
                 height: 8,
               ),
               CustomFormField(
                 text: 'Surname',
-                width: width,
+                width: widget.width,
+                controller: null,
               ),
               const SizedBox(
                 height: 8,
               ),
               CustomFormField(
                 text: 'Age',
-                width: width,
+                width: widget.width,
+                controller: null,
               ),
               const SizedBox(
                 height: 6,
               ),
-              const ElevatedButton(
-                onPressed: null,
-                child: Text(
+              ElevatedButton(
+                onPressed: createUserWithEmailAndPassword,
+                child: const Text(
                   'REGISTER',
                   style: TextStyle(
                     color: Colors.white,
@@ -171,7 +231,9 @@ class RegistrationForm extends LoginForm{
                     style: TextStyle(color: Colors.grey[700]),
                   ),
                   TextButton(
-                    onPressed: () {toggle();},
+                    onPressed: () {
+                      widget.toggle();
+                    },
                     style: TextButton.styleFrom(
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -193,23 +255,24 @@ class RegistrationForm extends LoginForm{
       ],
     );
   }
-
-
-
-
 }
-
-
 
 class CustomFormField extends StatelessWidget {
   final String text;
   final double width;
+  // TODO: remove "?" for controller
+  final TextEditingController? controller;
 
-  const CustomFormField({super.key, required this.text, required this.width});
+  const CustomFormField(
+      {super.key,
+      required this.text,
+      required this.width,
+      required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      controller: controller,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,

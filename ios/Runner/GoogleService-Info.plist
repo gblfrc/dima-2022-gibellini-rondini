@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>620827551324-me8a1tdtnejiebik3jk0f8uf4rraqbpp.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.620827551324-me8a1tdtnejiebik3jk0f8uf4rraqbpp</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBkpNfPv86xw65jpxoj2BkpeOHISmHez2Q</string>
+	<key>GCM_SENDER_ID</key>
+	<string>620827551324</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>it.polimi.dima.gblrnd.progetto</string>
+	<key>PROJECT_ID</key>
+	<string>dima-gibellini-rondini</string>
+	<key>STORAGE_BUCKET</key>
+	<string>dima-gibellini-rondini.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:620827551324:ios:93ddd463038c16e0c6e899</string>
+</dict>
+</plist>

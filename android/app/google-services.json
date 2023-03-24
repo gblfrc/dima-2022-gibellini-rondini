@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "620827551324",
+    "project_id": "dima-gibellini-rondini",
+    "storage_bucket": "dima-gibellini-rondini.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:620827551324:android:699dbc09ec09e893c6e899",
+        "android_client_info": {
+          "package_name": "it.polimi.dima.gblrnd.progetto"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "620827551324-4jqs8nrd36bjgd2c5l5bcisabevqjpoi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAsNJgttRM1f1LHA9I38DplFYV-O9lE7Ak"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "620827551324-4jqs8nrd36bjgd2c5l5bcisabevqjpoi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

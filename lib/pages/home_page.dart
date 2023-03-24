@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../components/cards.dart';
+import '../app_logic/auth.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,6 +12,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
+  final User? user = Auth().currentUser;
+
+  Future<void> signOut() async{
+    await Auth().signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,6 +26,7 @@ class _HomePageState extends State<HomePage> {
       ),
       body: ListView(
         children: <Widget>[
+          Text(user?.email ?? 'Something went wrong!!!'),
           const ListTile(
             // Widget that allows to insert a title and (optionally) a sub-title
             title: Text("Latest sessions"),
