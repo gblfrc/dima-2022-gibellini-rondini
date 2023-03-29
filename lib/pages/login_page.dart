@@ -12,13 +12,13 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _isLogin = true;
 
-  void displaySnackBar(String errorMessage) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(errorMessage),
-      ),
-    );
-  }
+  // void displaySnackBar(String errorMessage) {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text(errorMessage),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -26,33 +26,35 @@ class _LoginPageState extends State<LoginPage> {
     double padding = containerWidth / 15;
     double formWidth = containerWidth - 2 * padding;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).primaryColor,
-      ),
-      child: SafeArea(
-        child: Center(
-          child: Material(
-            elevation: 15,
-            child: Container(
-              width: containerWidth,
-              decoration: BoxDecoration(
-                //TODO: find a better color
-                color: Colors.yellow[100],
+    return Scaffold(
+      body: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor,
+        ),
+        child: SafeArea(
+          child: Center(
+            child: Material(
+              elevation: 15,
+              child: Container(
+                width: containerWidth,
+                decoration: BoxDecoration(
+                  //TODO: find a better color
+                  color: Colors.yellow[100],
+                ),
+                child: Padding(
+                    padding: EdgeInsets.all(padding),
+                    child: _isLogin
+                        ? LoginForm(
+                            width: formWidth,
+                            toggle: _toggleRegister,
+                            //errorCallback: displaySnackBar,
+                          )
+                        : RegistrationForm(
+                            width: formWidth,
+                            toggle: _toggleRegister,
+                            //errorCallback: displaySnackBar,
+                          )),
               ),
-              child: Padding(
-                  padding: EdgeInsets.all(padding),
-                  child: _isLogin
-                      ? LoginForm(
-                          width: formWidth,
-                          toggle: _toggleRegister,
-                          errorCallback: displaySnackBar,
-                        )
-                      : RegistrationForm(
-                          width: formWidth,
-                          toggle: _toggleRegister,
-                          errorCallback: displaySnackBar,
-                        )),
             ),
           ),
         ),

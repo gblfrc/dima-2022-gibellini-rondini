@@ -5,9 +5,9 @@ import '../app_logic/auth.dart';
 class LoginForm extends StatefulWidget {
   final double width;
   final Function toggle;
-  final Function errorCallback;
+  //final Function errorCallback;
 
-  const LoginForm({super.key, required this.width, required this.toggle, required this.errorCallback});
+  const LoginForm({super.key, required this.width, required this.toggle});
 
   @override
   State<LoginForm> createState() => _LoginFormState();
@@ -24,11 +24,13 @@ class _LoginFormState extends State<LoginForm> {
         password: _controllerPassword.text,
       );
     } on FirebaseAuthException catch (e) {
-      widget.errorCallback(e.message);
-      // print('ERRORE: $e.message');
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   SnackBar(content: Text(e.message ?? 'An error occurred'),)
-      // );
+      //widget.errorCallback(e.message);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? "Something went wrong. Please try again."),
+        ),
+      );
+      // print('ERROR: $e.message');
       // setState(() {
       //   errorMessage = e.message;
       // });
@@ -37,8 +39,6 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    print(context);
-
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -135,7 +135,7 @@ class _LoginFormState extends State<LoginForm> {
 
 class RegistrationForm extends LoginForm {
   const RegistrationForm(
-      {super.key, required super.width, required super.toggle, required super.errorCallback});
+      {super.key, required super.width, required super.toggle});
 
   @override
   State<RegistrationForm> createState() => _RegistrationFormState();
@@ -155,8 +155,12 @@ class _RegistrationFormState extends State<RegistrationForm> {
       // setState(() {
       //   errorMessage = e.message;
       // });
-      print('C\'è stato un errore');
-      print(e.message);
+      //print(e.message);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? "Something went wrong. Please try again."),
+        ),
+      );
     }
   }
 
@@ -189,6 +193,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 text: 'Password',
                 width: widget.width,
                 controller: _controllerPassword,
+                obscure: true,
               ),
               const SizedBox(
                 height: 8,
