@@ -5,8 +5,9 @@ import '../app_logic/auth.dart';
 class LoginForm extends StatefulWidget {
   final double width;
   final Function toggle;
+  final Function errorCallback;
 
-  const LoginForm({super.key, required this.width, required this.toggle});
+  const LoginForm({super.key, required this.width, required this.toggle, required this.errorCallback});
 
   @override
   State<LoginForm> createState() => _LoginFormState();
@@ -15,17 +16,19 @@ class LoginForm extends StatefulWidget {
 class _LoginFormState extends State<LoginForm> {
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
-  String? errorMessage = '';
 
-  Future<void> signInWithEmailAndPassword() async {
+  Future<void> signInWithEmailAndPassword(BuildContext context) async {
     try {
       await Auth().signInWithEmailAndPassword(
         email: _controllerEmail.text,
         password: _controllerPassword.text,
       );
     } on FirebaseAuthException catch (e) {
-      print('C\'è stato un errore');
-      print(e.message);
+      widget.errorCallback(e.message);
+      // print('ERRORE: $e.message');
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text(e.message ?? 'An error occurred'),)
+      // );
       // setState(() {
       //   errorMessage = e.message;
       // });
@@ -34,6 +37,8 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
+    print(context);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -53,12 +58,13 @@ class _LoginFormState extends State<LoginForm> {
                 text: 'Password',
                 width: widget.width,
                 controller: _controllerPassword,
+                obscure: true,
               ),
               const SizedBox(
                 height: 6,
               ),
               ElevatedButton(
-                onPressed: signInWithEmailAndPassword,
+                onPressed: () {signInWithEmailAndPassword(context);},
                 child: const Text(
                   'LOGIN',
                   style: TextStyle(
@@ -129,7 +135,7 @@ class _LoginFormState extends State<LoginForm> {
 
 class RegistrationForm extends LoginForm {
   const RegistrationForm(
-      {super.key, required super.width, required super.toggle});
+      {super.key, required super.width, required super.toggle, required super.errorCallback});
 
   @override
   State<RegistrationForm> createState() => _RegistrationFormState();
@@ -138,7 +144,6 @@ class RegistrationForm extends LoginForm {
 class _RegistrationFormState extends State<RegistrationForm> {
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
-  String? errorMessage = '';
 
   Future<void> createUserWithEmailAndPassword() async {
     try {
@@ -262,17 +267,20 @@ class CustomFormField extends StatelessWidget {
   final double width;
   // TODO: remove "?" for controller
   final TextEditingController? controller;
+  bool? obscure = false;
 
-  const CustomFormField(
+  CustomFormField(
       {super.key,
       required this.text,
       required this.width,
-      required this.controller});
+      required this.controller,
+      this.obscure,});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      obscureText: obscure ?? false,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,
@@ -282,6 +290,7 @@ class CustomFormField extends StatelessWidget {
           borderRadius: BorderRadius.circular(5),
         ),
         hintText: text,
+
       ),
     );
   }

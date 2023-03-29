@@ -12,20 +12,23 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   bool _isLogin = true;
 
+  void displaySnackBar(String errorMessage) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(errorMessage),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    double containerWidth = MediaQuery
-        .of(context)
-        .size
-        .width * 2 / 3;
+    double containerWidth = MediaQuery.of(context).size.width * 2 / 3;
     double padding = containerWidth / 15;
     double formWidth = containerWidth - 2 * padding;
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme
-            .of(context)
-            .primaryColor,
+        color: Theme.of(context).primaryColor,
       ),
       child: SafeArea(
         child: Center(
@@ -41,13 +44,15 @@ class _LoginPageState extends State<LoginPage> {
                   padding: EdgeInsets.all(padding),
                   child: _isLogin
                       ? LoginForm(
-                    width: formWidth,
-                    toggle: _toggleRegister,
-                  )
+                          width: formWidth,
+                          toggle: _toggleRegister,
+                          errorCallback: displaySnackBar,
+                        )
                       : RegistrationForm(
-                    width: formWidth,
-                    toggle:_toggleRegister,
-                  )),
+                          width: formWidth,
+                          toggle: _toggleRegister,
+                          errorCallback: displaySnackBar,
+                        )),
             ),
           ),
         ),
@@ -60,5 +65,4 @@ class _LoginPageState extends State<LoginPage> {
       _isLogin = !_isLogin;
     });
   }
-
 }
