@@ -1,10 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../app_logic/auth.dart';
 
 class LoginForm extends StatefulWidget {
   final double width;
   final Function toggle;
+
   //final Function errorCallback;
 
   const LoginForm({super.key, required this.width, required this.toggle});
@@ -64,7 +68,9 @@ class _LoginFormState extends State<LoginForm> {
                 height: 6,
               ),
               ElevatedButton(
-                onPressed: () {signInWithEmailAndPassword(context);},
+                onPressed: () {
+                  signInWithEmailAndPassword(context);
+                },
                 child: const Text(
                   'LOGIN',
                   style: TextStyle(
@@ -144,18 +150,25 @@ class RegistrationForm extends LoginForm {
 class _RegistrationFormState extends State<RegistrationForm> {
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
+  final TextEditingController _controllerName = TextEditingController();
+  final TextEditingController _controllerSurname = TextEditingController();
+  final TextEditingController _controllerBirthday = TextEditingController();
 
   Future<void> createUserWithEmailAndPassword() async {
     try {
-      await Auth().createUserWithEmailAndPassword(
+      UserCredential credentials = await Auth().createUserWithEmailAndPassword(
         email: _controllerEmail.text,
         password: _controllerPassword.text,
       );
+      final docUser = FirebaseFirestore.instance
+          .collection("users")
+          .doc(credentials.user?.uid);
+      await docUser.set({
+        "name": _controllerName.text,
+        "surname": _controllerSurname.text,
+        "birthday": DateFormat("dd-MM-yyyy").parse(_controllerBirthday.text),
+      });
     } on FirebaseAuthException catch (e) {
-      // setState(() {
-      //   errorMessage = e.message;
-      // });
-      //print(e.message);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.message ?? "Something went wrong. Please try again."),
@@ -182,14 +195,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 height: 8,
               ),
               CustomFormField(
-                text: 'Username',
-                width: widget.width,
-                controller: null,
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              CustomFormField(
                 text: 'Password',
                 width: widget.width,
                 controller: _controllerPassword,
@@ -201,7 +206,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
               CustomFormField(
                 text: 'Name',
                 width: widget.width,
-                controller: null,
+                controller: _controllerName,
               ),
               const SizedBox(
                 height: 8,
@@ -209,15 +214,29 @@ class _RegistrationFormState extends State<RegistrationForm> {
               CustomFormField(
                 text: 'Surname',
                 width: widget.width,
-                controller: null,
+                controller: _controllerSurname,
               ),
               const SizedBox(
                 height: 8,
               ),
-              CustomFormField(
-                text: 'Age',
-                width: widget.width,
-                controller: null,
+              DateTimeField(
+                format: DateFormat("dd-MM-yyyy"),
+                onShowPicker: (context, currentValue) => showDatePicker(
+                    context: context,
+                    initialDate: currentValue ?? DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime(2100)),
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  isDense: true,
+                  contentPadding: EdgeInsets.all(widget.width / 20),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  hintText: "Birthday",
+                ),
+                controller: _controllerBirthday,
               ),
               const SizedBox(
                 height: 6,
@@ -270,16 +289,18 @@ class _RegistrationFormState extends State<RegistrationForm> {
 class CustomFormField extends StatelessWidget {
   final String text;
   final double width;
+
   // TODO: remove "?" for controller
   final TextEditingController? controller;
   bool? obscure = false;
 
-  CustomFormField(
-      {super.key,
-      required this.text,
-      required this.width,
-      required this.controller,
-      this.obscure,});
+  CustomFormField({
+    super.key,
+    required this.text,
+    required this.width,
+    required this.controller,
+    this.obscure,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -295,7 +316,6 @@ class CustomFormField extends StatelessWidget {
           borderRadius: BorderRadius.circular(5),
         ),
         hintText: text,
-
       ),
     );
   }
