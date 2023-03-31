@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../app_logic/auth.dart';
 import '../components/contact_card.dart';
@@ -30,10 +31,24 @@ class AccountPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const ContactCard(
-                'https://cdn.vox-cdn.com/thumbor/s0kqMLJlv5TMYQpSe3DAr0KUFBU=/1400x1400/filters:format(jpeg)/cdn.vox-cdn.com/uploads/chorus_asset/file/24422421/1245495880.jpg',
-                'Nickeil Alexander-Walker',
-                "Professional basketball player for the Minnesota T'Wolves according to my Wikipedia page."),
+            FutureBuilder(
+                future: getUser(),
+                builder: (context, snapshot) {
+                  // TODO: Add case to handle error snapshot.hasError
+                  if (snapshot.hasData) {
+                    return ContactCard(
+                        'https://cdn.vox-cdn.com/thumbor/s0kqMLJlv5TMYQpSe3DAr0KUFBU=/1400x1400/filters:format(jpeg)/cdn.vox-cdn.com/uploads/chorus_asset/file/24422421/1245495880.jpg',
+                        "${snapshot.data!["name"]} ${snapshot.data!["surname"]}",
+                        "Professional basketball player for the Minnesota T'Wolves according to my Wikipedia page."
+                    );
+                  }
+                  else {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                }
+            ),
             const ListTile(
               // Widget that allows to insert a title and (optionally) a sub-title
               title: Text("Latest sessions"),
@@ -118,5 +133,12 @@ class AccountPage extends StatelessWidget {
             ),
           ],
         ));
+  }
+
+
+  Future<DocumentSnapshot> getUser() async {
+    final docUser = FirebaseFirestore.instance.collection("users").doc(Auth().currentUser?.uid);
+    final snapshot = await docUser.get();
+    return snapshot;
   }
 }
