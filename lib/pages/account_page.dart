@@ -36,6 +36,7 @@ class AccountPage extends StatelessWidget {
                 builder: (context, snapshot) {
                   // TODO: Add case to handle error snapshot.hasError
                   if (snapshot.hasData) {
+                    // TODO: Add check to handle cases where snapshot.data.exists is false (this can happen even if hasData is true and it means that no document was found)
                     return ContactCard(
                         'https://cdn.vox-cdn.com/thumbor/s0kqMLJlv5TMYQpSe3DAr0KUFBU=/1400x1400/filters:format(jpeg)/cdn.vox-cdn.com/uploads/chorus_asset/file/24422421/1245495880.jpg',
                         "${snapshot.data!["name"]} ${snapshot.data!["surname"]}",
