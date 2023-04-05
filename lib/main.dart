@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:progetto/app_logic/widget_tree.dart';
+import 'package:progetto/pages/edit_profile_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,6 +17,9 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Flutter Demo',
+      routes: {
+        EditProfilePage.routeName: (context) => const EditProfilePage(),
+      },
       theme: ThemeData(
         primarySwatch: Colors.blue,
         // elevatedButtonTheme: ElevatedButtonThemeData(
