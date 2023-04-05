@@ -1,30 +1,34 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../pages/session_info_page.dart';
 import '../pages/goal_info_page.dart';
 
 class SessionCard extends StatelessWidget {
-  String type;
-  String dateString;
-  int duration;
-  double distance;
+  DocumentSnapshot sessionData;
 
-  // TODO: Add callback or info about session ID
-
-  SessionCard(this.type, this.dateString, this.duration, this.distance,
-      {super.key});
+  SessionCard(this.sessionData, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    DateTime dateTime = DateTime.parse(dateString).toLocal();
-    String formattedDate =
-        "${dateTime.month}/${dateTime.day}, ${dateTime.year}"; // TODO: Print month name instead of number
+    DateTime dateTime = DateTime.parse(sessionData["startDT"].toDate().toString()).toLocal();
+    String formattedDate = DateFormat("MMM d, y").format(dateTime);
+        //"${dateTime.month}/${dateTime.day}, ${dateTime.year}";
+    String type = "";
+    try {
+      sessionData["proposalID"];
+      type = "Shared";
+    }
+    on StateError catch (_) {
+      type = "Private";
+    }
     return Card(
       child: InkWell(
         // This widget creates a feedback animation when the user taps on the card
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => SessionInfoPage("dkcsmfkak24"),
+            builder: (context) => SessionInfoPage(sessionData),
           ),
         ),
         // TODO: The callback should show details about the session
@@ -46,7 +50,7 @@ class SessionCard extends StatelessWidget {
                         Icons.timer,
                         color: Theme.of(context).primaryColor,
                       ),
-                      Text("${duration ~/ 60} h ${duration % 60} min"),
+                      Text("${sessionData["duration"] ~/ 60} h ${sessionData["duration"] % 60} min"),
                     ],
                   ),
                   Row(
@@ -55,7 +59,7 @@ class SessionCard extends StatelessWidget {
                         Icons.route,
                         color: Theme.of(context).primaryColor,
                       ),
-                      Text("$distance km"),
+                      Text("${sessionData["distance"]} km"),
                     ],
                   ),
                 ],
@@ -128,8 +132,8 @@ class TrainingProposalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     DateTime dateTime = DateTime.parse(dateString).toLocal();
-    String formattedDate =
-        "${dateTime.month}/${dateTime.day}, ${dateTime.year} ${dateTime.hour}:${dateTime.minute}"; // TODO: Print month name instead of number
+    String formattedDate = DateFormat("MMM d, y").format(dateTime);
+        //"${dateTime.month}/${dateTime.day}, ${dateTime.year} ${dateTime.hour}:${dateTime.minute}";
     return Card(
       child: InkWell(
         onTap: () => print("Card tap"),

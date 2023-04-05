@@ -40,7 +40,7 @@ class _HomePageState extends State<HomePage> {
                   }
                   List<Widget> sessionList = [];
                   for(var session in snapshot.data!) { // For each session, we create a card and append it to the array of children
-                    sessionList.add(SessionCard("private", session["startDT"].toDate().toString(), session["duration"], session["distance"]));
+                    sessionList.add(SessionCard(session));
                   }
                   return Column(
                     children: sessionList,

@@ -1,12 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class SessionInfoPage extends StatelessWidget {
-  String sessionID;
+  DocumentSnapshot sessionData;
 
-  SessionInfoPage(this.sessionID, {super.key});
+  SessionInfoPage(this.sessionData, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    DateTime dateTime = DateTime.parse(sessionData["startDT"].toDate().toString()).toLocal();
+    //String formattedDate =
+        //"${dateTime.month}/${dateTime.day}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}";
+    String formattedDate = DateFormat("d MMM y").add_Hms().format(dateTime);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Session info"),
@@ -35,44 +41,44 @@ class SessionInfoPage extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Wrap(
-                    spacing: 20,
+                    spacing: 40,
                     runSpacing: 20,
                     alignment: WrapAlignment.spaceEvenly,
                     children: [
                       Column(
                         children: [
                           Text(
-                            "3/14/2023 16:30:21",
-                            style: TextStyle(
+                            formattedDate,
+                            style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text("Start"),
+                          const Text("Start"),
                         ],
                       ),
                       Column(
                         children: [
                           Text(
-                            "1:23:36",
-                            style: TextStyle(
+                            "${sessionData["duration"] ~/ 60}:${sessionData["duration"] % 60}", // TODO: Maybe is better to also add seconds?
+                            style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text("Duration"),
+                          const Text("Duration"),
                         ],
                       ),
                       Column(
                         children: [
                           Text(
-                            "5.98 km",
-                            style: TextStyle(
+                            "${sessionData["distance"]} km",
+                            style: const TextStyle(
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text("Distance"),
+                          const Text("Distance"),
                         ],
                       ),
                     ],
