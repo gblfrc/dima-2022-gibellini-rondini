@@ -12,8 +12,8 @@ class AccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<User?>(
-      future: getUser(uid),
+    return StreamBuilder<User?>(
+      stream: getUser(uid),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const _ErrorPage();
@@ -31,14 +31,9 @@ class AccountPage extends StatelessWidget {
     );
   }
 
-  Future<User?> getUser(String uid) async {
+  Stream<User?> getUser(String uid) {
     final docUser = FirebaseFirestore.instance.collection("users").doc(uid);
-    final snapshot = await docUser.get();
-    if (snapshot.exists) {
-      return User.fromJson(snapshot.data()!);
-    } else {
-      return null;
-    }
+    return docUser.snapshots().map((doc) => User.fromJson(doc.data()!));
   }
 }
 
