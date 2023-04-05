@@ -1,12 +1,24 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class GoalInfoPage extends StatelessWidget {
-  String goalID;
+  DocumentSnapshot goalData;
 
-  GoalInfoPage(this.goalID, {super.key});
+  GoalInfoPage(this.goalData, {super.key});
 
   @override
   Widget build(BuildContext context) {
+    String target;
+    String current;
+    if(goalData["type"] == "distanceGoal") {
+      target = "${goalData["targetValue"]} km";
+      current = "${goalData["currentValue"]} km";
+    }
+    else {
+      target = "${goalData["targetValue"]} min";
+      current = "${goalData["currentValue"]} min";
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Goal info"),
@@ -24,7 +36,7 @@ class GoalInfoPage extends StatelessWidget {
                     child: Column(
                       children: [
                         LinearProgressIndicator(
-                          value: 10.18 / 20,
+                          value: goalData["currentValue"] / goalData["targetValue"],
                           backgroundColor: Theme.of(context).focusColor,
                         ),
                         Wrap(
@@ -35,25 +47,25 @@ class GoalInfoPage extends StatelessWidget {
                             Column(
                               children: [
                                 Text(
-                                  "10.18 km",
-                                  style: TextStyle(
+                                  current,
+                                  style: const TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Text("Current"),
+                                const Text("Current"),
                               ],
                             ),
                             Column(
                               children: [
                                 Text(
-                                  "20 km",
-                                  style: TextStyle(
+                                  target,
+                                  style: const TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                Text("Target"),
+                                const Text("Target"),
                               ],
                             ),
                           ],

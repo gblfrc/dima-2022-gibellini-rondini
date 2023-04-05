@@ -73,29 +73,39 @@ class SessionCard extends StatelessWidget {
 }
 
 class GoalCard extends StatelessWidget {
-  String title;
-  bool isCompleted;
-  double targetValue;
-  double currentValue;
+  DocumentSnapshot goalData;
 
   // TODO: Add callback or info about goal ID
 
-  GoalCard(this.title, this.isCompleted, this.targetValue, this.currentValue,
-      {super.key});
+  GoalCard(this.goalData, {super.key});
 
   @override
   Widget build(BuildContext context) {
     String status;
-    if (isCompleted) {
+    String title = "Run for ";
+    if(goalData["completed"]) {
       status = "Completed";
     } else {
       status = "In progress";
     }
+    if(goalData["isMin"]) {
+      title += "at least ";
+    }
+    else {
+      title += "no more than ";
+    }
+    if(goalData["type"] == "distanceGoal") {
+      title += "${goalData["targetValue"]} km";
+    }
+    else {
+      title += "${goalData["targetValue"]} min";
+    }
+
     return Card(
       child: InkWell(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => GoalInfoPage("dkcsmfkak24"),
+            builder: (context) => GoalInfoPage(goalData),
           ),
         ),
         child: Column(
@@ -108,7 +118,7 @@ class GoalCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16),
               child: LinearProgressIndicator(
-                value: currentValue / targetValue,
+                value: goalData["currentValue"] / goalData["targetValue"],
                 backgroundColor: Theme.of(context).focusColor,
               ),
             ),
