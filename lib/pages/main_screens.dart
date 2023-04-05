@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../app_logic/auth.dart';
 import 'home_page.dart';
 import 'search_page.dart';
 import 'account_page.dart';
@@ -18,7 +19,7 @@ class _MainScreensState extends State<MainScreens> {
     const HomePage(),
     const SearchPage(),
     const FriendsPage(),
-    const AccountPage()
+    AccountPage(uid: Auth().currentUser?.uid ?? '')
   ];
 
   @override
