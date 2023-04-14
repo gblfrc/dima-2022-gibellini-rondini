@@ -185,8 +185,7 @@ class TrainingProposalCard extends StatelessWidget {
   }
 
   Future<String> getPlaceName(DocumentReference place) async {
-    final placeDocRef = FirebaseFirestore.instance.doc(place.path);
-    final placeDoc = await placeDocRef.get();
+    final placeDoc = await place.get();
     return placeDoc.get("name");
   }
 }
