@@ -9,7 +9,7 @@ class SessionInfoPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DateTime dateTime = DateTime.parse(sessionData["startDT"].toDate().toString()).toLocal();
+    DateTime dateTime = sessionData["startDT"].toDate().toLocal();
     //String formattedDate =
         //"${dateTime.month}/${dateTime.day}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}";
     String formattedDate = DateFormat("d MMM y").add_Hms().format(dateTime);

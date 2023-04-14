@@ -12,7 +12,7 @@ class SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DateTime dateTime = DateTime.parse(sessionData["startDT"].toDate().toString()).toLocal();
+    DateTime dateTime = sessionData["startDT"].toDate().toLocal();
     String formattedDate = DateFormat("MMM d, y").format(dateTime);
         //"${dateTime.month}/${dateTime.day}, ${dateTime.year}";
     String type = "";
@@ -75,8 +75,6 @@ class SessionCard extends StatelessWidget {
 class GoalCard extends StatelessWidget {
   DocumentSnapshot goalData;
 
-  // TODO: Add callback or info about goal ID
-
   GoalCard(this.goalData, {super.key});
 
   @override
@@ -130,19 +128,14 @@ class GoalCard extends StatelessWidget {
 }
 
 class TrainingProposalCard extends StatelessWidget {
-  String locationName;
-  String type;
-  String dateString;
+  DocumentSnapshot proposalData;
 
-  // TODO: Add ID or callback
-
-  TrainingProposalCard(this.locationName, this.type, this.dateString,
-      {super.key});
+  TrainingProposalCard(this.proposalData, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    DateTime dateTime = DateTime.parse(dateString).toLocal();
-    String formattedDate = DateFormat("MMM d, y").format(dateTime);
+    DateTime dateTime = proposalData["dateTime"].toDate().toLocal();
+    String formattedDate = DateFormat("MMM d, y ").add_Hm().format(dateTime);
         //"${dateTime.month}/${dateTime.day}, ${dateTime.year} ${dateTime.hour}:${dateTime.minute}";
     return Card(
       child: InkWell(
@@ -151,8 +144,19 @@ class TrainingProposalCard extends StatelessWidget {
           children: [
             const FractionallySizedBox(widthFactor: 1),
             ListTile(
-              title: Text("Proposed session at $locationName"),
-              subtitle: Text(type),
+              title: FutureBuilder( // We need to fetch asynchronously the place name
+                future: getPlaceName(proposalData["place"]),
+                builder: (context, snapshot) {
+                  if(snapshot.hasData) {
+                    return Text("Proposed session at ${snapshot.data}");
+                  }
+                  else {
+                    return const Text("Loading...");
+                  }
+                },
+
+              ),
+              subtitle: Text(proposalData["type"]),
             ),
             Padding(
               padding: const EdgeInsets.all(16),
@@ -178,5 +182,11 @@ class TrainingProposalCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<String> getPlaceName(DocumentReference place) async {
+    final placeDocRef = FirebaseFirestore.instance.doc(place.path);
+    final placeDoc = await placeDocRef.get();
+    return placeDoc.get("name");
   }
 }
