@@ -1,30 +1,54 @@
 import 'package:flutter/material.dart';
 
-class Tile extends StatelessWidget {
-  IconData icon = Icons.account_circle;
-  String title = "";
-  String subtitle = "";
-  Function callback;
+import '../model/user.dart';
 
-  Tile(this.icon, this.title, this.subtitle, this.callback, {super.key});
+class Tile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String? subtitle;
+  final Function callback;
+
+  const Tile(
+      {super.key,
+      required this.icon,
+      required this.title,
+      this.subtitle,
+      required this.callback});
 
   @override
   Widget build(BuildContext context) {
     Text? subtitleComponent;
-    if (subtitle != "") {
-      subtitleComponent = Text(subtitle);
-    }
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         ListTile(
+          //TODO: make size dependent from screen width
           leading: Icon(icon, size: 60),
           title: Text(title),
-          subtitle: subtitleComponent,
-          onTap: () => callback("Ciao"),
+          subtitle: subtitle != null ? Text(subtitle!) : const Text(""),
+          onTap: () {
+            callback('ciao');
+          },
         ),
         const Divider(),
       ],
+    );
+  }
+}
+
+class UserTile extends Tile {
+  UserTile(
+      {super.key,
+      required super.icon,
+      required super.title,
+      required super.subtitle,
+      required super.callback});
+
+  static Tile fromUser(User user) {
+    return Tile(
+      icon: Icons.account_circle,
+      title: "${user.name} ${user.surname}",
+      callback: print,
     );
   }
 }

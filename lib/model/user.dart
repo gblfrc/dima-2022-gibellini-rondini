@@ -10,7 +10,7 @@ class User {
   static User fromJson(Map<String, dynamic> json) => User(
   name: json['name'],
   surname: json['surname'],
-  birthday: (json['birthday'] as Timestamp).toDate()
+  birthday: json['birthday'] != null ? (json['birthday'] as Timestamp).toDate() : null
   );
 
 }
