@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:progetto/pages/session_page.dart';
 import '../components/cards.dart';
 import '../app_logic/auth.dart';
 import 'create_goal_page.dart';
@@ -98,7 +99,9 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         // TODO: Change onPressed callback: this is not doing anything at the moment
-        onPressed: () => print("FAB Pressed"),
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const SessionPage())
+        ),
         tooltip: 'New session',
         child: const Icon(Icons.directions_run),
       ),
