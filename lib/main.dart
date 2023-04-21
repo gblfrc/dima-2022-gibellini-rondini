@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       routes: {
         EditProfilePage.routeName: (context) => const EditProfilePage(),
       },
