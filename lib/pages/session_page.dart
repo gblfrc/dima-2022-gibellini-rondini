@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -11,13 +13,17 @@ class SessionPage extends StatefulWidget {
 }
 
 class _SessionPageState extends State<SessionPage> {
-  bool start = true;
+  bool start = false;
   bool pause = false;
   bool stop = false;
   bool resume = false;
   LatLng startingPoint = LatLng(45.694215, 9.670753);
-  Position? _currentPosition;
-  MapController _mapController = MapController();
+  LatLng? _currentPosition;
+  final List<LatLng> _positions = [];
+  final MapController _mapController = MapController();
+  Stream<Position>? _positionStream;
+  StreamSubscription<Position>? _positionUpdater;
+  StreamSubscription<Position>? _positionTracker;
 
   void updateButtons(bool start, bool pause, bool stop, bool resume) {
     setState(() {
@@ -26,6 +32,13 @@ class _SessionPageState extends State<SessionPage> {
       this.stop = stop;
       this.resume = resume;
     });
+  }
+
+  @override
+  void dispose() {
+    _positionUpdater?.cancel();
+    _positionTracker?.cancel();
+    super.dispose();
   }
 
   @override
@@ -40,16 +53,37 @@ class _SessionPageState extends State<SessionPage> {
           Flexible(
               flex: 5,
               child: FutureBuilder(
-                  future: _getCurrentPosition(context),
+                  future: _initPosition(context),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       Position position = snapshot.data!;
-                      LatLng center = LatLng(position.latitude, position.longitude);
+                      _currentPosition =
+                          LatLng(position.latitude, position.longitude);
+                      if(_positionUpdater == null) {
+                        _positionStream = Geolocator.getPositionStream(
+                            locationSettings: const LocationSettings(
+                              accuracy: LocationAccuracy.best,
+                              distanceFilter: 5,
+                            ));
+                        _positionUpdater = _positionStream!.listen(
+                              (Position position) {
+                            if (mounted) {
+                              setState(() {
+                                _currentPosition =
+                                    LatLng(position.latitude, position.longitude);
+                                _mapController.move(_currentPosition!, 18);
+                              });
+                            }
+                          },
+                        );
+                        start = true;
+                      }
                       return FlutterMap(
                         mapController: _mapController,
                         options: MapOptions(
-                          center: center,
-                          zoom: 18.0,
+                          center: _currentPosition,
+                          zoom: 18,
+                          maxZoom: 18.4,
                         ),
                         children: [
                           TileLayer(
@@ -57,24 +91,30 @@ class _SessionPageState extends State<SessionPage> {
                                 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                             subdomains: const ['a', 'b', 'c'],
                           ),
+                          PolylineLayer(
+                            polylineCulling: true,
+                            polylines: [
+                              Polyline(
+                                points: _positions,
+                                color: Colors.blue,
+                                strokeWidth: 7,
+                              )
+                            ],
+                          ),
                           MarkerLayer(
                             markers: [
                               Marker(
                                 // width: 50.0,
                                 // height: 50.0,
-                                point: center,
+                                point: _currentPosition!,
                                 builder: (ctx) => const Icon(
-                                  Icons.location_on,
-                                  color: Colors.red,
+                                  Icons.circle,
+                                  color: Colors.blue,
+                                  size: 30,
                                 ),
                               ),
                             ],
                           ),
-                          // PolylineLayer(
-                          //   polylines: [
-                          //     Polyline(points: points)
-                          //   ],
-                          // )
                         ],
                       );
                     } else if (snapshot.hasError) {
@@ -87,8 +127,7 @@ class _SessionPageState extends State<SessionPage> {
                         child: CircularProgressIndicator(),
                       );
                     }
-                  })
-              ),
+                  })),
           Flexible(
             flex: 1,
             child: Flex(
@@ -129,6 +168,16 @@ class _SessionPageState extends State<SessionPage> {
               stop: stop,
               resume: resume,
               changeButtons: updateButtons,
+              onStart: () {
+                updateButtons(false, true, true, false);
+                _positionTracker = _positionStream?.listen((Position position) {
+                  _positions.add(LatLng(position.latitude, position.longitude));
+                });
+              },
+              onStop: () {
+                updateButtons(true, false, false, false);
+                _positionTracker?.cancel();
+              },
             ),
           ),
         ],
@@ -165,20 +214,11 @@ class _SessionPageState extends State<SessionPage> {
     return true;
   }
 
-  Future<Position> _getCurrentPosition(BuildContext context) async {
+  Future<Position> _initPosition(BuildContext context) async {
     final hasPermission = await _handleLocationPermission(context);
     if (!hasPermission) return Future.error(Exception('Missing permissions'));
     return Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
-    //     .then((Position position) {
-    //   setState(() => _currentPosition = position);
-    //   _mapController.move(
-    //       LatLng(_currentPosition?.latitude ?? 45.694215,
-    //           _currentPosition?.longitude ?? 9.670753),
-    //       18.0);
-    // }).catchError((e) {
-    //   debugPrint(e);
-    // });
   }
 }
 
@@ -188,13 +228,18 @@ class _LowerButtonBar extends StatelessWidget {
   final bool stop;
   final bool resume;
   final Function changeButtons;
+  final Function onStart;
+  final Function onStop;
 
-  const _LowerButtonBar(
-      {required this.start,
-      required this.pause,
-      required this.stop,
-      required this.resume,
-      required this.changeButtons});
+  const _LowerButtonBar({
+    required this.start,
+    required this.pause,
+    required this.stop,
+    required this.resume,
+    required this.changeButtons,
+    required this.onStart,
+    required this.onStop,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +251,7 @@ class _LowerButtonBar extends StatelessWidget {
             child: Center(
               child: ElevatedButton(
                 onPressed: () {
-                  changeButtons(false, true, true, false);
+                  onStart();
                 },
                 child: Text(
                   'START',
@@ -257,7 +302,7 @@ class _LowerButtonBar extends StatelessWidget {
             child: Center(
               child: ElevatedButton(
                 onPressed: () {
-                  changeButtons(true, false, false, false);
+                  onStop();
                 },
                 child: Text(
                   'STOP',
