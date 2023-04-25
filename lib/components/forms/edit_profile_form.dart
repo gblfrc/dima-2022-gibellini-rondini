@@ -11,22 +11,28 @@ class EditProfileForm extends StatefulWidget {
   String? initialSurname;
   DateTime? initialBirthday;
 
-  EditProfileForm({super.key, required this.width, this.initialName, this.initialSurname, this.initialBirthday});
+  EditProfileForm(
+      {super.key,
+      required this.width,
+      this.initialName,
+      this.initialSurname,
+      this.initialBirthday});
 
   @override
   State<EditProfileForm> createState() => _EditProfileFormState();
 }
 
 class _EditProfileFormState extends State<EditProfileForm> {
-
   late TextEditingController _nameController;
   late TextEditingController _surnameController;
   late TextEditingController _birthdayController;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    String date = widget.initialBirthday == null ? '' : DateFormat('dd-MM-yyyy').format(widget.initialBirthday!);
+    String date = widget.initialBirthday == null
+        ? ''
+        : DateFormat.yMd().format(widget.initialBirthday!);
     _nameController = TextEditingController(text: widget.initialName);
     _surnameController = TextEditingController(text: widget.initialSurname);
     _birthdayController = TextEditingController(text: date);
@@ -58,12 +64,14 @@ class _EditProfileFormState extends State<EditProfileForm> {
                 height: 8,
               ),
               DateTimeField(
-                format: DateFormat("dd-MM-yyyy"),
-                onShowPicker: (context, currentValue) => showDatePicker(
-                    context: context,
-                    initialDate: currentValue ?? DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime(2100)),
+                format: DateFormat.yMd(),
+                onShowPicker: (context, currentValue) {
+                  return showDatePicker(
+                      context: context,
+                      initialDate: currentValue ?? DateTime.now(),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime(2100));
+                },
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
@@ -80,9 +88,20 @@ class _EditProfileFormState extends State<EditProfileForm> {
                 height: 6,
               ),
               ElevatedButton(
-                onPressed: () {
-                  updateUser();
-                  Navigator.pop(context);},
+                onPressed: () async {
+                  bool updatedUser = await updateUser();
+                  if (mounted) {
+                    if (updatedUser) {
+                      Navigator.pop(context);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('An error occurred during the update.'),
+                        ),
+                      );
+                    }
+                  }
+                },
                 child: const Text(
                   'UPDATE',
                   style: TextStyle(
@@ -97,16 +116,21 @@ class _EditProfileFormState extends State<EditProfileForm> {
     );
   }
 
-  void updateUser() async {
+  Future<bool> updateUser() async {
     final uid = Auth().currentUser?.uid;
     final docUser = FirebaseFirestore.instance.collection('users').doc(uid);
-    await docUser.update({
-      'name':_nameController.text,
-      'surname':_surnameController.text,
-      'birthday':DateFormat("dd-MM-yyyy").parse(_birthdayController.text)
-    });
-
+    try {
+      await docUser.update({
+        'name': _nameController.text,
+        'surname': _surnameController.text,
+        'birthday': DateFormat.yMd()
+            .parse(_birthdayController.text)
+            .toString()
+            .substring(0, 10),
+      });
+      return true;
+    } on Exception {
+      return false;
+    }
   }
-
-
 }

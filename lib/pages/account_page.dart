@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:progetto/pages/edit_profile_page.dart';
 import '../app_logic/auth.dart';
 import '../components/contact_card.dart';
@@ -76,7 +77,7 @@ class _LoggedUserPage extends StatelessWidget {
                 'https://cdn.vox-cdn.com/thumbor/s0kqMLJlv5TMYQpSe3DAr0KUFBU=/1400x1400/filters:format(jpeg)/cdn.vox-cdn.com/uploads/chorus_asset/file/24422421/1245495880.jpg',
                 "${user.name} ${user.surname}",
                 // "Professional basketball player for the Minnesota T'Wolves according to my Wikipedia page."),
-                "${user.birthday?.day}-${user.birthday?.month}-${user.birthday?.year}")
+                DateFormat.yMd().format(user.birthday!))
           ],
         ));
   }

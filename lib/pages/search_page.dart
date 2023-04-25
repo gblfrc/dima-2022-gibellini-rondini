@@ -1,7 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:algolia/algolia.dart';
 import 'package:flutter/material.dart';
 import 'package:progetto/app_logic/auth.dart';
 
+import '../app_logic/algolia_app.dart';
 import '../components/search_bar.dart';
 import '../components/tiles.dart';
 import '../model/user.dart';
@@ -142,19 +143,17 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _updateUserList(String name) async {
-    // TODO: improve search mechanism, either introducing an index in firestore documents
-    // TODO:      or using a third-party service such as Algolia
+    print(name);
     String? uid = Auth().currentUser?.uid;
     List<User> newList = List.empty();
     if (name != "") {
-      newList = await FirebaseFirestore.instance
-          .collection('users')
-          .where('name', isEqualTo: name)
-          .where('__name__', isNotEqualTo: uid)   // exclude document referring to current user
-          .snapshots()
-          .map((snapshot) =>
-              snapshot.docs.map((doc) => User.fromJson(doc.data())).toList())
-          .first;
+      AlgoliaQuerySnapshot snapshot = await AlgoliaApp.algolia.instance
+          .index('users')
+          .filters('NOT objectID:$uid') // excludes active user from results
+          .query(name)
+          .getObjects();
+      newList =
+          snapshot.hits.map((object) => User.fromJson(object.toMap())).toList();
     }
     setState(() {
       userList = newList;

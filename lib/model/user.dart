@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class User {
   String name;
   String surname;
@@ -8,9 +6,9 @@ class User {
   User({required this.name, required this.surname, this.birthday});
 
   static User fromJson(Map<String, dynamic> json) => User(
-  name: json['name'],
-  surname: json['surname'],
-  birthday: json['birthday'] != null ? (json['birthday'] as Timestamp).toDate() : null
-  );
-
+        name: json['name'],
+        surname: json['surname'],
+        // dart can parse dates only formatted as yyyy-MM-dd
+        birthday: DateTime.parse(json['birthday']),
+      );
 }
