@@ -19,7 +19,11 @@ class _SessionPageState extends State<SessionPage> {
   bool resume = false;
   LatLng startingPoint = LatLng(45.694215, 9.670753);
   LatLng? _currentPosition;
-  final List<LatLng> _positions = [];
+  double distance = 0;
+  Stopwatch stopwatch = Stopwatch();
+  Timer? timer;
+  List<List<LatLng>> _arrays = [];
+  List<LatLng> _positions = [];
   final MapController _mapController = MapController();
   Stream<Position>? _positionStream;
   StreamSubscription<Position>? _positionUpdater;
@@ -59,18 +63,18 @@ class _SessionPageState extends State<SessionPage> {
                       Position position = snapshot.data!;
                       _currentPosition =
                           LatLng(position.latitude, position.longitude);
-                      if(_positionUpdater == null) {
+                      if (_positionUpdater == null) {
                         _positionStream = Geolocator.getPositionStream(
                             locationSettings: const LocationSettings(
-                              accuracy: LocationAccuracy.best,
-                              distanceFilter: 5,
-                            ));
+                          accuracy: LocationAccuracy.best,
+                          distanceFilter: 5,
+                        ));
                         _positionUpdater = _positionStream!.listen(
-                              (Position position) {
+                          (Position position) {
                             if (mounted) {
                               setState(() {
-                                _currentPosition =
-                                    LatLng(position.latitude, position.longitude);
+                                _currentPosition = LatLng(
+                                    position.latitude, position.longitude);
                                 _mapController.move(_currentPosition!, 18);
                               });
                             }
@@ -94,11 +98,12 @@ class _SessionPageState extends State<SessionPage> {
                           PolylineLayer(
                             polylineCulling: true,
                             polylines: [
-                              Polyline(
-                                points: _positions,
-                                color: Colors.blue,
-                                strokeWidth: 7,
-                              )
+                              for (List<LatLng> posArray in _arrays)
+                                Polyline(
+                                  points: posArray,
+                                  color: Colors.blue,
+                                  strokeWidth: 7,
+                                )
                             ],
                           ),
                           MarkerLayer(
@@ -138,7 +143,8 @@ class _SessionPageState extends State<SessionPage> {
                 Flexible(
                   child: Center(
                     child: Text(
-                      '5 km',
+                      "${(distance / 1000).toStringAsFixed(2)} km",
+                      // toStringAsFixed sets the number of decimal positions
                       style: TextStyle(
                         fontSize: 30 * MediaQuery.of(context).textScaleFactor,
                         fontWeight: FontWeight.bold,
@@ -149,7 +155,7 @@ class _SessionPageState extends State<SessionPage> {
                 Flexible(
                   child: Center(
                     child: Text(
-                      '25:16',
+                      stopwatch.elapsed.toString().split('.').first,
                       style: TextStyle(
                         fontSize: 30 * MediaQuery.of(context).textScaleFactor,
                         fontWeight: FontWeight.bold,
@@ -169,14 +175,61 @@ class _SessionPageState extends State<SessionPage> {
               resume: resume,
               changeButtons: updateButtons,
               onStart: () {
+                _positions = [];
+                _arrays = [];
+                _arrays.add(_positions);
                 updateButtons(false, true, true, false);
+                distance = 0;
+                stopwatch.reset();
+                stopwatch.start();
+                timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+                  print('ciao');
+                  setState(() {});
+                });
                 _positionTracker = _positionStream?.listen((Position position) {
-                  _positions.add(LatLng(position.latitude, position.longitude));
+                  setState(() {
+                    LatLng pos = LatLng(position.latitude, position.longitude);
+                    if (_positions.isNotEmpty) {
+                      LatLng last = _positions.last;
+                      distance += Geolocator.distanceBetween(last.latitude,
+                          last.longitude, pos.latitude, pos.longitude);
+                    }
+                    _positions.add(pos);
+                  });
                 });
               },
               onStop: () {
                 updateButtons(true, false, false, false);
+                stopwatch.stop();
+                timer?.cancel();
                 _positionTracker?.cancel();
+              },
+              onPause: () {
+                updateButtons(false, false, true, true);
+                stopwatch.stop();
+                timer?.cancel();
+                _positionTracker?.cancel();
+              },
+              onResume: (){
+                updateButtons(false, true, true, false);
+                _positions = [];
+                _arrays.add(_positions);
+                stopwatch.start();
+                timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+                  print('ciao');
+                  setState(() {});
+                });
+                _positionTracker = _positionStream?.listen((Position position) {
+                  setState(() {
+                    LatLng pos = LatLng(position.latitude, position.longitude);
+                    if (_positions.isNotEmpty) {
+                      LatLng last = _positions.last;
+                      distance += Geolocator.distanceBetween(last.latitude,
+                          last.longitude, pos.latitude, pos.longitude);
+                    }
+                    _positions.add(pos);
+                  });
+                });
               },
             ),
           ),
@@ -230,6 +283,8 @@ class _LowerButtonBar extends StatelessWidget {
   final Function changeButtons;
   final Function onStart;
   final Function onStop;
+  final Function onPause;
+  final Function onResume;
 
   const _LowerButtonBar({
     required this.start,
@@ -239,6 +294,8 @@ class _LowerButtonBar extends StatelessWidget {
     required this.changeButtons,
     required this.onStart,
     required this.onStop,
+    required this.onPause,
+    required this.onResume,
   });
 
   @override
@@ -268,7 +325,7 @@ class _LowerButtonBar extends StatelessWidget {
             child: Center(
               child: ElevatedButton(
                 onPressed: () {
-                  changeButtons(false, false, true, true);
+                  onPause();
                 },
                 child: Text(
                   'PAUSE',
@@ -285,7 +342,7 @@ class _LowerButtonBar extends StatelessWidget {
             child: Center(
               child: ElevatedButton(
                 onPressed: () {
-                  changeButtons(false, true, true, false);
+                  onResume();
                 },
                 child: Text(
                   'RESUME',
