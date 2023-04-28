@@ -128,7 +128,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
         "userID": docUser, // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
       };
       await FirebaseFirestore.instance.collection("goals").add(data);
-      if (!context.mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Goal created!"),
