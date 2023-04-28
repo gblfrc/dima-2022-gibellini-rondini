@@ -1,9 +1,12 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+
+import '../app_logic/auth.dart';
 
 class SessionPage extends StatefulWidget {
   const SessionPage({super.key});
@@ -24,6 +27,7 @@ class _SessionPageState extends State<SessionPage> {
   Timer? timer;
   List<List<LatLng>> _arrays = [];
   List<LatLng> _positions = [];
+  DateTime? startDT;
   final MapController _mapController = MapController();
   Stream<Position>? _positionStream;
   StreamSubscription<Position>? _positionUpdater;
@@ -182,8 +186,8 @@ class _SessionPageState extends State<SessionPage> {
                 distance = 0;
                 stopwatch.reset();
                 stopwatch.start();
+                startDT = DateTime.now();
                 timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
-                  print('ciao');
                   setState(() {});
                 });
                 _positionTracker = _positionStream?.listen((Position position) {
@@ -203,6 +207,7 @@ class _SessionPageState extends State<SessionPage> {
                 stopwatch.stop();
                 timer?.cancel();
                 _positionTracker?.cancel();
+                saveSession();
               },
               onPause: () {
                 updateButtons(false, false, true, true);
@@ -216,7 +221,6 @@ class _SessionPageState extends State<SessionPage> {
                 _arrays.add(_positions);
                 stopwatch.start();
                 timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
-                  print('ciao');
                   setState(() {});
                 });
                 _positionTracker = _positionStream?.listen((Position position) {
@@ -273,6 +277,38 @@ class _SessionPageState extends State<SessionPage> {
     return Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
   }
+
+  Future<void> saveSession() async{
+    try {
+      List<Map<String, List<GeoPoint>>> maps = [];
+      for (List<LatLng> array in _arrays) {
+        List<GeoPoint> geopoints = [];
+        for (LatLng position in array) {
+          geopoints.add(GeoPoint(position.latitude, position.longitude));
+        }
+        Map<String, List<GeoPoint>> map = {"values": geopoints};
+        maps.add(map);
+      }
+      final docUser = FirebaseFirestore.instance
+          .collection("users")
+          .doc(Auth().currentUser!.uid);
+      FirebaseFirestore.instance
+          .collection('sessions')
+          .doc()
+          .set({
+        "userID": docUser,
+        "distance": distance,
+        "startDT": Timestamp.fromDate(startDT!),
+        "duration": stopwatch.elapsedMilliseconds / 1000,
+        "positions": maps
+      });
+    } on FirebaseException {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Something went wrong when saving the session.')));
+    }
+  }
+
 }
 
 class _LowerButtonBar extends StatelessWidget {
