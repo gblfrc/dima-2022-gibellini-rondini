@@ -14,13 +14,22 @@ class SessionInfoPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     DateTime dateTime = sessionData["startDT"].toDate().toLocal();
-    List<LatLng> positions = [];
-    for(GeoPoint p in sessionData["positions"]) {
-      positions.add(LatLng(p.latitude, p.longitude));
+    List<List<LatLng>> segments = [];
+    for (Map<String, dynamic> m in sessionData["positions"]) {
+      List<LatLng> points = [];
+      for (GeoPoint p in m["values"] ?? []) {
+        points.add(LatLng(p.latitude, p.longitude));
+      }
+      segments.add(points);
     }
     //String formattedDate =
     //"${dateTime.month}/${dateTime.day}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}";
     String formattedDate = DateFormat("d MMM y").add_Hms().format(dateTime);
+    String formattedDuration = "${sessionData["duration"] ~/ (60 * 60)}";
+    formattedDuration +=
+        ":${(sessionData["duration"] ~/ 60).toString().padLeft(2, "0")}";
+    formattedDuration +=
+        ":${(sessionData["duration"] % 60).toStringAsFixed(0).padLeft(2, "0")}";
     return Scaffold(
       appBar: AppBar(
         title: const Text("Session info"),
@@ -32,10 +41,10 @@ class SessionInfoPage extends StatelessWidget {
             fit: FlexFit.tight,
             child: FlutterMap(
               options: MapOptions(
-                center: positions.first,
+                //center: segments.first.first,
                 //zoom: 18,
                 maxZoom: 18.4,
-                bounds: getBoundCorner(positions),
+                bounds: getBoundCorner(segments),
               ),
               children: [
                 TileLayer(
@@ -46,11 +55,12 @@ class SessionInfoPage extends StatelessWidget {
                 PolylineLayer(
                   polylineCulling: true,
                   polylines: [
-                    Polyline(
-                      points: positions,
-                      color: Colors.blue,
-                      strokeWidth: 7,
-                    )
+                    for (List<LatLng> posArray in segments)
+                      Polyline(
+                        points: posArray,
+                        color: Colors.blue,
+                        strokeWidth: 7,
+                      )
                   ],
                 ),
                 MarkerLayer(
@@ -58,10 +68,24 @@ class SessionInfoPage extends StatelessWidget {
                     Marker(
                       // width: 50.0,
                       // height: 50.0,
-                      point: positions.first,
-                      builder: (ctx) => const Icon(
-                        Icons.circle,
-                        color: Colors.blue,
+                      point: segments.first.first,
+                      // First point of the first segment
+                      builder: (ctx) => Icon(
+                        Icons.assistant_direction,
+                        color: Theme.of(context).primaryColor,
+                        shadows: const [Shadow(color:Colors.white, blurRadius: 30)],
+                        size: 30,
+                      ),
+                    ),
+                    Marker(
+                      // width: 50.0,
+                      // height: 50.0,
+                      point: segments.last.last,
+                      // First point of the first segment
+                      builder: (ctx) => Icon(
+                        Icons.flag_circle_rounded,
+                        color: Theme.of(context).primaryColor,
+                        shadows: const [Shadow(color:Colors.white, blurRadius: 30)],
                         size: 30,
                       ),
                     ),
@@ -97,8 +121,7 @@ class SessionInfoPage extends StatelessWidget {
                     Column(
                       children: [
                         Text(
-                          "${sessionData["duration"] ~/ 60}:${sessionData["duration"] % 60}",
-                          // TODO: Maybe is better to also add seconds?
+                          formattedDuration,
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -110,7 +133,7 @@ class SessionInfoPage extends StatelessWidget {
                     Column(
                       children: [
                         Text(
-                          "${sessionData["distance"]} km",
+                          "${(sessionData["distance"] / 1000).toStringAsFixed(2)} km",
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -149,10 +172,15 @@ class SessionInfoPage extends StatelessWidget {
     );
   }
 
-  LatLngBounds getBoundCorner(List<LatLng> positions) { // TODO: Add a safe area when calculating the boundaries
+  LatLngBounds getBoundCorner(List<List<LatLng>> segments) {
+    // TODO: Add a safe area when calculating the boundaries
+    List<LatLng> positions = segments
+        .expand((element) =>
+            element) // The list of lists is flattened into a single list
+        .toList();
     List<double> latitudes = [];
     List<double> longitudes = [];
-    for(LatLng p in positions) {
+    for (LatLng p in positions) {
       latitudes.add(p.latitude);
       longitudes.add(p.longitude);
     }

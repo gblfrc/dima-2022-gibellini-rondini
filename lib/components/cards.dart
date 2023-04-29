@@ -14,7 +14,6 @@ class SessionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     DateTime dateTime = sessionData["startDT"].toDate().toLocal();
     String formattedDate = DateFormat("MMM d, y").format(dateTime);
-        //"${dateTime.month}/${dateTime.day}, ${dateTime.year}";
     String type = "";
     try {
       sessionData["proposalID"];
@@ -23,6 +22,9 @@ class SessionCard extends StatelessWidget {
     on StateError catch (_) {
       type = "Private";
     }
+    String formattedDuration = "${sessionData["duration"] ~/ (60 * 60)} h ";
+    formattedDuration +=
+    "${(sessionData["duration"] ~/ 60)} min";
     return Card(
       child: InkWell(
         // This widget creates a feedback animation when the user taps on the card
@@ -31,7 +33,6 @@ class SessionCard extends StatelessWidget {
             builder: (context) => SessionInfoPage(sessionData),
           ),
         ),
-        // TODO: The callback should show details about the session
         child: Column(
           children: [
             const FractionallySizedBox(widthFactor: 1),
@@ -50,7 +51,7 @@ class SessionCard extends StatelessWidget {
                         Icons.timer,
                         color: Theme.of(context).primaryColor,
                       ),
-                      Text("${sessionData["duration"] ~/ 60} h ${sessionData["duration"] % 60} min"),
+                      Text(formattedDuration),
                     ],
                   ),
                   Row(
@@ -59,7 +60,7 @@ class SessionCard extends StatelessWidget {
                         Icons.route,
                         color: Theme.of(context).primaryColor,
                       ),
-                      Text("${sessionData["distance"]} km"),
+                      Text("${(sessionData["distance"] / 1000).toStringAsFixed(2)} km"),
                     ],
                   ),
                 ],
