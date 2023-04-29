@@ -24,22 +24,30 @@ class _HomePageState extends State<HomePage> {
       ),
       body: ListView(
         children: <Widget>[
-          const ListTile( // Widget that allows to insert a title and (optionally) a sub-title
+          const ListTile(
+            // Widget that allows to insert a title and (optionally) a sub-title
             title: Text("Latest sessions"),
           ),
-          FutureBuilder(
-              future: getLatestSessions(),
+          StreamBuilder(
+              stream: getLatestSessions(),
               builder: (context, snapshot) {
-                // TODO: Add case to handle error snapshot.hasError
-                if (snapshot.hasData) { // This returns true even if there are no documents in the list
-                  if (snapshot.data!.isEmpty) { // If there are no sessions, we print a message
+                if (snapshot.hasError) {
+                  return const Text(
+                    "Something went wrong. Please try again later.",
+                    textAlign: TextAlign.center,
+                  );
+                }
+                if (snapshot.hasData) {
+                  // This returns true even if there are no documents in the list
+                  if (snapshot.data!.docs.isEmpty) {
+                    // If there are no sessions, we print a message
                     return const Text(
                       "You do not have any completed session yet.",
                       textAlign: TextAlign.center,
                     );
                   }
                   List<Widget> sessionList = [];
-                  for (var session in snapshot.data!) {
+                  for (var session in snapshot.data!.docs) {
                     // For each session, we create a card and append it to the array of children
                     sessionList.add(SessionCard(session));
                   }
@@ -61,9 +69,16 @@ class _HomePageState extends State<HomePage> {
           StreamBuilder(
               stream: getGoals(),
               builder: (context, snapshot) {
-                // TODO: Add case to handle error snapshot.hasError
-                if (snapshot.hasData) { // This returns true even if there are no documents in the list
-                  if (snapshot.data!.docs.isEmpty) { // If there are no goals, we print a message
+                if (snapshot.hasError) {
+                  return const Text(
+                    "Something went wrong. Please try again later.",
+                    textAlign: TextAlign.center,
+                  );
+                }
+                if (snapshot.hasData) {
+                  // This returns true even if there are no documents in the list
+                  if (snapshot.data!.docs.isEmpty) {
+                    // If there are no goals, we print a message
                     return const Text(
                       "You do not have any goal to reach at the moment...\nTime for a new challenge?",
                       textAlign: TextAlign.center,
@@ -82,7 +97,8 @@ class _HomePageState extends State<HomePage> {
                   );
                 }
               }),
-          Column( // Wrapping the button with a Column avoids the button to take 100% width
+          Column(
+            // Wrapping the button with a Column avoids the button to take 100% width
             children: [
               ElevatedButton(
                 onPressed: () => Navigator.of(context).push(
@@ -99,30 +115,31 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         // TODO: Change onPressed callback: this is not doing anything at the moment
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const SessionPage())
-        ),
+        onPressed: () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => const SessionPage())),
         tooltip: 'New session',
         child: const Icon(Icons.directions_run),
       ),
     );
   }
 
-  Future<List<DocumentSnapshot>> getLatestSessions() async {
+  Stream<QuerySnapshot<Map<String, dynamic>>> getLatestSessions() {
     final userDocRef = FirebaseFirestore.instance
         .collection("users")
         .doc(Auth().currentUser?.uid);
     final docUser = FirebaseFirestore.instance
         .collection("sessions")
         .where("userID", isEqualTo: userDocRef); // TODO: Add limit
-    final querySnapshot = await docUser.get(); // This get returns QuerySnapshot
-    return querySnapshot.docs; // Return the list of DocumentSnapshot
+    return docUser.snapshots();
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getGoals() {
-    final userDocRef = FirebaseFirestore.instance.collection("users").doc(Auth().currentUser?.uid);
-    final docUser = FirebaseFirestore.instance.collection("goals").where("userID", isEqualTo: userDocRef);
+    final userDocRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(Auth().currentUser?.uid);
+    final docUser = FirebaseFirestore.instance
+        .collection("goals")
+        .where("userID", isEqualTo: userDocRef);
     return docUser.snapshots();
-    //return querySnapshot.docs; // Return the list of DocumentSnapshot
   }
 }

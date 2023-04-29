@@ -68,8 +68,7 @@ class SessionInfoPage extends StatelessWidget {
                     Marker(
                       // width: 50.0,
                       // height: 50.0,
-                      point: segments.first.first,
-                      // First point of the first segment
+                      point: segments.first.first, // First point of the first segment
                       builder: (ctx) => Icon(
                         Icons.assistant_direction,
                         color: Theme.of(context).primaryColor,
@@ -80,8 +79,8 @@ class SessionInfoPage extends StatelessWidget {
                     Marker(
                       // width: 50.0,
                       // height: 50.0,
-                      point: segments.last.last,
-                      // First point of the first segment
+                      //
+                      point: segments.last.last, // Final destination
                       builder: (ctx) => Icon(
                         Icons.flag_circle_rounded,
                         color: Theme.of(context).primaryColor,
