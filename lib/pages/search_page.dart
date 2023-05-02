@@ -1,10 +1,12 @@
 import 'package:algolia/algolia.dart';
 import 'package:flutter/material.dart';
 import 'package:progetto/app_logic/auth.dart';
+import 'package:progetto/app_logic/location_iq.dart';
 
 import '../app_logic/algolia_app.dart';
 import '../components/search_bar.dart';
 import '../components/tiles.dart';
+import '../model/place.dart';
 import '../model/user.dart';
 
 class SearchPage extends StatefulWidget {
@@ -16,9 +18,8 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   List<User> userList = List.empty();
+  List<Place> placeList = List.empty();
 
-  // TODO: search bar --> make more intelligent, showing suggestions...
-  // TODO:            --> fix, do not let it move with the tabs
   // TODO: introduce function to de-select search bar
 
   @override
@@ -79,8 +80,9 @@ class _SearchPageState extends State<SearchPage> {
                       Expanded(
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(0, 0, 0, padding),
-                          child: const SearchBar(
-                            onChanged: print,
+                          child: SearchBar(
+                            // Place searchbar
+                            onChanged: _updatePlaceList,
                           ),
                         ),
                       ),
@@ -88,19 +90,15 @@ class _SearchPageState extends State<SearchPage> {
                   ),
                   Expanded(
                     child: ListView(
-                      children: const [
-                        Tile(
-                            icon: Icons.place,
-                            title: "A place",
-                            subtitle: "",
-                            callback: print),
-                        Tile(
-                            icon: Icons.place,
-                            title: "Another place",
-                            subtitle: "",
-                            callback: print),
-                        // TODO: find a finer way to implement the list without dividers, maybe with space between objects
-                      ],
+                      children: placeList
+                          .map((place) => Tile(
+                                icon: Icons.place,
+                                title: place.name,
+                                subtitle: "${place.city}, ${place.state}, ${place.country}",
+                                callback: print,
+                              ))
+                          .toList(),
+                      // TODO: find a finer way to implement the list without dividers, maybe with space between object
                     ),
                   ),
                 ],
@@ -143,7 +141,6 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _updateUserList(String name) async {
-    print(name);
     String? uid = Auth().currentUser?.uid;
     List<User> newList = List.empty();
     if (name != "") {
@@ -157,6 +154,17 @@ class _SearchPageState extends State<SearchPage> {
     }
     setState(() {
       userList = newList;
+    });
+  }
+
+  void _updatePlaceList(String name) async {
+    List<Place> newList = [];
+    var places = await LocationIq.get(name);
+    for (Map<String, dynamic> m in places) {
+      newList.add(Place.fromJson(m));
+    }
+    setState(() {
+      placeList = newList;
     });
   }
 }
