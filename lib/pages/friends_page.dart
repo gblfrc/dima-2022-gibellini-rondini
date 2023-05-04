@@ -83,15 +83,12 @@ class FriendsPage extends StatelessWidget {
                               textAlign: TextAlign.center,
                             );
                           }
-                          List<Widget> friendList = [];
-                          for (var friend in snapshot.data!) {
-                            friendList.add(UserTile.fromUser(User(
-                                name: friend.get("name"),
-                                surname: friend.get("surname"))));
-                          }
+                          List<User> friends = snapshot.data!;
                           return Column(
-                            children: friendList,
-                          );
+                              children: friends
+                                  .map((friend) =>
+                                      UserTile.fromUser(friend, context))
+                                  .toList());
                         } else {
                           return const Center(
                             child: CircularProgressIndicator(),
@@ -103,19 +100,6 @@ class FriendsPage extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                 ],
-                // children: <Widget>[
-                //   const Padding(padding: EdgeInsets.all(10)),
-                //   Tile(
-                //       icon: Icons.account_circle,
-                //       title: "Luca Rondini",
-                //       subtitle: "",
-                //       callback: print),
-                //   Tile(
-                //       icon: Icons.account_circle,
-                //       title: "Federico Gibellini",
-                //       subtitle: "",
-                //       callback: print),
-                // ],
               ),
             ),
           ],
@@ -149,23 +133,32 @@ class FriendsPage extends StatelessWidget {
     final docProposals = FirebaseFirestore.instance
         .collection("proposals")
         .where("owner",
-            whereIn: friendOfDocRefs) // TODO: Split friendOfDocRefs if the length is > 10 because of whereIn limit
+            whereIn:
+                friendOfDocRefs) // TODO: Split friendOfDocRefs if the length is > 10 because of whereIn limit
         .where("dateTime", isGreaterThanOrEqualTo: Timestamp.now());
-    final querySnapshot = await docProposals.get(); // This get returns QuerySnapshot
+    final querySnapshot =
+        await docProposals.get(); // This get returns QuerySnapshot
     return querySnapshot.docs; // Return the list of DocumentSnapshot
   }
 
-  Future<List<DocumentSnapshot>> getFriends() async {
+  Future<List<User>> getFriends() async {
     final userDocRef = FirebaseFirestore.instance
         .collection("users")
         .doc(Auth().currentUser?.uid);
 
     final userSnapshot = await userDocRef.get();
     final friendRefs = userSnapshot.get("friends");
-    List<DocumentSnapshot> friendDocs = [];
+    List<User> friends = [];
     for (var friend in friendRefs) {
-      friendDocs.add(await friend.get());
+      DocumentSnapshot friendDoc = await friend.get();
+      friends.add(
+        User(
+          name: friendDoc.get('name'),
+          surname: friendDoc.get('surname'),
+          uid: friend.id,
+        ),
+      );
     }
-    return friendDocs; // Return the list of DocumentSnapshot
+    return friends; // Return the list of Users
   }
 }

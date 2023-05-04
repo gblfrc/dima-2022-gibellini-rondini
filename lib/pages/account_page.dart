@@ -34,7 +34,7 @@ class AccountPage extends StatelessWidget {
 
   Stream<User?> getUser(String uid) {
     final docUser = FirebaseFirestore.instance.collection("users").doc(uid);
-    return docUser.snapshots().map((doc) => User.fromJson(doc.data()!));
+    return docUser.snapshots().map((doc) => User.fromJson(doc.data()!, uid: uid));
   }
 }
 

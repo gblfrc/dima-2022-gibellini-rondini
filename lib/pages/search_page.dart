@@ -60,7 +60,7 @@ class _SearchPageState extends State<SearchPage> {
                   Expanded(
                     child: ListView(
                       children: userList
-                          .map((user) => UserTile.fromUser(user))
+                          .map((user) => UserTile.fromUser(user, context))
                           .toList(),
                     ),
                   ),
@@ -94,7 +94,8 @@ class _SearchPageState extends State<SearchPage> {
                           .map((place) => Tile(
                                 icon: Icons.place,
                                 title: place.name,
-                                subtitle: "${place.city}, ${place.state}, ${place.country}",
+                                subtitle:
+                                    "${place.city}, ${place.state}, ${place.country}",
                                 callback: print,
                               ))
                           .toList(),
@@ -149,8 +150,10 @@ class _SearchPageState extends State<SearchPage> {
           .filters('NOT objectID:$uid') // excludes active user from results
           .query(name)
           .getObjects();
-      newList =
-          snapshot.hits.map((object) => User.fromJson(object.toMap())).toList();
+      newList = snapshot.hits.map((object) {
+        Map<String, dynamic> map = object.toMap();
+        return User.fromJson(map, uid: map['objectID']);
+      }).toList();
     }
     setState(() {
       userList = newList;
