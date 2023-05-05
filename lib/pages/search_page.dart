@@ -91,13 +91,7 @@ class _SearchPageState extends State<SearchPage> {
                   Expanded(
                     child: ListView(
                       children: placeList
-                          .map((place) => Tile(
-                                icon: Icons.place,
-                                title: place.name,
-                                subtitle:
-                                    "${place.city}, ${place.state}, ${place.country}",
-                                callback: print,
-                              ))
+                          .map((place) => PlaceTile.fromPlace(place, context))
                           .toList(),
                       // TODO: find a finer way to implement the list without dividers, maybe with space between object
                     ),
@@ -105,7 +99,7 @@ class _SearchPageState extends State<SearchPage> {
                 ],
               ),
             ),
-            Column(
+            ListView(
               children: [
                 Center(
                   child: Container(
@@ -162,12 +156,30 @@ class _SearchPageState extends State<SearchPage> {
 
   void _updatePlaceList(String name) async {
     List<Place> newList = [];
-    var places = await LocationIq.get(name);
-    for (Map<String, dynamic> m in places) {
-      newList.add(Place.fromJson(m));
+    if (name != "") {
+      var places = await LocationIq.get(name);
+      for (Map<String, dynamic> m in places) {
+        newList.add(Place.fromJson(m));
+      }
     }
     setState(() {
       placeList = newList;
     });
   }
 }
+
+/*
+* {place_id: 321172780204,
+* osm_id: 11694848,
+* osm_type: relation,
+* licence: https://locationiq.com/attribution,
+* lat: 45.70169115,
+* lon: 9.67716459,
+* boundingbox: [45.7006306, 45.7027429, 9.6754815, 9.6778017],
+* class: leisure,
+* type: park,
+* display_name: Parco Suardi, Italy,
+* display_place: Parco Suardi,
+* display_address: Italy,
+* address: {name: Parco Suardi, country: Italy, country_code: it}}
+* */

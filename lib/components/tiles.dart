@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:progetto/pages/account_page.dart';
 
+import '../model/place.dart';
 import '../model/user.dart';
+import '../pages/place_page.dart';
 
 class Tile extends StatelessWidget {
   final IconData icon;
@@ -41,7 +43,7 @@ class UserTile extends Tile {
       {super.key,
       required super.icon,
       required super.title,
-      required super.subtitle,
+      super.subtitle,
       required super.callback});
 
   static Tile fromUser(User user, BuildContext context) {
@@ -51,6 +53,30 @@ class UserTile extends Tile {
       callback: () => Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => AccountPage(uid: user.uid),
+        ),
+      ),
+    );
+  }
+}
+
+class PlaceTile extends Tile {
+  PlaceTile(
+      {super.key,
+      required super.icon,
+      required super.title,
+      required super.subtitle,
+      required super.callback});
+
+  static Tile fromPlace(Place place, BuildContext context) {
+    return Tile(
+      icon: Icons.place,
+      title: place.name,
+      subtitle: "${place.city != null ? "${place.city}, " : ""}"
+          "${place.state != null ? "${place.state}, " : ""}"
+          "${place.country != null ? "${place.country}" : ""}",
+      callback: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PlacePage(place: place),
         ),
       ),
     );
