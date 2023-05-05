@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../model/user.dart';
 import '../pages/session_info_page.dart';
 import '../pages/goal_info_page.dart';
 
@@ -18,13 +19,11 @@ class SessionCard extends StatelessWidget {
     try {
       sessionData["proposalID"];
       type = "Shared";
-    }
-    on StateError catch (_) {
+    } on StateError catch (_) {
       type = "Private";
     }
     String formattedDuration = "${sessionData["duration"] ~/ (60 * 60)} h ";
-    formattedDuration +=
-    "${(sessionData["duration"] ~/ 60)} min";
+    formattedDuration += "${(sessionData["duration"] ~/ 60)} min";
     return Card(
       child: InkWell(
         // This widget creates a feedback animation when the user taps on the card
@@ -60,7 +59,8 @@ class SessionCard extends StatelessWidget {
                         Icons.route,
                         color: Theme.of(context).primaryColor,
                       ),
-                      Text("${(sessionData["distance"] / 1000).toStringAsFixed(2)} km"),
+                      Text(
+                          "${(sessionData["distance"] / 1000).toStringAsFixed(2)} km"),
                     ],
                   ),
                 ],
@@ -82,21 +82,19 @@ class GoalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     String status;
     String title = "Run for ";
-    if(goalData["completed"]) {
+    if (goalData["completed"]) {
       status = "Completed";
     } else {
       status = "In progress";
     }
-    if(goalData["isMin"]) {
+    if (goalData["isMin"]) {
       title += "at least ";
-    }
-    else {
+    } else {
       title += "no more than ";
     }
-    if(goalData["type"] == "distanceGoal") {
+    if (goalData["type"] == "distanceGoal") {
       title += "${goalData["targetValue"]} km";
-    }
-    else {
+    } else {
       title += "${goalData["targetValue"]} min";
     }
 
@@ -130,6 +128,7 @@ class GoalCard extends StatelessWidget {
 
 class TrainingProposalCard extends StatelessWidget {
   DocumentSnapshot proposalData;
+  DocumentSnapshot? ownerData;
 
   TrainingProposalCard(this.proposalData, {super.key});
 
@@ -137,7 +136,7 @@ class TrainingProposalCard extends StatelessWidget {
   Widget build(BuildContext context) {
     DateTime dateTime = proposalData["dateTime"].toDate().toLocal();
     String formattedDate = DateFormat("MMM d, y ").add_Hm().format(dateTime);
-        //"${dateTime.month}/${dateTime.day}, ${dateTime.year} ${dateTime.hour}:${dateTime.minute}";
+    //"${dateTime.month}/${dateTime.day}, ${dateTime.year} ${dateTime.hour}:${dateTime.minute}";
     return Card(
       child: InkWell(
         onTap: () => print("Card tap"),
@@ -145,8 +144,10 @@ class TrainingProposalCard extends StatelessWidget {
           children: [
             const FractionallySizedBox(widthFactor: 1),
             ListTile(
-              title: FutureBuilder( // We need to fetch asynchronously the place name
-                future: getPlaceName(proposalData["place"]),
+              title:
+                  Text("Proposed session at ${proposalData["place"]["name"]}"),
+              /*FutureBuilder( // We need to fetch asynchronously the place name
+                future: getPlaceName(proposalData["place"]["name"]),
                 builder: (context, snapshot) {
                   if(snapshot.hasData) {
                     return Text("Proposed session at ${snapshot.data}");
@@ -156,13 +157,32 @@ class TrainingProposalCard extends StatelessWidget {
                   }
                 },
 
-              ),
+              ),*/
               subtitle: Text(proposalData["type"]),
             ),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      FutureBuilder(
+                        // We need to fetch asynchronously the owner name
+                        future: getOwner(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            return Text("Proposed by ${snapshot.data!.name} ${snapshot.data!.surname}");
+                          } else {
+                            return const Text("Loading...");
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                   Row(
                     children: [
                       Icon(
@@ -185,8 +205,17 @@ class TrainingProposalCard extends StatelessWidget {
     );
   }
 
-  Future<String> getPlaceName(DocumentReference place) async {
+  Future<User> getOwner() async {
+    DocumentSnapshot ownerDoc = await proposalData["owner"].get();
+    User owner = User(
+      name: ownerDoc.get('name'),
+      surname: ownerDoc.get('surname'),
+      uid: ownerDoc.id,
+    );
+    return owner;
+  }
+/*Future<String> getPlaceName(DocumentReference place) async {
     final placeDoc = await place.get();
     return placeDoc.get("name");
-  }
+  }*/
 }
