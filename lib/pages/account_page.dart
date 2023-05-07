@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/pages/edit_profile_page.dart';
 import '../app_logic/auth.dart';
 import '../components/contact_card.dart';
@@ -14,7 +15,7 @@ class AccountPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: getUser(uid),
+      stream: Database.getUser(uid),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const _ErrorPage();
@@ -30,11 +31,6 @@ class AccountPage extends StatelessWidget {
         }
       },
     );
-  }
-
-  Stream<User?> getUser(String uid) {
-    final docUser = FirebaseFirestore.instance.collection("users").doc(uid);
-    return docUser.snapshots().map((doc) => User.fromJson(doc.data()!));
   }
 }
 

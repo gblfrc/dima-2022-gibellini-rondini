@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:progetto/app_logic/exceptions.dart';
 
 // Created followin the video:
 // https://www.youtube.com/watch?v=rWamixHIKmQ
@@ -22,19 +23,19 @@ class Auth {
     required String email,
     required String password,
   }) async {
-    UserCredential credential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email, password: password);
-    return credential;
+    try {
+      UserCredential credential = await _firebaseAuth
+          .createUserWithEmailAndPassword(
+          email: email, password: password);
+      return credential;
+    } on FirebaseAuthException {
+      throw AuthenticationException("Couldn't authenticate user.");
+    }
   }
 
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
   }
-
-
-
-
-
 
 
 }

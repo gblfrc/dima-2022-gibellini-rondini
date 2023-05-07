@@ -1,11 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../app_logic/auth.dart';
+import '../../app_logic/database.dart';
+import '../../app_logic/exceptions.dart';
 import 'custom_form_field.dart';
 import 'login_form.dart';
+import '../../model/user.dart' as model_user; // use as in import because User is also a class in the firebase auth library
 
 class RegistrationForm extends LoginForm {
   const RegistrationForm(
@@ -28,20 +30,29 @@ class _RegistrationFormState extends State<RegistrationForm> {
         email: _controllerEmail.text,
         password: _controllerPassword.text,
       );
-      final docUser = FirebaseFirestore.instance
-          .collection("users")
-          .doc(credentials.user?.uid);
-      await docUser.set({
-        "name": _controllerName.text,
-        "surname": _controllerSurname.text,
-        "birthday": DateFormat("dd-MM-yyyy").parse(_controllerBirthday.text),
-      });
-    } on FirebaseAuthException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message ?? "Something went wrong. Please try again."),
+      Database.createUser(
+        model_user.User(
+          name: _controllerName.text,
+          surname: _controllerSurname.text,
+          birthday: DateFormat.yMd().parse(_controllerBirthday.text),
+          uid: credentials.user!.uid,
         ),
       );
+    }on AuthenticationException catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? "Authentication exception"),
+        ),
+      );
+    } on DatabaseException catch (e) {
+      // TODO: handle case in which a user is created for Firebase Auth but
+      // TODO:          it is not created for Firestore
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? "Database Exception"),
+        ),
+      );
+
     }
   }
 
