@@ -1,9 +1,10 @@
-import 'package:algolia/algolia.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:progetto/app_logic/auth.dart';
-import 'package:progetto/app_logic/location_iq.dart';
+import 'package:progetto/app_logic/search_engine.dart';
 
-import '../app_logic/algolia_app.dart';
 import '../components/search_bar.dart';
 import '../components/tiles.dart';
 import '../model/place.dart';
@@ -19,6 +20,9 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   List<User> userList = List.empty();
   List<Place> placeList = List.empty();
+  // List<Proposal> proposalList = List.empty();
+  LatLng? _initialPosition;
+  final MapController _mapController = MapController();
 
   // TODO: introduce function to de-select search bar
 
@@ -99,34 +103,79 @@ class _SearchPageState extends State<SearchPage> {
                 ],
               ),
             ),
-            ListView(
+            Flex(
+              direction: Axis.vertical,
               children: [
-                Center(
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 20, 0, 10),
-                    padding: const EdgeInsets.all(110),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                    ),
-                    child: const Text('THIS IS NOT A MAP'),
+                Flexible(
+                  flex: 2,
+                  child: Padding(
+                    padding:
+                        EdgeInsets.all(MediaQuery.of(context).size.width / 20),
+                    child: FutureBuilder(
+                        future: _initPosition(context),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            Position position = snapshot.data!;
+                            _initialPosition =
+                                LatLng(position.latitude, position.longitude);
+                            return FlutterMap(
+                              mapController: _mapController,
+                              options: MapOptions(
+                                center: _initialPosition,
+                                zoom: 15,
+                                maxZoom: 18.4,
+                                onMapEvent: (e) {
+                                  if (e is MapEventDoubleTapZoomEnd ||
+                                      e is MapEventFlingAnimationEnd ||
+                                      e is MapEventMoveEnd ||
+                                      e is MapEventRotateEnd) {
+                                    print(e); // TODO: replace this print with actual call for update of list of proposal
+                                  }
+                                },
+                              ),
+                              children: [
+                                TileLayer(
+                                  urlTemplate:
+                                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                                  subdomains: const ['a', 'b', 'c'],
+                                ),
+                              ],
+                            );
+                          } else if (snapshot.hasError) {
+                            return const Text(
+                              "Something went wrong. Please try again later.",
+                              textAlign: TextAlign.center,
+                            );
+                          } else {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        }),
                   ),
                 ),
-                const Padding(padding: EdgeInsets.all(10)),
-                const ListTile(
-                  leading: Icon(Icons.place, size: 60),
-                  title: Text("A training"),
-                  trailing: Text('2 km'),
-                  onTap: null,
+                Flexible(
+                  flex: 3,
+                  child: ListView(
+                    children: const [
+                      ListTile(
+                        leading: Icon(Icons.place, size: 60),
+                        title: Text("A training"),
+                        trailing: Text('2 km'),
+                        onTap: null,
+                      ),
+                      Divider(),
+                      // TODO: find a finer way to implement the list without dividers, maybe with space between objects
+                      ListTile(
+                        leading: Icon(Icons.place, size: 60),
+                        title: Text("Another training"),
+                        trailing: Text('5 km'),
+                        onTap: null,
+                      ),
+                      Divider(),
+                    ],
+                  ),
                 ),
-                const Divider(),
-                // TODO: find a finer way to implement the list without dividers, maybe with space between objects
-                const ListTile(
-                  leading: Icon(Icons.place, size: 60),
-                  title: Text("Another training"),
-                  trailing: Text('5 km'),
-                  onTap: null,
-                ),
-                const Divider(),
               ],
             ),
           ],
@@ -135,36 +184,67 @@ class _SearchPageState extends State<SearchPage> {
     );
   }
 
+  /*
+  * Function to update list of users shown in user search tab
+  */
   void _updateUserList(String name) async {
+    // get uid of currrently logged user
     String? uid = Auth().currentUser?.uid;
-    List<User> newList = List.empty();
-    if (name != "") {
-      AlgoliaQuerySnapshot snapshot = await AlgoliaApp.algolia.instance
-          .index('users')
-          .filters('NOT objectID:$uid') // excludes active user from results
-          .query(name)
-          .getObjects();
-      newList = snapshot.hits.map((object) {
-        Map<String, dynamic> map = object.toMap();
-        return User.fromJson(map, uid: map['objectID']);
-      }).toList();
-    }
+    // get all users except the logged one
+    List<User> newList = await SearchEngine.getUsersByName(name, excludeUid: uid);
+    // call setState to update widget
     setState(() {
       userList = newList;
     });
   }
 
+  /*
+  * Function to update list of places shown in place search tab
+  */
   void _updatePlaceList(String name) async {
-    List<Place> newList = [];
-    if (name != "") {
-      var places = await LocationIq.get(name);
-      for (Map<String, dynamic> m in places) {
-        newList.add(Place.fromJson(m));
-      }
-    }
+    // get all places given place name
+    List<Place> newList = await SearchEngine.getPlacesByName(name);
+    // call setState to update widget
     setState(() {
       placeList = newList;
     });
+  }
+
+
+  Future<bool> _handleLocationPermission(BuildContext context) async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location services are disabled. Please enable the services')));
+      return false;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied')));
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location permissions are permanently denied, we cannot request permissions.')));
+      return false;
+    }
+    return true;
+  }
+
+  Future<Position> _initPosition(BuildContext context) async {
+    final hasPermission = await _handleLocationPermission(context);
+    if (!hasPermission) return Future.error(Exception('Missing permissions'));
+    return Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
   }
 }
 
