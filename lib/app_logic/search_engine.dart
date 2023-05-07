@@ -27,7 +27,7 @@ class SearchEngine {
       // create list from returned snapshot
       return snapshot.hits.map((object) {
         Map<String, dynamic> json = object.toMap();
-        json['uid'] = json['objectId'];
+        json['uid'] = json['objectID'];
         return User.fromJson(json);
       }).toList();
       // return empty list if query string is empty

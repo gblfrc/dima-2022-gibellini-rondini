@@ -21,7 +21,8 @@ class Database {
 
   static void updateUser(User user) async {
     try {
-      final docUser = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final docUser =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
       await docUser.update(
         {
           'name': user.name,
@@ -37,11 +38,10 @@ class Database {
 
   static Stream<User?> getUser(String uid) {
     final docUser = FirebaseFirestore.instance.collection("users").doc(uid);
-    return docUser.snapshots().map((doc) => User.fromJson(doc.data()!));
+    return docUser.snapshots().map((doc) {
+      Map<String, dynamic> json = doc.data()!;
+      json['uid'] = uid;
+      return User.fromJson(json);
+    });
   }
-
-
-
-
-
 }
