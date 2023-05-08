@@ -1,61 +1,77 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import '../model/user.dart';
+import '../app_logic/storage.dart';
 
 class ContactCard extends StatelessWidget {
-  final String imageLink;
-  final String name;
-  final String
-      bio; // remove if no bio is intended to be (or replace with something else)
+  final User user;
 
-  const ContactCard(this.imageLink, this.name, this.bio, {super.key});
+  const ContactCard({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
-    var containerWidth = MediaQuery.of(context).size.width / 3;
-    var padding = containerWidth / 8;
-    containerWidth = containerWidth - 2 * padding;
+    var height = MediaQuery.of(context).size.width / 3;
+    var padding = height / 8;
 
-    return Flex(
-      direction: Axis.horizontal,
-      children: [
-        Expanded(
-          flex: 1,
-          child: Padding(
-              padding: EdgeInsets.all(padding),
-              child: Container(
-                height: containerWidth,
-                decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue),
-                    borderRadius:
-                        BorderRadius.all(Radius.circular(containerWidth / 2)),
-                    image: DecorationImage(image: NetworkImage(imageLink))
-                ),
-              )
+    return SizedBox(
+      height: height,
+      child: Flex(
+        direction: Axis.horizontal,
+        children: [
+          Expanded(
+            flex: 1,
+            child: FutureBuilder(
+              future: Storage.downloadURL(user.uid),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return CircleAvatar(
+                    radius: height * 0.45,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    child: CircleAvatar(
+                      radius: height * 0.42,
+                      backgroundColor: Colors.white,
+                      foregroundImage: NetworkImage(snapshot.data!),
+                    ),
+                  );
+                } else {
+                  return Icon(
+                    Icons.account_circle,
+                    color: Colors.grey,
+                    size: height,
+                  );
+                }
+              },
+            ),
           ),
-        ),
-        Expanded(
+          Flexible(
             flex: 2,
             child: Padding(
               padding:
                   EdgeInsets.fromLTRB(padding / 2, padding, padding, padding),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(name,
-                      style: TextStyle(
-                        fontSize: MediaQuery.of(context).textScaleFactor * 22,
-                        fontWeight: FontWeight.bold,
-                      )),
                   Text(
-                    bio,
+                    "${user.name} ${user.surname}",
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).textScaleFactor * 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    DateFormat.yMd().format(user.birthday!),
                     style: TextStyle(
                       fontSize: MediaQuery.of(context).textScaleFactor * 15,
                     ),
                   )
                 ],
               ),
-            )
-        )
-      ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

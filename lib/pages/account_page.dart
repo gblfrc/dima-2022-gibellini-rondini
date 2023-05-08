@@ -1,153 +1,98 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
+import 'package:progetto/components/contact_card.dart';
 import 'package:progetto/pages/edit_profile_page.dart';
-import '../app_logic/auth.dart';
-import '../components/contact_card.dart';
+
 import '../model/user.dart';
 
-class AccountPage extends StatelessWidget {
+class AccountPage extends StatefulWidget {
   final String uid;
 
   const AccountPage({super.key, required this.uid});
 
   @override
+  State<AccountPage> createState() => _AccountPageState();
+}
+
+class _AccountPageState extends State<AccountPage> {
+  User? user;
+
+  @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: Database.getUser(uid),
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return const _ErrorPage();
-        } else if (snapshot.hasData) {
-          final user = snapshot.data;
-          if (user == null) {
-            return const _UserNotFoundPage();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('My account'),
+        actions: widget.uid == Auth().currentUser!.uid
+            ? [
+                IconButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        // TODO: the snackbar should go over the bottom navigation bar;
+                        // TODO: might want to revise handling of the BNB (our of current scaffold)
+                        content: Column(
+                          children: [
+                            ListTile(
+                              leading: const Icon(Icons.edit),
+                              title: const Text('Edit profile'),
+                              iconColor: Colors.white,
+                              textColor: Colors.white,
+                              onTap: () async {
+                                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const EditProfilePage(),
+                                    settings: RouteSettings(
+                                      arguments: user,
+                                    ),
+                                  ),
+                                );
+                                setState(() {});
+                              },
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.logout),
+                              title: const Text('Logout'),
+                              iconColor: Colors.white,
+                              textColor: Colors.white,
+                              onTap: () async {
+                                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                await Auth().signOut();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.more_vert),
+                ),
+              ]
+            : [],
+      ),
+      body: StreamBuilder(
+        stream: Database.getUser(widget.uid),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('An error has occurred'),
+            );
+          } else if (snapshot.hasData) {
+            user = snapshot.data!;
+            return Column(
+              children: [
+                ContactCard(user: user!),
+                // TODO: insert list of sessions
+              ],
+            );
           } else {
-            return _LoggedUserPage(user: user);
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
-        } else {
-          return const _LoadingPage();
-        }
-      },
-    );
-  }
-}
-
-class _LoggedUserPage extends StatelessWidget {
-  final User user;
-
-  const _LoggedUserPage({super.key, required this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('My account'),
-          actions: [
-            IconButton(
-              onPressed: () {
-                Navigator.pushNamed(
-                  context,
-                  EditProfilePage.routeName,
-                  arguments:
-                      ProfileArguments(user.name, user.surname, user.birthday),
-                );
-              },
-              icon: const Icon(
-                Icons.edit,
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout),
-              tooltip: "Logout",
-              onPressed: () async {
-                await Auth().signOut();
-              },
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            ContactCard(
-                'https://cdn.vox-cdn.com/thumbor/s0kqMLJlv5TMYQpSe3DAr0KUFBU=/1400x1400/filters:format(jpeg)/cdn.vox-cdn.com/uploads/chorus_asset/file/24422421/1245495880.jpg',
-                "${user.name} ${user.surname}",
-                // "Professional basketball player for the Minnesota T'Wolves according to my Wikipedia page."),
-                DateFormat.yMd().format(user.birthday!))
-          ],
-        ));
-  }
-}
-
-class _ErrorPage extends StatelessWidget {
-  const _ErrorPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My account'),
-      ),
-      body: const Center(
-        child: Text('An error occurred'),
-      ),
-    );
-  }
-}
-
-class _UserNotFoundPage extends StatelessWidget {
-  const _UserNotFoundPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    var containerWidth = MediaQuery.of(context).size.width / 3;
-    var padding = containerWidth / 8;
-    containerWidth = containerWidth - 2 * padding;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My account'),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(padding),
-        child: Center(
-          child: Text(
-            'Account not found',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: MediaQuery.of(context).textScaleFactor * 22,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadingPage extends StatelessWidget {
-  const _LoadingPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    var containerWidth = MediaQuery.of(context).size.width / 3;
-    var padding = containerWidth / 8;
-    containerWidth = containerWidth - 2 * padding;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My account'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: "Logout",
-            onPressed: () async {
-              await Auth().signOut();
-            },
-          ),
-        ],
-      ),
-      body: const Center(
-        child: CircularProgressIndicator(),
+        },
       ),
     );
   }

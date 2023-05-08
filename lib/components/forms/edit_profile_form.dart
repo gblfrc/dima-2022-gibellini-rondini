@@ -13,16 +13,9 @@ import 'custom_form_field.dart';
 
 class EditProfileForm extends StatefulWidget {
   final double width;
-  String? initialName;
-  String? initialSurname;
-  DateTime? initialBirthday;
+  final User user;
 
-  EditProfileForm(
-      {super.key,
-      required this.width,
-      this.initialName,
-      this.initialSurname,
-      this.initialBirthday});
+  const EditProfileForm({super.key, required this.width, required this.user});
 
   @override
   State<EditProfileForm> createState() => _EditProfileFormState();
@@ -32,22 +25,20 @@ class _EditProfileFormState extends State<EditProfileForm> {
   late TextEditingController _nameController;
   late TextEditingController _surnameController;
   late TextEditingController _birthdayController;
-  late Image _image;
-  late String imagePath;
+  Image? _image;
+  String? _imagePath;
 
   // TODO: handle case of user with no picture
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    String date = widget.initialBirthday == null
+    String date = widget.user.birthday == null
         ? ''
-        : DateFormat.yMd().format(widget.initialBirthday!);
-    _nameController = TextEditingController(text: widget.initialName);
-    _surnameController = TextEditingController(text: widget.initialSurname);
+        : DateFormat.yMd().format(widget.user.birthday!);
+    _nameController = TextEditingController(text: widget.user.name);
+    _surnameController = TextEditingController(text: widget.user.surname);
     _birthdayController = TextEditingController(text: date);
-    String pictureUrl = await Storage().downloadURL(Auth().currentUser!.uid);
-    _image = Image.network(pictureUrl);
   }
 
   @override
@@ -56,9 +47,27 @@ class _EditProfileFormState extends State<EditProfileForm> {
       children: [
         Column(
           children: [
-            Container(
+            SizedBox(
               height: MediaQuery.of(context).size.height / 4,
-              child: _image,
+              child: _image ??
+                  FutureBuilder(
+                    future: Storage.downloadURL(widget.user.uid),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Image.network(snapshot.data!);
+                      } else {
+                        return LayoutBuilder(
+                          builder: (context, constraint) {
+                            return Icon(
+                              Icons.account_circle,
+                              size: constraint.biggest.height,
+                              color: Colors.grey,
+                            );
+                          },
+                        );
+                      }
+                    },
+                  ),
             ),
             Flex(
               direction: Axis.horizontal,
@@ -71,9 +80,9 @@ class _EditProfileFormState extends State<EditProfileForm> {
                       type: FileType.image,
                     );
                     if (result != null) {
-                      imagePath = result.files.single.path!;
+                      _imagePath = result.files.single.path!;
                       setState(() {
-                        _image = Image.file(File(imagePath));
+                        _image = Image.file(File(_imagePath!));
                       });
                     } else if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -87,8 +96,17 @@ class _EditProfileFormState extends State<EditProfileForm> {
                   child: const Text('Pick picture'),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    Storage().uploadFile(imagePath, Auth().currentUser!.uid);
+                  onPressed: () async {
+                    if (_imagePath != null) {
+                      await Storage.uploadFile(
+                          _imagePath!, Auth().currentUser!.uid);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content:
+                              Text('Profile picture updated successfully.'),
+                        ),
+                      );
+                    }
                   },
                   child: const Text('Update profile picture'),
                 ),
@@ -156,7 +174,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content:
-                            Text('An error occurred during the update.'),
+                                Text('An error occurred during the update.'),
                           ),
                         );
                       }

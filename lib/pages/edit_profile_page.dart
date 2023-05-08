@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../components/forms/edit_profile_form.dart';
+import '../model/user.dart';
 
 class EditProfilePage extends StatelessWidget {
   static const routeName = '/edit_profile';
@@ -10,7 +11,7 @@ class EditProfilePage extends StatelessWidget {
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double padding = width / 20;
-    final args = ModalRoute.of(context)!.settings.arguments as ProfileArguments;
+    final user = ModalRoute.of(context)!.settings.arguments as User;
 
     return Scaffold(
       appBar: AppBar(
@@ -20,22 +21,9 @@ class EditProfilePage extends StatelessWidget {
         padding: EdgeInsets.all(padding),
         child: EditProfileForm(
           width: width - 2 * padding,
-          initialName: args.name,
-          initialSurname: args.surname,
-          initialBirthday: args.birthday,
+          user: user,
         ),
       ),
     );
   }
-}
-
-
-
-class ProfileArguments {
-  final String name;
-  final String surname;
-  final DateTime? birthday;
-
-  ProfileArguments(this.name, this.surname, this.birthday);
-
 }
