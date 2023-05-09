@@ -25,15 +25,17 @@ class ContactCard extends StatelessWidget {
               future: Storage.downloadURL(user.uid),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  return CircleAvatar(
-                    radius: height * 0.45,
-                    backgroundColor: Theme.of(context).primaryColor,
-                    child: CircleAvatar(
-                      radius: height * 0.42,
-                      backgroundColor: Colors.white,
-                      foregroundImage: NetworkImage(snapshot.data!),
-                    ),
-                  );
+                  return LayoutBuilder(builder: (context, constraint) {
+                    return CircleAvatar(
+                      radius: constraint.maxHeight * 0.45,
+                      backgroundColor: Theme.of(context).primaryColor,
+                      child: CircleAvatar(
+                        radius: constraint.maxHeight * 0.42,
+                        backgroundColor: Colors.white,
+                        foregroundImage: NetworkImage(snapshot.data!),
+                      ),
+                    );
+                  });
                 } else {
                   return Icon(
                     Icons.account_circle,

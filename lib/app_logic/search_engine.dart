@@ -49,7 +49,7 @@ class SearchEngine {
     );
     var response = await http.get(url);
     // extract places from http response and return list
-    List<Place> places = List.empty();
+    List<Place> places = [];
     for (Map<String, dynamic> json in jsonDecode(response.body)) {
       json['id'] = json['osm_id'];
       json['name'] = json['display_place'] ?? json['display_name'];

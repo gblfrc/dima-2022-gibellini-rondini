@@ -4,9 +4,10 @@ import 'package:progetto/pages/account_page.dart';
 import '../model/place.dart';
 import '../model/user.dart';
 import '../pages/place_page.dart';
+import '../app_logic/storage.dart';
 
 class Tile extends StatelessWidget {
-  final IconData icon;
+  final Widget icon;
   final String title;
   final String? subtitle;
   final Function? callback;
@@ -23,15 +24,21 @@ class Tile extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
+        subtitle != null ?
         ListTile(
+            //TODO: make size dependent from screen width
+            leading: icon,
+            title: Text(title),
+            subtitle: subtitle != null ? Text(subtitle!) : const Text(""),
+            onTap: () {
+              callback!();
+            }) : ListTile(
           //TODO: make size dependent from screen width
-          leading: Icon(icon, size: 60),
-          title: Text(title),
-          subtitle: subtitle != null ? Text(subtitle!) : const Text(""),
-          onTap: () {
-            callback!();
-          }
-        ),
+            leading: icon,
+            title: Text(title),
+            onTap: () {
+              callback!();
+            }),
         const Divider(),
       ],
     );
@@ -48,7 +55,31 @@ class UserTile extends Tile {
 
   static Tile fromUser(User user, BuildContext context) {
     return Tile(
-      icon: Icons.account_circle,
+      icon: FutureBuilder(
+          future: Storage.downloadURL(user.uid),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return LayoutBuilder(builder: (context, constraint) {
+                return CircleAvatar(
+                  radius: constraint.maxHeight * 0.45,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  child: CircleAvatar(
+                    radius: constraint.maxHeight * 0.42,
+                    backgroundColor: Colors.white,
+                    foregroundImage: NetworkImage(snapshot.data!),
+                  ),
+                );
+              });
+            } else {
+              return LayoutBuilder(builder: (context, constraint) {
+                return Icon(
+                  size: constraint.maxHeight,
+                  Icons.account_circle,
+                  color: Colors.grey.shade500,
+                );
+              });
+            }
+          }),
       title: "${user.name} ${user.surname}",
       callback: () => Navigator.of(context).push(
         MaterialPageRoute(
@@ -60,16 +91,20 @@ class UserTile extends Tile {
 }
 
 class PlaceTile extends Tile {
-  PlaceTile(
+  const PlaceTile(
       {super.key,
       required super.icon,
       required super.title,
       required super.subtitle,
       required super.callback});
 
-  static Tile fromPlace(Place place, BuildContext context) {
+  static Tile fromPlace(Place place, BuildContext context){
     return Tile(
-      icon: Icons.place,
+      icon: LayoutBuilder(
+        builder: (context, constraint) {
+          return Icon(Icons.place, size: constraint.maxHeight);
+        },
+      ),
       title: place.name,
       subtitle: "${place.city != null ? "${place.city}, " : ""}"
           "${place.state != null ? "${place.state}, " : ""}"
