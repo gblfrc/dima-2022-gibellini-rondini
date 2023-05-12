@@ -81,21 +81,19 @@ class GoalCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String status;
-    String title = "Run for ";
+    String title = "Run ";
     if (goalData["completed"]) {
       status = "Completed";
     } else {
       status = "In progress";
     }
-    if (goalData["isMin"]) {
-      title += "at least ";
-    } else {
-      title += "no more than ";
-    }
     if (goalData["type"] == "distanceGoal") {
-      title += "${goalData["targetValue"]} km";
+      title += "for at least ${goalData["targetValue"]} km";
+    } else if (goalData["type"] == "timeGoal") {
+      title += "for at least ${goalData["targetValue"]} min";
     } else {
-      title += "${goalData["targetValue"]} min";
+      title +=
+          "with an average speed of at least ${goalData["targetValue"]} km/h";
     }
 
     return Card(
@@ -112,13 +110,15 @@ class GoalCard extends StatelessWidget {
               title: Text(title),
               subtitle: Text(status),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: LinearProgressIndicator(
-                value: goalData["currentValue"] / goalData["targetValue"],
-                backgroundColor: Theme.of(context).focusColor,
-              ),
-            ),
+            goalData["type"] != "speedGoal"
+                ? Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: LinearProgressIndicator(
+                      value: goalData["currentValue"] / goalData["targetValue"],
+                      backgroundColor: Theme.of(context).focusColor,
+                    ),
+                  )
+                : Container(),
           ],
         ),
       ),
@@ -175,7 +175,8 @@ class TrainingProposalCard extends StatelessWidget {
                         future: getOwner(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
-                            return Text("Proposed by ${snapshot.data!.name} ${snapshot.data!.surname}");
+                            return Text(
+                                "Proposed by ${snapshot.data!.name} ${snapshot.data!.surname}");
                           } else {
                             return const Text("Loading...");
                           }

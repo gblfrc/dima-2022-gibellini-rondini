@@ -10,13 +10,15 @@ class GoalInfoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     String target;
     String current;
-    if(goalData["type"] == "distanceGoal") {
+    if (goalData["type"] == "distanceGoal") {
       target = "${goalData["targetValue"]} km";
       current = "${goalData["currentValue"]} km";
-    }
-    else {
+    } else if (goalData["type"] == "timeGoal") {
       target = "${goalData["targetValue"]} min";
       current = "${goalData["currentValue"]} min";
+    } else {
+      target = "${goalData["targetValue"]} km/h";
+      current = "N/A";
     }
 
     return Scaffold(
@@ -35,10 +37,13 @@ class GoalInfoPage extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        LinearProgressIndicator(
-                          value: goalData["currentValue"] / goalData["targetValue"],
-                          backgroundColor: Theme.of(context).focusColor,
-                        ),
+                        goalData["type"] != "speedGoal"
+                            ? LinearProgressIndicator(
+                                value: goalData["currentValue"] /
+                                    goalData["targetValue"],
+                                backgroundColor: Theme.of(context).focusColor,
+                              )
+                            : Container(),
                         Wrap(
                           spacing: 20,
                           runSpacing: 20,
