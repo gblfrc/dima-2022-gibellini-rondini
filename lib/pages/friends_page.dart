@@ -1,7 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../app_logic/auth.dart';
+import '../app_logic/database.dart';
 import '../components/tiles.dart';
 import '../components/cards.dart';
 import '../model/user.dart';
@@ -30,7 +29,7 @@ class FriendsPage extends StatelessWidget {
               children: [
                 Padding(padding: EdgeInsets.all(padding)),
                 FutureBuilder(
-                    future: getProposals(),
+                    future: Database.getProposals(),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         return const Text(
@@ -67,7 +66,7 @@ class FriendsPage extends StatelessWidget {
                 children: [
                   Padding(padding: EdgeInsets.all(padding)),
                   FutureBuilder(
-                      future: getFriends(),
+                      future: Database.getFriends(),
                       builder: (context, snapshot) {
                         if (snapshot.hasError) {
                           return const Text(
@@ -106,59 +105,5 @@ class FriendsPage extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<List<DocumentSnapshot>> getProposals() async {
-    final userDocRef = FirebaseFirestore.instance
-        .collection("users")
-        .doc(Auth().currentUser?.uid);
-
-    // Get the list of people that have added the current user to their friends
-    final friendOfList = FirebaseFirestore.instance
-        .collection("users")
-        .where("friends", arrayContains: userDocRef);
-    final friendOfSnapshot = await friendOfList.get();
-    final friendOfDocs = friendOfSnapshot.docs;
-    List<DocumentReference> friendOfDocRefs = [];
-    for (var friendDoc in friendOfDocs) {
-      friendOfDocRefs.add(friendDoc.reference);
-    }
-
-    if (friendOfDocRefs.isEmpty) {
-      // We need this check since whereIn doesn't accept an empty array
-      List<DocumentSnapshot> emptyList = [];
-      return emptyList;
-    }
-    // Get the proposals made by all the people returned by the previous query that are not expired
-    final docProposals = FirebaseFirestore.instance
-        .collection("proposals")
-        .where("owner",
-            whereIn:
-                friendOfDocRefs) // TODO: Split friendOfDocRefs if the length is > 10 because of whereIn limit
-        .where("dateTime", isGreaterThanOrEqualTo: Timestamp.now());
-    final querySnapshot =
-        await docProposals.get(); // This get returns QuerySnapshot
-    return querySnapshot.docs; // Return the list of DocumentSnapshot
-  }
-
-  Future<List<User>> getFriends() async {
-    final userDocRef = FirebaseFirestore.instance
-        .collection("users")
-        .doc(Auth().currentUser?.uid);
-
-    final userSnapshot = await userDocRef.get();
-    final friendRefs = userSnapshot.get("friends");
-    List<User> friends = [];
-    for (var friend in friendRefs) {
-      DocumentSnapshot friendDoc = await friend.get();
-      friends.add(
-        User(
-          name: friendDoc.get('name'),
-          surname: friendDoc.get('surname'),
-          uid: friend.id,
-        ),
-      );
-    }
-    return friends; // Return the list of Users
   }
 }

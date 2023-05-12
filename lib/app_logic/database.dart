@@ -7,6 +7,7 @@ import 'package:progetto/app_logic/exceptions.dart';
 
 import '../model/proposal.dart';
 import '../model/user.dart';
+import 'auth.dart';
 
 class Database {
   static void createUser(User user) async {
@@ -47,6 +48,39 @@ class Database {
       json['uid'] = uid;
       return User.fromJson(json);
     });
+  }
+
+  static Future<List<DocumentSnapshot>> getProposals() async {
+    final userDocRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(Auth().currentUser?.uid);
+
+    // Get the list of people that have added the current user to their friends
+    final friendOfList = FirebaseFirestore.instance
+        .collection("users")
+        .where("friends", arrayContains: userDocRef);
+    final friendOfSnapshot = await friendOfList.get();
+    final friendOfDocs = friendOfSnapshot.docs;
+    List<DocumentReference> friendOfDocRefs = [];
+    for (var friendDoc in friendOfDocs) {
+      friendOfDocRefs.add(friendDoc.reference);
+    }
+
+    if (friendOfDocRefs.isEmpty) {
+      // We need this check since whereIn doesn't accept an empty array
+      List<DocumentSnapshot> emptyList = [];
+      return emptyList;
+    }
+    // Get the proposals made by all the people returned by the previous query that are not expired
+    final docProposals = FirebaseFirestore.instance
+        .collection("proposals")
+        .where("owner",
+            whereIn:
+                friendOfDocRefs) // TODO: Split friendOfDocRefs if the length is > 10 because of whereIn limit
+        .where("dateTime", isGreaterThanOrEqualTo: Timestamp.now());
+    final querySnapshot =
+        await docProposals.get(); // This get returns QuerySnapshot
+    return querySnapshot.docs;
   }
 
   static Future<List<Proposal>> getProposalsWithinBoundsGivenUser(
@@ -100,6 +134,87 @@ class Database {
     });
     }
     return newList;
+  }
+
+  static Future<List<User>> getFriends() async {
+    final userDocRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(Auth().currentUser?.uid);
+
+    final userSnapshot = await userDocRef.get();
+    final friendRefs = userSnapshot.get("friends");
+    List<User> friends = [];
+    for (var friend in friendRefs) {
+      DocumentSnapshot friendDoc = await friend.get();
+      friends.add(
+        User(
+          name: friendDoc.get('name'),
+          surname: friendDoc.get('surname'),
+          uid: friend.id,
+        ),
+      );
+    }
+    return friends;
+  }
+
+  static void addFriend(String user, String friend) async {
+    final docUser = FirebaseFirestore.instance.collection("users").doc(user);
+    final docFriend =
+        FirebaseFirestore.instance.collection("users").doc(friend);
+    try {
+      await docUser.update(
+        {
+          'friends': FieldValue.arrayUnion([docFriend]),
+        },
+      );
+    } on Exception {
+      throw DatabaseException('An error occurred while adding friend.');
+    }
+  }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getLatestSessions(
+      {int? limit}) {
+    final userDocRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(Auth().currentUser?.uid);
+    Query<Map<String, dynamic>> docSession = FirebaseFirestore.instance
+        .collection("sessions")
+        .where("userID", isEqualTo: userDocRef)
+        .orderBy("startDT", descending: true);
+    if (limit != null) {
+      docSession = docSession.limit(limit);
+    }
+    return docSession.snapshots();
+  }
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getGoals() {
+    final userDocRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(Auth().currentUser?.uid);
+    final docUser = FirebaseFirestore.instance
+        .collection("goals")
+        .where("userID", isEqualTo: userDocRef);
+    return docUser.snapshots();
+  }
+
+  static Future<void> createGoal(double targetValue, String type) async {
+    try {
+      final uid = Auth().currentUser?.uid;
+      final docUser = FirebaseFirestore.instance.collection('users').doc(uid);
+      final data = {
+        "completed": false,
+        "currentValue": 0,
+        "targetValue": targetValue,
+        "type": type,
+        "userID": docUser,
+        // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
+      };
+      await FirebaseFirestore.instance.collection("goals").add(data);
+    } on Error {
+      throw DatabaseException("An error occurred while creating goal.");
+    } on Exception {
+      throw DatabaseException("An error occurred while creating goal.");
+    }
   }
 }
 
