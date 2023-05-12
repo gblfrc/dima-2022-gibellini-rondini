@@ -48,6 +48,9 @@ dependencies:
   http: ^0.13.6
   file_picker: 5.2.11
   firebase_storage: ^11.1.2
+  flutter_background_service: ^2.4.6
+  flutter_background_service_android: ^3.0.3
+  permission_handler: ^10.2.0
   dart_geohash: 2.0.2
 
 dev_dependencies:

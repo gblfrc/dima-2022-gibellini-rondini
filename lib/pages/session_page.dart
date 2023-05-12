@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../app_logic/auth.dart';
+import '../app_logic/tracking_service.dart';
 
 class SessionPage extends StatefulWidget {
   const SessionPage({super.key});
@@ -29,9 +31,10 @@ class _SessionPageState extends State<SessionPage> {
   List<LatLng> _positions = [];
   DateTime? startDT;
   final MapController _mapController = MapController();
-  Stream<Position>? _positionStream;
+  Stream<Position>? positionStream;
   StreamSubscription<Position>? _positionUpdater;
   StreamSubscription<Position>? _positionTracker;
+  TrackingService? tracker;
 
   void updateButtons(bool start, bool pause, bool stop, bool resume) {
     setState(() {
@@ -68,18 +71,22 @@ class _SessionPageState extends State<SessionPage> {
                       _currentPosition =
                           LatLng(position.latitude, position.longitude);
                       if (_positionUpdater == null) {
-                        _positionStream = Geolocator.getPositionStream(
+                        positionStream = Geolocator.getPositionStream(
                             locationSettings: const LocationSettings(
                           accuracy: LocationAccuracy.best,
                           distanceFilter: 5,
                         ));
-                        _positionUpdater = _positionStream!.listen(
+                        print("Building session page ${positionStream.hashCode}");
+                        TrackingService.positionStream = positionStream;
+                        print("Stream code is: ${TrackingService.positionStream.hashCode}");
+                        _positionUpdater = positionStream!.listen(
                           (Position position) {
                             if (mounted) {
                               setState(() {
                                 _currentPosition = LatLng(
                                     position.latitude, position.longitude);
                                 _mapController.move(_currentPosition!, 18);
+                                print("HASHCODE: ${positionStream.hashCode}");
                               });
                             }
                           },
@@ -147,7 +154,7 @@ class _SessionPageState extends State<SessionPage> {
                 Flexible(
                   child: Center(
                     child: Text(
-                      "${(distance / 1000).toStringAsFixed(2)} km",
+                      "${(TrackingService.distance / 1000).toStringAsFixed(2)} km",
                       // toStringAsFixed sets the number of decimal positions
                       style: TextStyle(
                         fontSize: 30 * MediaQuery.of(context).textScaleFactor,
@@ -178,27 +185,22 @@ class _SessionPageState extends State<SessionPage> {
               stop: stop,
               resume: resume,
               changeButtons: updateButtons,
-              onStart: () {
+              onStart: () async {
                 _positions = [];
                 _arrays = [];
                 _arrays.add(_positions);
                 updateButtons(false, true, true, false);
                 distance = 0;
+                TrackingService.positions = _positions;
+                TrackingService.distance = distance;
+                await TrackingService.start();
+                FlutterBackgroundService().invoke("setAsForeground");
                 stopwatch.reset();
                 stopwatch.start();
                 startDT = DateTime.now();
                 timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
-                  setState(() {});
-                });
-                _positionTracker = _positionStream?.listen((Position position) {
                   setState(() {
-                    LatLng pos = LatLng(position.latitude, position.longitude);
-                    if (_positions.isNotEmpty) {
-                      LatLng last = _positions.last;
-                      distance += Geolocator.distanceBetween(last.latitude,
-                          last.longitude, pos.latitude, pos.longitude);
-                    }
-                    _positions.add(pos);
+                    print(_positions);
                   });
                 });
               },
@@ -207,6 +209,7 @@ class _SessionPageState extends State<SessionPage> {
                 stopwatch.stop();
                 timer?.cancel();
                 _positionTracker?.cancel();
+                FlutterBackgroundService().invoke("stopService");
                 saveSession();
               },
               onPause: () {
@@ -223,7 +226,7 @@ class _SessionPageState extends State<SessionPage> {
                 timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
                   setState(() {});
                 });
-                _positionTracker = _positionStream?.listen((Position position) {
+                _positionTracker = positionStream?.listen((Position position) {
                   setState(() {
                     LatLng pos = LatLng(position.latitude, position.longitude);
                     if (_positions.isNotEmpty) {
