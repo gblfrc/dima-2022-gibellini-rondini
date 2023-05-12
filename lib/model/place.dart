@@ -17,17 +17,18 @@ class Place {
   *   String name,
   *   String? city,
   *   String? state,
-  *   String? country,
-  *   float lat,
-  *   float lon
+  *   String? country
+  *   double lat,
+  *   double lon
   * }
   * */
   static Place fromJson(Map<String, dynamic> json) => Place(
-        id: json['osm_id'],
-        name: json['display_place'] ?? json['display_name'],
-        city: json['address']['city'],
-        state: json['address']['state'],
-        country: json['address']['country'],
-        coords: LatLng(double.parse(json['lat']), double.parse(json['lon'])),
+        id: json['id'],
+        // name: json['display_place'] ?? json['display_name'],
+        name: json['name'],
+        city: json['city'],
+        state: json['state'],
+        country: json['country'],
+        coords: LatLng((json['lat']), (json['lon'])),
       );
 }

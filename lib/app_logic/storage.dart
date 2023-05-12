@@ -1,10 +1,6 @@
 import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-
-import '../model/user.dart';
 
 class Storage {
   static Future<void> uploadFile(String path, String filename) async {
@@ -24,19 +20,4 @@ class Storage {
         .getDownloadURL();
   }
 
-  static FutureBuilder profilePictureOrAccountIcon(User user) {
-    return FutureBuilder(
-        future: downloadURL(user.uid),
-        builder: (context, snaphsot) {
-          if (snaphsot.hasError) {
-            return const Icon(Icons.account_circle);
-          } else if (snaphsot.hasData) {
-            return Image.network(snaphsot.data);
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-        });
-  }
 }

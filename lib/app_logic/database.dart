@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:progetto/app_logic/exceptions.dart';
 
+import '../model/proposal.dart';
 import '../model/user.dart';
 
 class Database {
@@ -44,4 +46,38 @@ class Database {
       return User.fromJson(json);
     });
   }
+
+  static Future<List<Proposal>> getProposalsWithinBoundsGivenUser(
+      LatLngBounds bounds, String uid) async {
+    List<Proposal> newList = [];
+    await FirebaseFirestore.instance
+        .collection("proposals")
+        .get()
+        .then((snapshot) async {
+      for (var doc in snapshot.docs) {
+        Map<String, dynamic> json = doc.data();
+        var ownerRef = json['owner'] as DocumentReference;
+        var dateTime = (json['dateTime'] as Timestamp).toDate().toString();
+        var placeGeoPoint = json['place']['coords'] as GeoPoint;
+        json['pid'] = doc.id;
+        json['owner'] = await ownerRef.get().then((snapshot) {
+          var userData = snapshot.data() as Map<String, dynamic>;
+          userData['uid'] = snapshot.id;
+          return userData;
+        });
+        json['dateTime'] = dateTime;
+        json['place']['lat'] = placeGeoPoint.latitude;
+        json['place']['lon'] = placeGeoPoint.longitude;
+        newList.add(Proposal.fromJson(json));
+      }
+    }, onError: (e) {
+      print("Error completing: $e");
+    });
+    return newList;
+  }
 }
+
+//{owner: DocumentReference<Map<String, dynamic>>(users/SjM8IQQiqbV3q60PlSTr9qnZpI92),
+//dateTime: Timestamp(seconds=1683652518, nanoseconds=35000000),
+//place: {name: Parco Suardi, id: 11694848, coords: Instance of 'GeoPoint'},
+//type: Friends}

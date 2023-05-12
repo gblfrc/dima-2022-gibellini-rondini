@@ -52,10 +52,13 @@ class SearchEngine {
     List<Place> places = [];
     for (Map<String, dynamic> json in jsonDecode(response.body)) {
       json['id'] = json['osm_id'];
+      json['lat'] = double.parse(json['lat']);
+      json['lon'] = double.parse(json['lon']);
       json['name'] = json['display_place'] ?? json['display_name'];
       json['city'] = json['address']['city'];
       json['state'] = json['address']['state'];
       json['country'] = json['address']['country'];
+      print(json);
       places.add(Place.fromJson(json));
     }
     return places;

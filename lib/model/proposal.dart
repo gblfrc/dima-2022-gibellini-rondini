@@ -1,25 +1,36 @@
 import 'package:progetto/model/place.dart';
+import 'user.dart';
 
 class Proposal {
   String id;
-  String ownerId;
+  DateTime dateTime;
+  User owner;
   Place place;
-  String? type;
+  String type;
 
   Proposal(
       {required this.id,
-      required this.ownerId,
+      required this.dateTime,
+      required this.owner,
       required this.place,
-      this.type});
+      required this.type});
 
-  static fromJson(Map<String, dynamic> json, String id) {
-    json['place']['display_name'] = json['place']['name'];
-    json['place']['lat'] = json['place']['coords'].latitude;
-    json['place']['lon'] = json['place']['coords'].longitude;
-    json['place']['osm_id'] = json['place']['id'].longitude;
+
+  /*
+  * Function to create a Proposal object from a json map
+  * Required json structure: {
+  *   String id,
+  *   String dateTime,
+  *   // json to obtain a user model object,
+  *   // json to obtain a place model object,
+  *   String type
+  * }
+  * */
+  static fromJson(Map<String, dynamic> json) {
     return Proposal(
-      id: id,
-      ownerId: json['owner'],
+      id: json['pid'],
+      dateTime: DateTime.parse(json['dateTime']),
+      owner: User.fromJson(json['owner']),
       place: Place.fromJson(json['place']),
       type: json['type'],
     );
