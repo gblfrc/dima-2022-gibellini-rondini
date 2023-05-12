@@ -130,6 +130,7 @@ class ProposalTile extends Tile {
   static Tile fromProposal(Proposal proposal, BuildContext context){
     return Tile(
       icon: LayoutBuilder(
+        // TODO: Replace the place icon with calendar with the proposed date
         builder: (context, constraint) {
           return Icon(Icons.place, size: constraint.maxHeight);
         },

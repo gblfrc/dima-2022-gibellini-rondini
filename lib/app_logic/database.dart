@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dart_geohash/dart_geohash.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:progetto/app_logic/exceptions.dart';
 
 import '../model/proposal.dart';
@@ -49,16 +51,39 @@ class Database {
 
   static Future<List<Proposal>> getProposalsWithinBoundsGivenUser(
       LatLngBounds bounds, String uid) async {
+    // collect hashes for the four corners and for the center
+    List<String> hashes = [];
+    var northEast = bounds.northEast ?? LatLng(bounds.north, bounds.east);
+    var southWest = bounds.southWest ?? LatLng(bounds.south, bounds.west);
+    hashes.add(GeoHasher().encode(bounds.northWest.longitude,bounds.northWest.latitude, precision: 6));
+    hashes.add(GeoHasher().encode(northEast.longitude,northEast.latitude, precision: 6));
+    hashes.add(GeoHasher().encode(southWest.longitude,southWest.latitude, precision: 6));
+    hashes.add(GeoHasher().encode(bounds.southEast.longitude,bounds.southEast.latitude, precision: 6));
+    hashes.add(GeoHasher().encode(bounds.center.longitude,bounds.center.latitude, precision: 6));
+    // sort alphabetically
+    hashes.sort();
     List<Proposal> newList = [];
-    await FirebaseFirestore.instance
+    List<Future<QuerySnapshot<Map<String, dynamic>>>> futures = [];
+    // future for public proposals
+    futures.add(FirebaseFirestore.instance
         .collection("proposals")
-        .get()
-        .then((snapshot) async {
+        .where('place.geohash', isGreaterThanOrEqualTo: hashes[0])
+        .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length-1])
+        .where('type', isEqualTo: 'Public')
+        .get());
+    for (var future in futures) {
+      await future.then((snapshot) async {
       for (var doc in snapshot.docs) {
+        // extract content of documents as json
         Map<String, dynamic> json = doc.data();
+        // check on position insider map boundaries
+        var placeGeoPoint = json['place']['coords'] as GeoPoint;
+        if (!bounds.contains(LatLng(placeGeoPoint.latitude, placeGeoPoint.longitude))){
+          continue;
+        }
+        // build actual proposal object
         var ownerRef = json['owner'] as DocumentReference;
         var dateTime = (json['dateTime'] as Timestamp).toDate().toString();
-        var placeGeoPoint = json['place']['coords'] as GeoPoint;
         json['pid'] = doc.id;
         json['owner'] = await ownerRef.get().then((snapshot) {
           var userData = snapshot.data() as Map<String, dynamic>;
@@ -73,6 +98,7 @@ class Database {
     }, onError: (e) {
       print("Error completing: $e");
     });
+    }
     return newList;
   }
 }
