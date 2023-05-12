@@ -1,7 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:progetto/pages/session_page.dart';
+import '../app_logic/database.dart';
 import '../components/cards.dart';
 import '../app_logic/auth.dart';
 import 'create_goal_page.dart';
@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
             title: Text("Latest sessions"),
           ),
           StreamBuilder(
-              stream: getLatestSessions(),
+              stream: Database.getLatestSessions(limit: 2),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return const Text(
@@ -67,7 +67,7 @@ class _HomePageState extends State<HomePage> {
             title: Text("My goals"),
           ),
           StreamBuilder(
-              stream: getGoals(),
+              stream: Database.getGoals(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return const Text(
@@ -121,25 +121,5 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.directions_run),
       ),
     );
-  }
-
-  Stream<QuerySnapshot<Map<String, dynamic>>> getLatestSessions() {
-    final userDocRef = FirebaseFirestore.instance
-        .collection("users")
-        .doc(Auth().currentUser?.uid);
-    final docUser = FirebaseFirestore.instance
-        .collection("sessions")
-        .where("userID", isEqualTo: userDocRef); // TODO: Add limit
-    return docUser.snapshots();
-  }
-
-  Stream<QuerySnapshot<Map<String, dynamic>>> getGoals() {
-    final userDocRef = FirebaseFirestore.instance
-        .collection("users")
-        .doc(Auth().currentUser?.uid);
-    final docUser = FirebaseFirestore.instance
-        .collection("goals")
-        .where("userID", isEqualTo: userDocRef);
-    return docUser.snapshots();
   }
 }
