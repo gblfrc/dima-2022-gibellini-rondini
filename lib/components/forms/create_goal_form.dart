@@ -16,7 +16,6 @@ class CreateGoalForm extends StatefulWidget {
 class _CreateGoalFormState extends State<CreateGoalForm> {
   late TextEditingController _targetValueController;
   late String? _type = "distanceGoal";
-  late bool? _isMin = true;
 
   @override
   void initState() {
@@ -56,29 +55,13 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
                   });
                 },
               ),
-              const SizedBox(
-                height: 8,
-              ),
-              const ListTile(
-                title: Text("Target type"),
-              ),
               RadioListTile(
-                title: const Text("Run for at least..."),
-                value: true,
-                groupValue: _isMin,
-                onChanged: (bool? value) {
+                title: const Text("Speed goal"),
+                value: "speedGoal",
+                groupValue: _type,
+                onChanged: (String? value) {
                   setState(() {
-                    _isMin = value;
-                  });
-                },
-              ),
-              RadioListTile(
-                title: const Text("Run for at most..."),
-                value: false,
-                groupValue: _isMin,
-                onChanged: (bool? value) {
-                  setState(() {
-                    _isMin = value;
+                    _type = value;
                   });
                 },
               ),
@@ -123,7 +106,6 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
         "completed": false,
         "currentValue": 0,
         "targetValue": int.parse(_targetValueController.text),
-        "isMin": _isMin,
         "type": _type,
         "userID": docUser, // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
       };

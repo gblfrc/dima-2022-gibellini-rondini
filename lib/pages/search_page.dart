@@ -204,7 +204,6 @@ class _SearchPageState extends State<SearchPage> {
   void _updatePlaceList(String name) async {
     // get all places given place name
     List<Place> newList = await SearchEngine.getPlacesByName(name);
-    print(newList);
     // call setState to update widget
     setState(() {
       placeList = newList;
