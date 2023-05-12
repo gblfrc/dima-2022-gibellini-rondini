@@ -1,7 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../../app_logic/auth.dart';
+import '../../app_logic/database.dart';
 import 'custom_form_field.dart';
 
 class CreateGoalForm extends StatefulWidget {
@@ -116,17 +115,9 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
 
   void createGoal() async {
     try {
-      final uid = Auth().currentUser?.uid;
-      final docUser = FirebaseFirestore.instance.collection('users').doc(uid);
-      final data = {
-        "completed": false,
-        "currentValue": 0,
-        "targetValue": double.parse(_targetValueController.text),
-        "type": _type,
-        "userID": docUser,
-        // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
-      };
-      await FirebaseFirestore.instance.collection("goals").add(data);
+      await Database.createGoal(
+          double.parse(_targetValueController.text), _type!);
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -135,12 +126,6 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
         ),
       );
       Navigator.of(context).pop();
-    } on Error {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Something went wrong. Please try again."),
-        ),
-      );
     } on Exception {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

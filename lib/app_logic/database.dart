@@ -144,7 +144,8 @@ class Database {
     }
   }
 
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getLatestSessions({int? limit}) {
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getLatestSessions(
+      {int? limit}) {
     final userDocRef = FirebaseFirestore.instance
         .collection("users")
         .doc(Auth().currentUser?.uid);
@@ -152,7 +153,7 @@ class Database {
         .collection("sessions")
         .where("userID", isEqualTo: userDocRef)
         .orderBy("startDT", descending: true);
-    if(limit != null) {
+    if (limit != null) {
       docSession = docSession.limit(limit);
     }
     return docSession.snapshots();
@@ -166,6 +167,26 @@ class Database {
         .collection("goals")
         .where("userID", isEqualTo: userDocRef);
     return docUser.snapshots();
+  }
+
+  static Future<void> createGoal(double targetValue, String type) async {
+    try {
+      final uid = Auth().currentUser?.uid;
+      final docUser = FirebaseFirestore.instance.collection('users').doc(uid);
+      final data = {
+        "completed": false,
+        "currentValue": 0,
+        "targetValue": targetValue,
+        "type": type,
+        "userID": docUser,
+        // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
+      };
+      await FirebaseFirestore.instance.collection("goals").add(data);
+    } on Error {
+      throw DatabaseException("An error occurred while creating goal.");
+    } on Exception {
+      throw DatabaseException("An error occurred while creating goal.");
+    }
   }
 }
 
