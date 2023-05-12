@@ -5,7 +5,8 @@ class CustomFormField extends StatelessWidget {
   final double width;
 
   final TextEditingController controller;
-  bool? obscure = false;
+  bool? obscure;
+  bool? numericOnly;
 
   CustomFormField({
     super.key,
@@ -13,6 +14,7 @@ class CustomFormField extends StatelessWidget {
     required this.width,
     required this.controller,
     this.obscure,
+    this.numericOnly,
   });
 
   @override
@@ -20,6 +22,7 @@ class CustomFormField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       obscureText: obscure ?? false,
+      keyboardType: numericOnly ?? false ? TextInputType.number : null,
       decoration: InputDecoration(
         filled: true,
         fillColor: Colors.white,

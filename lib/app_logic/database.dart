@@ -44,4 +44,19 @@ class Database {
       return User.fromJson(json);
     });
   }
+
+  static void addFriend(String user, String friend) async {
+    final docUser = FirebaseFirestore.instance.collection("users").doc(user);
+    final docFriend = FirebaseFirestore.instance.collection("users").doc(friend);
+    try {
+      await docUser.update(
+        {
+          'friends': FieldValue.arrayUnion([docFriend]),
+        },
+      );
+    } on Exception {
+      throw DatabaseException(
+          'An error occurred while adding friend.');
+    }
+  }
 }

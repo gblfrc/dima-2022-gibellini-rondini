@@ -25,71 +25,87 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Form(
-          // TODO: add form key
-          child: Column(
-            children: [
-              const ListTile(
-                title: Text("Goal type"),
-              ),
-              RadioListTile(
-                title: const Text("Distance goal"),
-                value: "distanceGoal",
-                groupValue: _type,
-                onChanged: (String? value) {
-                  setState(() {
-                    _type = value;
-                  });
-                },
-              ),
-              RadioListTile(
-                title: const Text("Time goal"),
-                value: "timeGoal",
-                groupValue: _type,
-                onChanged: (String? value) {
-                  setState(() {
-                    _type = value;
-                  });
-                },
-              ),
-              RadioListTile(
-                title: const Text("Speed goal"),
-                value: "speedGoal",
-                groupValue: _type,
-                onChanged: (String? value) {
-                  setState(() {
-                    _type = value;
-                  });
-                },
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              CustomFormField(
-                // TODO: Modify CustomFormField so that it can set the field to be numeric only (keyboardType: TextInputType.number)
-                text: 'Target value',
-                width: widget.width,
-                controller: _targetValueController,
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              const SizedBox(
-                height: 6,
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  createGoal();
-                },
-                child: const Text('SAVE'),
-              ),
-            ],
-          ),
+    double width = MediaQuery.of(context).size.width;
+    double padding = width / 20;
+    return Padding(
+      padding: EdgeInsets.all(padding),
+      child: Form(
+        // TODO: add form key and form validation (negative values, decimal minutes...)
+        child: Column(
+          children: [
+            const ListTile(
+              title: Text("Goal type"),
+            ),
+            RadioListTile(
+              title: const Text("Distance goal"),
+              value: "distanceGoal",
+              groupValue: _type,
+              onChanged: (String? value) {
+                setState(() {
+                  _type = value;
+                });
+              },
+            ),
+            RadioListTile(
+              title: const Text("Time goal"),
+              value: "timeGoal",
+              groupValue: _type,
+              onChanged: (String? value) {
+                setState(() {
+                  _type = value;
+                });
+              },
+            ),
+            RadioListTile(
+              title: const Text("Speed goal"),
+              value: "speedGoal",
+              groupValue: _type,
+              onChanged: (String? value) {
+                setState(() {
+                  _type = value;
+                });
+              },
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            Flex(
+              direction: Axis.horizontal,
+              children: [
+                Flexible(
+                  flex: 5,
+                  child: CustomFormField(
+                    text: 'Target value',
+                    width: widget.width,
+                    controller: _targetValueController,
+                    numericOnly: true,
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  fit: FlexFit.tight,
+                  child: Text(
+                    _type == "distanceGoal" ? "km" : (_type == "timeGoal" ? "min" : "km/h"),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            const SizedBox(
+              height: 6,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                createGoal();
+              },
+              child: const Text('SAVE'),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -105,14 +121,16 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
       final data = {
         "completed": false,
         "currentValue": 0,
-        "targetValue": int.parse(_targetValueController.text),
+        "targetValue": double.parse(_targetValueController.text),
         "type": _type,
-        "userID": docUser, // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
+        "userID": docUser,
+        // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
       };
       await FirebaseFirestore.instance.collection("goals").add(data);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
+          // TODO: Maybe it is better to use behavior: SnackBarBehavior.floating (after having fixed double scaffold problem),
           content: Text("Goal created!"),
         ),
       );
