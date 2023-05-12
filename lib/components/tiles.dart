@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:progetto/pages/account_page.dart';
 
 import '../model/place.dart';
+import '../model/proposal.dart';
 import '../model/user.dart';
 import '../pages/place_page.dart';
 import '../app_logic/storage.dart';
@@ -114,6 +115,28 @@ class PlaceTile extends Tile {
           builder: (context) => PlacePage(place: place),
         ),
       ),
+    );
+  }
+}
+
+class ProposalTile extends Tile {
+  const ProposalTile(
+      {super.key,
+      required super.icon,
+      required super.title,
+      required super.subtitle,
+      required super.callback});
+
+  static Tile fromProposal(Proposal proposal, BuildContext context){
+    return Tile(
+      icon: LayoutBuilder(
+        builder: (context, constraint) {
+          return Icon(Icons.place, size: constraint.maxHeight);
+        },
+      ),
+      title: proposal.place.name,
+      subtitle: "Organizer: ${proposal.owner.name} ${proposal.owner.surname}",
+      callback: null
     );
   }
 }

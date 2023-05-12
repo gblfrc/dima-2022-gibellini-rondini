@@ -3,11 +3,13 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:progetto/app_logic/auth.dart';
+import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/search_engine.dart';
 
 import '../components/search_bar.dart';
 import '../components/tiles.dart';
 import '../model/place.dart';
+import '../model/proposal.dart';
 import '../model/user.dart';
 
 class SearchPage extends StatefulWidget {
@@ -20,7 +22,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   List<User> userList = List.empty();
   List<Place> placeList = List.empty();
-  // List<Proposal> proposalList = List.empty();
+  List<Proposal> proposalList = List.empty();
   LatLng? _initialPosition;
   final MapController _mapController = MapController();
 
@@ -129,7 +131,8 @@ class _SearchPageState extends State<SearchPage> {
                                       e is MapEventFlingAnimationEnd ||
                                       e is MapEventMoveEnd ||
                                       e is MapEventRotateEnd) {
-                                    print(e); // TODO: replace this print with actual call for update of list of proposal
+                                    _updateProposalList(_mapController.bounds!,
+                                        Auth().currentUser!.uid);
                                   }
                                 },
                               ),
@@ -157,23 +160,10 @@ class _SearchPageState extends State<SearchPage> {
                 Flexible(
                   flex: 3,
                   child: ListView(
-                    children: const [
-                      ListTile(
-                        leading: Icon(Icons.place, size: 60),
-                        title: Text("A training"),
-                        trailing: Text('2 km'),
-                        onTap: null,
-                      ),
-                      Divider(),
-                      // TODO: find a finer way to implement the list without dividers, maybe with space between objects
-                      ListTile(
-                        leading: Icon(Icons.place, size: 60),
-                        title: Text("Another training"),
-                        trailing: Text('5 km'),
-                        onTap: null,
-                      ),
-                      Divider(),
-                    ],
+                    children: proposalList
+                        .map((proposal) =>
+                            ProposalTile.fromProposal(proposal, context))
+                        .toList(),
                   ),
                 ),
               ],
@@ -191,7 +181,8 @@ class _SearchPageState extends State<SearchPage> {
     // get uid of currrently logged user
     String? uid = Auth().currentUser?.uid;
     // get all users except the logged one
-    List<User> newList = await SearchEngine.getUsersByName(name, excludeUid: uid);
+    List<User> newList =
+        await SearchEngine.getUsersByName(name, excludeUid: uid);
     // call setState to update widget
     setState(() {
       userList = newList;
@@ -210,6 +201,19 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
+  /*
+  * Function to update list of places shown in place search tab
+  */
+  void _updateProposalList(LatLngBounds bounds, String uid) async {
+    // get all proposals for logged user within boundaries of the map
+    List<Proposal> newList =
+        await Database.getProposalsWithinBoundsGivenUser(bounds, uid);
+    print(newList);
+    // call setState to update widget
+    setState(() {
+      proposalList = newList;
+    });
+  }
 
   Future<bool> _handleLocationPermission(BuildContext context) async {
     bool serviceEnabled;
