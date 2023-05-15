@@ -103,6 +103,12 @@ class Database {
         .collection("proposals")
         .where('place.geohash', isGreaterThanOrEqualTo: hashes[0])
         .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length-1])
+        .where('type', isEqualTo: 'Friends')
+        .get());
+    futures.add(FirebaseFirestore.instance
+        .collection("proposals")
+        .where('place.geohash', isGreaterThanOrEqualTo: hashes[0])
+        .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length-1])
         .where('type', isEqualTo: 'Public')
         .get());
     for (var future in futures) {
@@ -117,13 +123,22 @@ class Database {
         }
         // build actual proposal object
         var ownerRef = json['owner'] as DocumentReference;
-        var dateTime = (json['dateTime'] as Timestamp).toDate().toString();
-        json['pid'] = doc.id;
+        if (ownerRef.id == uid) continue; // discard object if owner is logged user
         json['owner'] = await ownerRef.get().then((snapshot) {
           var userData = snapshot.data() as Map<String, dynamic>;
+          // check if current user is friend of proposal owner
+          if (json['type'] == 'Friends'){
+            var friends = userData['friends'];
+            var friendIds = [];
+            for (DocumentReference friend in friends) {friendIds.add(friend.id);}
+            if (!friendIds.contains(uid)) return null;
+          }
           userData['uid'] = snapshot.id;
           return userData;
         });
+        if (json['owner'] == null) continue;
+        var dateTime = (json['dateTime'] as Timestamp).toDate().toString();
+        json['pid'] = doc.id;
         json['dateTime'] = dateTime;
         json['place']['lat'] = placeGeoPoint.latitude;
         json['place']['lon'] = placeGeoPoint.longitude;
