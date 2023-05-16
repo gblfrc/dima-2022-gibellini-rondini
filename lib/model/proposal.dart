@@ -2,14 +2,14 @@ import 'package:progetto/model/place.dart';
 import 'user.dart';
 
 class Proposal {
-  String id;
+  String? id;
   DateTime dateTime;
   User owner;
   Place place;
   String type;
 
   Proposal(
-      {required this.id,
+      {this.id,
       required this.dateTime,
       required this.owner,
       required this.place,

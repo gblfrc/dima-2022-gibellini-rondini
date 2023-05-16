@@ -231,6 +231,31 @@ class Database {
       throw DatabaseException("An error occurred while creating goal.");
     }
   }
+
+  static void createProposal(Proposal proposal) async {
+    try {
+      await FirebaseFirestore.instance.collection("proposals").add(
+        {
+          "dateTime": Timestamp.fromDate(proposal.dateTime),
+          "owner": FirebaseFirestore.instance.collection('users').doc(proposal.owner.uid),
+          "place": {
+            "coords": GeoPoint(proposal.place.coords.latitude,proposal.place.coords.longitude),
+            "geohash": GeoHasher().encode(proposal.place.coords.longitude,proposal.place.coords.latitude, precision: 9),
+            "id": proposal.place.id,
+            "latitude": proposal.place.coords.latitude,
+            "longitude": proposal.place.coords.longitude,
+            "name": proposal.place.name
+          },
+          "type": proposal.type,
+        },
+      );
+    } on FirebaseException {
+      throw DatabaseException("Couldn't create proposal");
+    }
+  }
+
+
+
 }
 
 //{owner: DocumentReference<Map<String, dynamic>>(users/SjM8IQQiqbV3q60PlSTr9qnZpI92),

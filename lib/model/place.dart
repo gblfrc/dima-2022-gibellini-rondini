@@ -6,9 +6,9 @@ class Place {
   String? city;
   String? state;
   String? country;
-  LatLng? coords;
+  LatLng coords;
 
-  Place({required this.id, required this.name, this.city, this.state, this.country, this.coords});
+  Place({required this.id, required this.name, this.city, this.state, this.country, required this.coords});
 
   /*
   * Function to create a User object from a json map

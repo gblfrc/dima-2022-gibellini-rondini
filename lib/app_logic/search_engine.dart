@@ -58,7 +58,6 @@ class SearchEngine {
       json['city'] = json['address']['city'];
       json['state'] = json['address']['state'];
       json['country'] = json['address']['country'];
-      print(json);
       places.add(Place.fromJson(json));
     }
     return places;
