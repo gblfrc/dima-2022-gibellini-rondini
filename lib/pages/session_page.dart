@@ -2,13 +2,11 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../app_logic/auth.dart';
-import '../app_logic/tracking_service.dart';
 
 class SessionPage extends StatefulWidget {
   const SessionPage({super.key});
@@ -34,7 +32,6 @@ class _SessionPageState extends State<SessionPage> {
   Stream<Position>? positionStream;
   StreamSubscription<Position>? _positionUpdater;
   StreamSubscription<Position>? _positionTracker;
-  TrackingService? tracker;
 
   void updateButtons(bool start, bool pause, bool stop, bool resume) {
     setState(() {
@@ -72,13 +69,18 @@ class _SessionPageState extends State<SessionPage> {
                           LatLng(position.latitude, position.longitude);
                       if (_positionUpdater == null) {
                         positionStream = Geolocator.getPositionStream(
-                            locationSettings: const LocationSettings(
-                          accuracy: LocationAccuracy.best,
-                          distanceFilter: 5,
-                        ));
-                        print("Building session page ${positionStream.hashCode}");
-                        TrackingService.positionStream = positionStream;
-                        print("Stream code is: ${TrackingService.positionStream.hashCode}");
+                            locationSettings: AndroidSettings(
+                                accuracy: LocationAccuracy.best,
+                                distanceFilter: 5,
+                                foregroundNotificationConfig:
+                                    const ForegroundNotificationConfig(
+                                        notificationTitle:
+                                            "Tracking in progress",
+                                        notificationText:
+                                            "Your position is being tracked.",
+                                        notificationIcon: AndroidResource(
+                                            name: 'launch_background',
+                                            defType: 'drawable'))));
                         _positionUpdater = positionStream!.listen(
                           (Position position) {
                             if (mounted) {
@@ -86,7 +88,6 @@ class _SessionPageState extends State<SessionPage> {
                                 _currentPosition = LatLng(
                                     position.latitude, position.longitude);
                                 _mapController.move(_currentPosition!, 18);
-                                print("HASHCODE: ${positionStream.hashCode}");
                               });
                             }
                           },
@@ -154,7 +155,7 @@ class _SessionPageState extends State<SessionPage> {
                 Flexible(
                   child: Center(
                     child: Text(
-                      "${(TrackingService.distance / 1000).toStringAsFixed(2)} km",
+                      "${(distance / 1000).toStringAsFixed(2)} km",
                       // toStringAsFixed sets the number of decimal positions
                       style: TextStyle(
                         fontSize: 30 * MediaQuery.of(context).textScaleFactor,
@@ -191,10 +192,20 @@ class _SessionPageState extends State<SessionPage> {
                 _arrays.add(_positions);
                 updateButtons(false, true, true, false);
                 distance = 0;
-                TrackingService.positions = _positions;
-                TrackingService.distance = distance;
-                await TrackingService.start();
-                FlutterBackgroundService().invoke("setAsForeground");
+                //TrackingService.positions = _positions;
+                //TrackingService.distance = distance;
+                //await TrackingService.start();
+                //FlutterBackgroundService().invoke("setAsForeground");
+                _positionTracker = positionStream!.listen((Position position) {
+                  LatLng pos = LatLng(position.latitude, position.longitude);
+                  if (_positions.isNotEmpty) {
+                    LatLng last = _positions.last;
+                    distance += Geolocator.distanceBetween(
+                        last.latitude, last.longitude, pos.latitude,
+                        pos.longitude);
+                  }
+                  _positions.add(pos);
+                });
                 stopwatch.reset();
                 stopwatch.start();
                 startDT = DateTime.now();
@@ -209,7 +220,7 @@ class _SessionPageState extends State<SessionPage> {
                 stopwatch.stop();
                 timer?.cancel();
                 _positionTracker?.cancel();
-                FlutterBackgroundService().invoke("stopService");
+                //FlutterBackgroundService().invoke("stopService");
                 saveSession();
               },
               onPause: () {
@@ -218,7 +229,7 @@ class _SessionPageState extends State<SessionPage> {
                 timer?.cancel();
                 _positionTracker?.cancel();
               },
-              onResume: (){
+              onResume: () {
                 updateButtons(false, true, true, false);
                 _positions = [];
                 _arrays.add(_positions);
@@ -281,7 +292,7 @@ class _SessionPageState extends State<SessionPage> {
         desiredAccuracy: LocationAccuracy.high);
   }
 
-  Future<void> saveSession() async{
+  Future<void> saveSession() async {
     try {
       List<Map<String, List<GeoPoint>>> maps = [];
       for (List<LatLng> array in _arrays) {
@@ -295,10 +306,7 @@ class _SessionPageState extends State<SessionPage> {
       final docUser = FirebaseFirestore.instance
           .collection("users")
           .doc(Auth().currentUser!.uid);
-      FirebaseFirestore.instance
-          .collection('sessions')
-          .doc()
-          .set({
+      FirebaseFirestore.instance.collection('sessions').doc().set({
         "userID": docUser,
         "distance": distance,
         "startDT": Timestamp.fromDate(startDT!),
@@ -307,11 +315,9 @@ class _SessionPageState extends State<SessionPage> {
       });
     } on FirebaseException {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Something went wrong when saving the session.')));
+          content: Text('Something went wrong when saving the session.')));
     }
   }
-
 }
 
 class _LowerButtonBar extends StatelessWidget {

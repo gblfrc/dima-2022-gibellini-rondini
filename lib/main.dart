@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:progetto/app_logic/tracking_service.dart';
 import 'package:progetto/app_logic/widget_tree.dart';
 import 'package:progetto/pages/edit_profile_page.dart';
 
