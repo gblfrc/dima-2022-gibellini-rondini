@@ -99,7 +99,7 @@ class Database {
           if (proposal != null) proposals.add(proposal);
         }
       }, onError: (e) {
-        print("Error completing: $e");
+        throw DatabaseException("Couldn't get friend proposals for current user.");
       });
     }
     return proposals;
@@ -153,7 +153,7 @@ class Database {
           if (proposal != null) newList.add(proposal);
         }
       }, onError: (e) {
-        print("Error completing: $e");
+        throw DatabaseException("Couldn't get proposals within specified boundary.");
       });
     }
     return newList;
@@ -208,6 +208,17 @@ class Database {
       docSession = docSession.limit(limit);
     }
     return docSession.snapshots();
+  }
+
+  static Future<QuerySnapshot<Map<String, dynamic>>> getSessionsByUser(String uid) {
+    final userDocRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(uid);
+    Query<Map<String, dynamic>> docSession = FirebaseFirestore.instance
+        .collection("sessions")
+        .where("userID", isEqualTo: userDocRef)
+        .orderBy("startDT", descending: true);
+    return docSession.snapshots().first;
   }
 
   static Stream<QuerySnapshot<Map<String, dynamic>>> getGoals() {
@@ -313,7 +324,7 @@ class Database {
         if (proposal != null) list.add(proposal);
       }
     }, onError: (e) {
-      print("Error completing: $e");
+      throw DatabaseException("Couldn't get proposals for the requested place.");
     });
     return list;
   }
