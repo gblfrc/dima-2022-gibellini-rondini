@@ -30,7 +30,7 @@ class Database {
   static void updateUser(User user) async {
     try {
       final docUser =
-          FirebaseFirestore.instance.collection('users').doc(user.uid);
+      FirebaseFirestore.instance.collection('users').doc(user.uid);
       await docUser.update(
         {
           'name': user.name,
@@ -87,7 +87,7 @@ class Database {
           .collection("proposals")
           .where("owner", whereIn: splitRefs[i])
       //TODO: unlock where clause on time
-          // .where("dateTime", isGreaterThanOrEqualTo: Timestamp.now())
+      // .where("dateTime", isGreaterThanOrEqualTo: Timestamp.now())
           .get());
     }
     // Get proposals from returned documents
@@ -183,7 +183,7 @@ class Database {
   static void addFriend(String user, String friend) async {
     final docUser = FirebaseFirestore.instance.collection("users").doc(user);
     final docFriend =
-        FirebaseFirestore.instance.collection("users").doc(friend);
+    FirebaseFirestore.instance.collection("users").doc(friend);
     try {
       await docUser.update(
         {
@@ -272,7 +272,7 @@ class Database {
     try {
       var uid = Auth().currentUser!.uid;
       DocumentReference userRef =
-          FirebaseFirestore.instance.collection('users').doc(uid);
+      FirebaseFirestore.instance.collection('users').doc(uid);
       await FirebaseFirestore.instance
           .collection('proposals')
           .doc(proposal.id)
@@ -288,7 +288,7 @@ class Database {
     try {
       var uid = Auth().currentUser!.uid;
       DocumentReference userRef =
-          FirebaseFirestore.instance.collection('users').doc(uid);
+      FirebaseFirestore.instance.collection('users').doc(uid);
       await FirebaseFirestore.instance
           .collection('proposals')
           .doc(proposal.id)
@@ -316,6 +316,31 @@ class Database {
       print("Error completing: $e");
     });
     return list;
+  }
+
+  static Future<List<Proposal>> getUpcomingProposals() async {
+    List<Proposal?> proposalsTemp = [];
+    List<Proposal> proposals = [];
+    final currentUserRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(Auth().currentUser?.uid);
+    DateTime now = DateTime.now();
+    DateTime upperBound = now.add(const Duration(hours: 2));
+    DateTime lowerBound = now.add(const Duration(hours: -2));
+    QuerySnapshot<Map<String, dynamic>> proposalsDocs = await FirebaseFirestore.instance.collection("proposals")
+        .where("participants", arrayContains: currentUserRef)
+    .where("dateTime", isLessThanOrEqualTo: Timestamp.fromDate(upperBound))
+    .where("dateTime", isGreaterThanOrEqualTo: Timestamp.fromDate(lowerBound)) // TODO: Add filter for completed proposals
+    .get();
+    for(QueryDocumentSnapshot<Map<String, dynamic>> doc in proposalsDocs.docs) {
+      proposalsTemp.add(await _proposalFromFirestore(doc));
+    }
+    for(Proposal? temp in proposalsTemp) { // TODO: Fix this with a new version of _proposalFromFirestore
+      if (temp != null) {
+        proposals.add(temp);
+      }
+    }
+    return proposals;
   }
 
   /*
