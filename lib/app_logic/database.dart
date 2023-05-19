@@ -335,16 +335,28 @@ class Database {
     final currentUserRef = FirebaseFirestore.instance
         .collection("users")
         .doc(Auth().currentUser?.uid);
+    // Filter session in the range of 2 hours (in the past or in the future)
     DateTime now = DateTime.now();
     DateTime upperBound = now.add(const Duration(hours: 2));
     DateTime lowerBound = now.add(const Duration(hours: -2));
+    // Sessions proposed by others
     QuerySnapshot<Map<String, dynamic>> proposalsDocs = await FirebaseFirestore.instance.collection("proposals")
         .where("participants", arrayContains: currentUserRef)
     .where("dateTime", isLessThanOrEqualTo: Timestamp.fromDate(upperBound))
     .where("dateTime", isGreaterThanOrEqualTo: Timestamp.fromDate(lowerBound)) // TODO: Add filter for completed proposals
     .get();
+    // Sessions proposed by the user
+    QuerySnapshot<Map<String, dynamic>> proposalsDocsOwned = await FirebaseFirestore.instance.collection("proposals")
+        .where("owner", isEqualTo: currentUserRef)
+        .where("dateTime", isLessThanOrEqualTo: Timestamp.fromDate(upperBound))
+        .where("dateTime", isGreaterThanOrEqualTo: Timestamp.fromDate(lowerBound)) // TODO: Add filter for completed proposals
+        .get();
+
     for(QueryDocumentSnapshot<Map<String, dynamic>> doc in proposalsDocs.docs) {
       proposalsTemp.add(await _proposalFromFirestore(doc));
+    }
+    for(QueryDocumentSnapshot<Map<String, dynamic>> doc in proposalsDocsOwned.docs) {
+      proposalsTemp.add(await _proposalFromFirestore(doc)); // TODO: Not doing anything: fix this with a new version of _proposalFromFirestore
     }
     for(Proposal? temp in proposalsTemp) { // TODO: Fix this with a new version of _proposalFromFirestore
       if (temp != null) {
