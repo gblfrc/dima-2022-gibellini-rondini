@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:progetto/app_logic/auth.dart';
 
-import '../model/user.dart';
+import '../app_logic/database.dart';
+import '../model/proposal.dart';
 import '../pages/session_info_page.dart';
 import '../pages/goal_info_page.dart';
 
@@ -126,15 +128,26 @@ class GoalCard extends StatelessWidget {
   }
 }
 
-class TrainingProposalCard extends StatelessWidget {
-  DocumentSnapshot proposalData;
-  DocumentSnapshot? ownerData;
+class TrainingProposalCard extends StatefulWidget {
+  final Proposal proposal;
 
-  TrainingProposalCard(this.proposalData, {super.key});
+  const TrainingProposalCard({super.key, required this.proposal});
 
   @override
+  State<TrainingProposalCard> createState() => _TrainingProposalCardState();
+}
+
+class _TrainingProposalCardState extends State<TrainingProposalCard> {
+  @override
   Widget build(BuildContext context) {
-    DateTime dateTime = proposalData["dateTime"].toDate().toLocal();
+    Proposal proposal = widget.proposal;
+    bool joinable;
+    if (!proposal.participants.contains(Auth().currentUser!.uid)) {
+      joinable = true;
+    } else {
+      joinable = false;
+    }
+    DateTime dateTime = proposal.dateTime.toLocal();
     String formattedDate = DateFormat("MMM d, y ").add_Hm().format(dateTime);
     //"${dateTime.month}/${dateTime.day}, ${dateTime.year} ${dateTime.hour}:${dateTime.minute}";
     return Card(
@@ -144,21 +157,8 @@ class TrainingProposalCard extends StatelessWidget {
           children: [
             const FractionallySizedBox(widthFactor: 1),
             ListTile(
-              title:
-                  Text("Proposed session at ${proposalData["place"]["name"]}"),
-              /*FutureBuilder( // We need to fetch asynchronously the place name
-                future: getPlaceName(proposalData["place"]["name"]),
-                builder: (context, snapshot) {
-                  if(snapshot.hasData) {
-                    return Text("Proposed session at ${snapshot.data}");
-                  }
-                  else {
-                    return const Text("Loading...");
-                  }
-                },
-
-              ),*/
-              subtitle: Text(proposalData["type"]),
+              title: Text("Proposed session at ${proposal.place.name}"),
+              subtitle: Text(proposal.type),
             ),
             Padding(
               padding: const EdgeInsets.all(16),
@@ -170,18 +170,8 @@ class TrainingProposalCard extends StatelessWidget {
                         Icons.person,
                         color: Theme.of(context).primaryColor,
                       ),
-                      FutureBuilder(
-                        // We need to fetch asynchronously the owner name
-                        future: getOwner(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return Text(
-                                "Proposed by ${snapshot.data!.name} ${snapshot.data!.surname}");
-                          } else {
-                            return const Text("Loading...");
-                          }
-                        },
-                      ),
+                      Text(
+                          "Proposed by ${proposal.owner.name} ${proposal.owner.surname}")
                     ],
                   ),
                   Row(
@@ -194,8 +184,37 @@ class TrainingProposalCard extends StatelessWidget {
                     ],
                   ),
                   ElevatedButton(
-                    onPressed: () => print("Pressed"),
-                    child: const Text("Join training"),
+                    onPressed: () {
+                      if (joinable) {
+                        try {
+                          Database.addParticipantToProposal(proposal);
+                          print('joined');
+                          proposal.participants.add(Auth().currentUser!.uid);
+                        } on Exception {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  "An error occurred. Couldn't join session"),
+                            ),
+                          );
+                        }
+                      } else {
+                        try {
+                          Database.removeParticipantFromProposal(proposal);
+                          print('joined');
+                          proposal.participants.remove(Auth().currentUser!.uid);
+                        } on Exception {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  "An error occurred. Couldn't leave session"),
+                            ),
+                          );
+                        }
+                      }
+                      setState(() {});
+                    },
+                    child: joinable ? const Text("Join") : const Text('Leave'),
                   )
                 ],
               ),
@@ -206,15 +225,6 @@ class TrainingProposalCard extends StatelessWidget {
     );
   }
 
-  Future<User> getOwner() async {
-    DocumentSnapshot ownerDoc = await proposalData["owner"].get();
-    User owner = User(
-      name: ownerDoc.get('name'),
-      surname: ownerDoc.get('surname'),
-      uid: ownerDoc.id,
-    );
-    return owner;
-  }
 /*Future<String> getPlaceName(DocumentReference place) async {
     final placeDoc = await place.get();
     return placeDoc.get("name");

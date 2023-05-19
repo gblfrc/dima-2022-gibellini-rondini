@@ -208,7 +208,6 @@ class _SearchPageState extends State<SearchPage> {
     // get all proposals for logged user within boundaries of the map
     List<Proposal> newList =
         await Database.getProposalsWithinBoundsGivenUser(bounds, uid);
-    print(newList);
     // call setState to update widget
     setState(() {
       proposalList = newList;

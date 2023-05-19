@@ -131,6 +131,7 @@ class ProposalFormState extends State<ProposalForm> {
                           dateTime: dateTime!,
                           owner: user!,
                           place: location!,
+                          participants: [],
                           type: type);
                       Database.createProposal(proposal);
                       if (mounted) {

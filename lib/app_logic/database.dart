@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dart_geohash/dart_geohash.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -5,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:progetto/app_logic/exceptions.dart';
 
+import '../model/place.dart';
 import '../model/proposal.dart';
 import '../model/user.dart';
 import 'auth.dart';
@@ -50,37 +53,56 @@ class Database {
     });
   }
 
-  static Future<List<DocumentSnapshot>> getProposals() async {
-    final userDocRef = FirebaseFirestore.instance
+  static Future<List<Proposal?>> getFriendProposals() async {
+    // Create document reference for current user
+    final currentUserRef = FirebaseFirestore.instance
         .collection("users")
         .doc(Auth().currentUser?.uid);
-
-    // Get the list of people that have added the current user to their friends
-    final friendOfList = FirebaseFirestore.instance
+    // Get the list of users that have added the current user to their friends
+    final friendOfSnapshot = await FirebaseFirestore.instance
         .collection("users")
-        .where("friends", arrayContains: userDocRef);
-    final friendOfSnapshot = await friendOfList.get();
-    final friendOfDocs = friendOfSnapshot.docs;
+        .where("friends", arrayContains: currentUserRef)
+        .get();
+    // Create list of document references for friends
     List<DocumentReference> friendOfDocRefs = [];
-    for (var friendDoc in friendOfDocs) {
-      friendOfDocRefs.add(friendDoc.reference);
+    for (var doc in friendOfSnapshot.docs) {
+      friendOfDocRefs.add(doc.reference);
     }
-
+    // Return empty list if list of friends is empty
+    // Check needed since whereIn clause doesn't accept empty arrays
     if (friendOfDocRefs.isEmpty) {
-      // We need this check since whereIn doesn't accept an empty array
-      List<DocumentSnapshot> emptyList = [];
-      return emptyList;
+      return List.empty();
     }
-    // Get the proposals made by all the people returned by the previous query that are not expired
-    final docProposals = FirebaseFirestore.instance
-        .collection("proposals")
-        .where("owner",
-            whereIn:
-                friendOfDocRefs) // TODO: Split friendOfDocRefs if the length is > 10 because of whereIn limit
-        .where("dateTime", isGreaterThanOrEqualTo: Timestamp.now());
-    final querySnapshot =
-        await docProposals.get(); // This get returns QuerySnapshot
-    return querySnapshot.docs;
+    // Query database on non-passed proposals whose owner is in the list defined above
+    List<Future<QuerySnapshot<Map<String, dynamic>>>> futures = [];
+    // Split friendOfDocRefs because whereIn clause accepts at most 10 elements
+    List<List<DocumentReference>> splitRefs = [];
+    for (int i = 0; i < friendOfDocRefs.length; i += 10) {
+      splitRefs
+          .add(friendOfDocRefs.sublist(i, min(i + 10, friendOfDocRefs.length)));
+    }
+    // Create queries for each batch of split references
+    for (int i = 0; i < splitRefs.length; i++) {
+      futures.add(FirebaseFirestore.instance
+          .collection("proposals")
+          .where("owner", whereIn: splitRefs[i])
+      //TODO: unlock where clause on time
+          // .where("dateTime", isGreaterThanOrEqualTo: Timestamp.now())
+          .get());
+    }
+    // Get proposals from returned documents
+    List<Proposal?> proposals = [];
+    for (var future in futures) {
+      await future.then((snapshot) async {
+        for (var doc in snapshot.docs) {
+          Proposal? proposal = await _proposalFromFirestore(doc);
+          if (proposal != null) proposals.add(proposal);
+        }
+      }, onError: (e) {
+        print("Error completing: $e");
+      });
+    }
+    return proposals;
   }
 
   static Future<List<Proposal>> getProposalsWithinBoundsGivenUser(
@@ -89,11 +111,18 @@ class Database {
     List<String> hashes = [];
     var northEast = bounds.northEast ?? LatLng(bounds.north, bounds.east);
     var southWest = bounds.southWest ?? LatLng(bounds.south, bounds.west);
-    hashes.add(GeoHasher().encode(bounds.northWest.longitude,bounds.northWest.latitude, precision: 6));
-    hashes.add(GeoHasher().encode(northEast.longitude,northEast.latitude, precision: 6));
-    hashes.add(GeoHasher().encode(southWest.longitude,southWest.latitude, precision: 6));
-    hashes.add(GeoHasher().encode(bounds.southEast.longitude,bounds.southEast.latitude, precision: 6));
-    hashes.add(GeoHasher().encode(bounds.center.longitude,bounds.center.latitude, precision: 6));
+    hashes.add(GeoHasher().encode(
+        bounds.northWest.longitude, bounds.northWest.latitude,
+        precision: 6));
+    hashes.add(GeoHasher()
+        .encode(northEast.longitude, northEast.latitude, precision: 6));
+    hashes.add(GeoHasher()
+        .encode(southWest.longitude, southWest.latitude, precision: 6));
+    hashes.add(GeoHasher().encode(
+        bounds.southEast.longitude, bounds.southEast.latitude,
+        precision: 6));
+    hashes.add(GeoHasher()
+        .encode(bounds.center.longitude, bounds.center.latitude, precision: 6));
     // sort alphabetically
     hashes.sort();
     List<Proposal> newList = [];
@@ -102,51 +131,30 @@ class Database {
     futures.add(FirebaseFirestore.instance
         .collection("proposals")
         .where('place.geohash', isGreaterThanOrEqualTo: hashes[0])
-        .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length-1])
+        .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length - 1])
         .where('type', isEqualTo: 'Friends')
         .get());
     futures.add(FirebaseFirestore.instance
         .collection("proposals")
         .where('place.geohash', isGreaterThanOrEqualTo: hashes[0])
-        .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length-1])
+        .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length - 1])
         .where('type', isEqualTo: 'Public')
         .get());
     for (var future in futures) {
       await future.then((snapshot) async {
-      for (var doc in snapshot.docs) {
-        // extract content of documents as json
-        Map<String, dynamic> json = doc.data();
-        // check on position insider map boundaries
-        var placeGeoPoint = json['place']['coords'] as GeoPoint;
-        if (!bounds.contains(LatLng(placeGeoPoint.latitude, placeGeoPoint.longitude))){
-          continue;
-        }
-        // build actual proposal object
-        var ownerRef = json['owner'] as DocumentReference;
-        if (ownerRef.id == uid) continue; // discard object if owner is logged user
-        json['owner'] = await ownerRef.get().then((snapshot) {
-          var userData = snapshot.data() as Map<String, dynamic>;
-          // check if current user is friend of proposal owner
-          if (json['type'] == 'Friends'){
-            var friends = userData['friends'];
-            var friendIds = [];
-            for (DocumentReference friend in friends) {friendIds.add(friend.id);}
-            if (!friendIds.contains(uid)) return null;
+        for (var doc in snapshot.docs) {
+          // exclude out-of-bound proposals
+          var placeGeoPoint = doc.data()['place']['coords'] as GeoPoint;
+          if (!bounds.contains(
+              LatLng(placeGeoPoint.latitude, placeGeoPoint.longitude))) {
+            continue;
           }
-          userData['uid'] = snapshot.id;
-          return userData;
-        });
-        if (json['owner'] == null) continue;
-        var dateTime = (json['dateTime'] as Timestamp).toDate().toString();
-        json['pid'] = doc.id;
-        json['dateTime'] = dateTime;
-        json['place']['lat'] = placeGeoPoint.latitude;
-        json['place']['lon'] = placeGeoPoint.longitude;
-        newList.add(Proposal.fromJson(json));
-      }
-    }, onError: (e) {
-      print("Error completing: $e");
-    });
+          Proposal? proposal = await _proposalFromFirestore(doc);
+          if (proposal != null) newList.add(proposal);
+        }
+      }, onError: (e) {
+        print("Error completing: $e");
+      });
     }
     return newList;
   }
@@ -237,15 +245,21 @@ class Database {
       await FirebaseFirestore.instance.collection("proposals").add(
         {
           "dateTime": Timestamp.fromDate(proposal.dateTime),
-          "owner": FirebaseFirestore.instance.collection('users').doc(proposal.owner.uid),
+          "owner": FirebaseFirestore.instance
+              .collection('users')
+              .doc(proposal.owner.uid),
           "place": {
-            "coords": GeoPoint(proposal.place.coords.latitude,proposal.place.coords.longitude),
-            "geohash": GeoHasher().encode(proposal.place.coords.longitude,proposal.place.coords.latitude, precision: 9),
+            "coords": GeoPoint(proposal.place.coords.latitude,
+                proposal.place.coords.longitude),
+            "geohash": GeoHasher().encode(
+                proposal.place.coords.longitude, proposal.place.coords.latitude,
+                precision: 9),
             "id": proposal.place.id,
             "latitude": proposal.place.coords.latitude,
             "longitude": proposal.place.coords.longitude,
             "name": proposal.place.name
           },
+          "participants": [],
           "type": proposal.type,
         },
       );
@@ -254,11 +268,101 @@ class Database {
     }
   }
 
+  static void addParticipantToProposal(Proposal proposal) async {
+    try {
+      var uid = Auth().currentUser!.uid;
+      DocumentReference userRef =
+          FirebaseFirestore.instance.collection('users').doc(uid);
+      await FirebaseFirestore.instance
+          .collection('proposals')
+          .doc(proposal.id)
+          .update({
+        'participants': FieldValue.arrayUnion([userRef])
+      });
+    } on FirebaseException {
+      throw DatabaseException("An error occurred when joining the proposal");
+    }
+  }
 
+  static void removeParticipantFromProposal(Proposal proposal) async {
+    try {
+      var uid = Auth().currentUser!.uid;
+      DocumentReference userRef =
+          FirebaseFirestore.instance.collection('users').doc(uid);
+      await FirebaseFirestore.instance
+          .collection('proposals')
+          .doc(proposal.id)
+          .update({
+        'participants': FieldValue.arrayRemove([userRef])
+      });
+    } on FirebaseException {
+      throw DatabaseException("An error occurred when joining the proposal");
+    }
+  }
 
+  static Future<List<Proposal?>> getProposalsByPlace(Place place) async {
+    // future for public proposals
+    List<Proposal?> list = [];
+    var future = FirebaseFirestore.instance
+        .collection("proposals")
+        .where('place.id', isEqualTo: place.id)
+        .get();
+    await future.then((snapshot) async {
+      for (var doc in snapshot.docs) {
+        Proposal? proposal = await _proposalFromFirestore(doc);
+        if (proposal != null) list.add(proposal);
+      }
+    }, onError: (e) {
+      print("Error completing: $e");
+    });
+    return list;
+  }
+
+  /*
+  * Function to create a Proposal object starting from a Document from Firestore.
+  * Returns null if current user is owner or is not friend of the owner of the
+  * proposal.
+  * */
+  static Future<Proposal?> _proposalFromFirestore(
+      QueryDocumentSnapshot<Map<String, dynamic>> doc) async {
+    // create convenience variables
+    Map<String, dynamic> json = doc.data();
+    String uid = Auth().currentUser!.uid;
+    // discard proposal if current user is owner
+    var ownerRef = json['owner'] as DocumentReference;
+    if (ownerRef.id == uid) {
+      return null;
+    }
+    // obtain information about proposal owner and discard if current user is
+    // not friend of the proposal owner
+    json['owner'] = await ownerRef.get().then((snapshot) {
+      var userData = snapshot.data() as Map<String, dynamic>;
+      // check if current user is friend of proposal owner
+      if (json['type'] == 'Friends') {
+        var friends = userData['friends'];
+        var friendIds = [];
+        for (DocumentReference friend in friends) {
+          friendIds.add(friend.id);
+        }
+        if (!friendIds.contains(uid)) return null;
+      }
+      userData['uid'] = snapshot.id;
+      return userData;
+    });
+    if (json['owner'] == null) {
+      return null;
+    }
+    // build object
+    String dateTime = (json['dateTime'] as Timestamp).toDate().toString();
+    json['pid'] = doc.id;
+    json['dateTime'] = dateTime;
+    GeoPoint placeGeoPoint = json['place']['coords'] as GeoPoint;
+    json['place']['lat'] = placeGeoPoint.latitude;
+    json['place']['lon'] = placeGeoPoint.longitude;
+    List<DocumentReference> participants = (json['participants'] as List)
+        .map((item) => item as DocumentReference)
+        .toList();
+    json['participants'] = participants.map((item) => item.id).toList();
+    return Proposal.fromJson(json);
+  }
 }
-
-//{owner: DocumentReference<Map<String, dynamic>>(users/SjM8IQQiqbV3q60PlSTr9qnZpI92),
-//dateTime: Timestamp(seconds=1683652518, nanoseconds=35000000),
-//place: {name: Parco Suardi, id: 11694848, coords: Instance of 'GeoPoint'},
-//type: Friends}

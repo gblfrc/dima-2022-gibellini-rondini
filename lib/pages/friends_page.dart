@@ -29,7 +29,7 @@ class FriendsPage extends StatelessWidget {
               children: [
                 Padding(padding: EdgeInsets.all(padding)),
                 FutureBuilder(
-                    future: Database.getProposals(),
+                    future: Database.getFriendProposals(),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         return const Text(
@@ -44,14 +44,17 @@ class FriendsPage extends StatelessWidget {
                             "There are no proposals made by people that have added you to their friends.",
                             textAlign: TextAlign.center,
                           );
+                        } else {
+                          List<Widget> trainings = [];
+                          for (var proposal in snapshot.data!) {
+                            trainings.add(
+                              TrainingProposalCard(proposal: proposal!),
+                            );
+                          }
+                          return Column(
+                            children: trainings,
+                          );
                         }
-                        List<Widget> sessionList = [];
-                        for (var proposal in snapshot.data!) {
-                          sessionList.add(TrainingProposalCard(proposal));
-                        }
-                        return Column(
-                          children: sessionList,
-                        );
                       } else {
                         return const Center(
                           child: CircularProgressIndicator(),

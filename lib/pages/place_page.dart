@@ -1,9 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:progetto/components/cards.dart';
 
+import '../app_logic/database.dart';
 import '../model/place.dart';
+import '../model/proposal.dart';
 
 class PlacePage extends StatelessWidget {
   final Place place;
@@ -42,7 +43,7 @@ class PlacePage extends StatelessWidget {
                   MarkerLayer(
                     markers: [
                       Marker(
-                        point: place.coords!,
+                        point: place.coords,
                         builder: (ctx) => Icon(
                           Icons.place,
                           color: Colors.red.shade600,
@@ -63,7 +64,7 @@ class PlacePage extends StatelessWidget {
                 horizontal: (MediaQuery.of(context).size.width / 20),
               ),
               child: FutureBuilder(
-                future: getProposalsByPlace(place.id),
+                future: Database.getProposalsByPlace(place),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return Container(
@@ -73,9 +74,23 @@ class PlacePage extends StatelessWidget {
                       child: const Text('An error occurred'),
                     );
                   } else if (snapshot.hasData) {
-                    return ListView(
-                      children: snapshot.data!,
-                    );
+                    if (snapshot.data!.isEmpty) {
+                      return const Text(
+                          'There are no proposals for the requested location');
+                    } else {
+                      List<TrainingProposalCard> cards = [];
+                      for (int i = 0; i < snapshot.data!.length; i++) {
+                        Proposal? current = snapshot.data![i];
+                        cards.add(
+                          TrainingProposalCard(
+                            proposal: current!,
+                          ),
+                        );
+                      }
+                      return ListView(
+                        children: cards,
+                      );
+                    }
                   } else {
                     return const CircularProgressIndicator();
                   }
@@ -86,13 +101,5 @@ class PlacePage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<List<TrainingProposalCard>?> getProposalsByPlace(String pid) async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('proposals')
-        .where('place.id', isEqualTo: pid)
-        .get();
-    return snapshot.docs.map((doc) => TrainingProposalCard(doc)).toList();
   }
 }
