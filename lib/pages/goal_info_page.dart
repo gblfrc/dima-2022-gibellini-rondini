@@ -1,23 +1,24 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-class GoalInfoPage extends StatelessWidget {
-  DocumentSnapshot goalData;
+import '../model/goal.dart';
 
-  GoalInfoPage(this.goalData, {super.key});
+class GoalInfoPage extends StatelessWidget {
+  Goal goal;
+
+  GoalInfoPage(this.goal, {super.key});
 
   @override
   Widget build(BuildContext context) {
     String target;
     String current;
-    if (goalData["type"] == "distanceGoal") {
-      target = "${goalData["targetValue"]} km";
-      current = "${goalData["currentValue"]} km";
-    } else if (goalData["type"] == "timeGoal") {
-      target = "${goalData["targetValue"]} min";
-      current = "${goalData["currentValue"]} min";
+    if (goal.type == "distanceGoal") {
+      target = "${goal.targetValue} km";
+      current = "${goal.currentValue} km";
+    } else if (goal.type == "timeGoal") {
+      target = "${goal.targetValue} min";
+      current = "${goal.currentValue} min";
     } else {
-      target = "${goalData["targetValue"]} km/h";
+      target = "${goal.targetValue} km/h";
       current = "N/A";
     }
 
@@ -37,10 +38,10 @@ class GoalInfoPage extends StatelessWidget {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        goalData["type"] != "speedGoal"
+                        goal.type != "speedGoal"
                             ? LinearProgressIndicator(
-                                value: goalData["currentValue"] /
-                                    goalData["targetValue"],
+                                value: goal.currentValue ?? 0 /
+                                    goal.targetValue,
                                 backgroundColor: Theme.of(context).focusColor,
                               )
                             : Container(),

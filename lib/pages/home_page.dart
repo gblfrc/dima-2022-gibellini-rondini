@@ -100,17 +100,17 @@ class _HomePageState extends State<HomePage> {
             title: Text("My goals"),
           ),
           StreamBuilder(
-              stream: Database.getGoals(),
+              stream: Database.getGoals2(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  return const Text(
-                    "Something went wrong. Please try again later.",
+                  return Text(
+                    "Something went wrong. Please try again later. ${snapshot.error}",
                     textAlign: TextAlign.center,
                   );
                 }
                 if (snapshot.hasData) {
                   // This returns true even if there are no documents in the list
-                  if (snapshot.data!.docs.isEmpty) {
+                  if (snapshot.data!.isEmpty) {
                     // If there are no goals, we print a message
                     return const Text(
                       "You do not have any goal to reach at the moment...\nTime for a new challenge?",
@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage> {
                     );
                   }
                   List<Widget> goalList = [];
-                  for (var goal in snapshot.data!.docs) {
+                  for (var goal in snapshot.data!) {
                     goalList.add(GoalCard(goal));
                   }
                   return Column(

@@ -1,9 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:progetto/app_logic/auth.dart';
 
 import '../app_logic/database.dart';
+import '../model/goal.dart';
 import '../model/proposal.dart';
 import '../model/session.dart';
 import '../pages/session_info_page.dart';
@@ -77,33 +77,33 @@ class SessionCard extends StatelessWidget {
 }
 
 class GoalCard extends StatelessWidget {
-  DocumentSnapshot goalData;
+  Goal goal;
 
-  GoalCard(this.goalData, {super.key});
+  GoalCard(this.goal, {super.key});
 
   @override
   Widget build(BuildContext context) {
     String status;
     String title = "Run ";
-    if (goalData["completed"]) {
+    if (goal.completed) {
       status = "Completed";
     } else {
       status = "In progress";
     }
-    if (goalData["type"] == "distanceGoal") {
-      title += "for at least ${goalData["targetValue"]} km";
-    } else if (goalData["type"] == "timeGoal") {
-      title += "for at least ${goalData["targetValue"]} min";
+    if (goal.type == "distanceGoal") {
+      title += "for at least ${goal.targetValue} km";
+    } else if (goal.type == "timeGoal") {
+      title += "for at least ${goal.targetValue} min";
     } else {
       title +=
-          "with an average speed of at least ${goalData["targetValue"]} km/h";
+          "with an average speed of at least ${goal.targetValue} km/h";
     }
 
     return Card(
       child: InkWell(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => GoalInfoPage(goalData),
+            builder: (context) => GoalInfoPage(goal),
           ),
         ),
         child: Column(
@@ -113,11 +113,11 @@ class GoalCard extends StatelessWidget {
               title: Text(title),
               subtitle: Text(status),
             ),
-            goalData["type"] != "speedGoal"
+            goal.type != "speedGoal"
                 ? Padding(
                     padding: const EdgeInsets.all(16),
                     child: LinearProgressIndicator(
-                      value: goalData["currentValue"] / goalData["targetValue"],
+                      value: goal.currentValue ?? 0 / goal.targetValue,
                       backgroundColor: Theme.of(context).focusColor,
                     ),
                   )

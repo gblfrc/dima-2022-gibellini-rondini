@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:progetto/app_logic/exceptions.dart';
 import 'package:progetto/model/session.dart';
 
+import '../model/goal.dart';
 import '../model/place.dart';
 import '../model/proposal.dart';
 import '../model/user.dart';
@@ -243,16 +244,42 @@ class Database {
     return docUser.snapshots();
   }
 
+  static Stream<List<Goal>> getGoals2() async* {
+    final userDocRef = FirebaseFirestore.instance
+        .collection("users")
+        .doc(Auth().currentUser?.uid);
+    final docGoals = FirebaseFirestore.instance
+        .collection("goals")
+        .where("owner", isEqualTo: userDocRef);
+    await for (QuerySnapshot<Map<String, dynamic>> snapshot in docGoals.snapshots()) {
+      List<Goal> goals = [];
+      for(QueryDocumentSnapshot<Map<String, dynamic>> doc in snapshot.docs) {
+        print(doc.data());
+        Map<String, dynamic> json = doc.data();
+        json['id'] = doc.id;
+        json['owner'] = null; // TODO: Maybe it is better to add the user
+        goals.add(Goal.fromJson(json));
+      }
+      yield goals;
+      /*var lines = chunk.split('\n');
+      lines[0] = partial + lines[0]; // Prepend partial line.
+      partial = lines.removeLast(); // Remove new partial line.
+      for (final line in lines) {
+        yield line; // Add lines to output stream.
+      }*/
+    }
+  }
+
   static Future<void> createGoal(double targetValue, String type) async {
     try {
       final uid = Auth().currentUser?.uid;
       final docUser = FirebaseFirestore.instance.collection('users').doc(uid);
       final data = {
         "completed": false,
-        "currentValue": 0,
+        "currentValue": 0.0,
         "targetValue": targetValue,
         "type": type,
-        "userID": docUser,
+        "owner": docUser,
         // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
       };
       await FirebaseFirestore.instance.collection("goals").add(data);
