@@ -308,7 +308,7 @@ class _SessionPageState extends State<SessionPage> {
       final docUser = FirebaseFirestore.instance
           .collection("users")
           .doc(Auth().currentUser!.uid);
-      FirebaseFirestore.instance.collection('sessions').doc().set({
+      await FirebaseFirestore.instance.collection('sessions').doc().set({
         "userID": docUser,
         "distance": distance,
         "startDT": Timestamp.fromDate(startDT!),
@@ -320,6 +320,11 @@ class _SessionPageState extends State<SessionPage> {
                 .doc(widget.proposal!.id)
             : null
       });
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Session saved!')));
+        Navigator.of(context).pop();
+      }
     } on FirebaseException {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Something went wrong when saving the session.')));

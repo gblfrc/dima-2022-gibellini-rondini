@@ -100,7 +100,7 @@ class _HomePageState extends State<HomePage> {
             title: Text("My goals"),
           ),
           StreamBuilder(
-              stream: Database.getGoals2(),
+              stream: Database.getGoals(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../app_logic/database.dart';
+import '../../model/goal.dart';
 import 'custom_form_field.dart';
 
 class CreateGoalForm extends StatefulWidget {
@@ -115,8 +116,13 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
 
   void createGoal() async {
     try {
-      await Database.createGoal(
-          double.parse(_targetValueController.text), _type!);
+      Goal goal = Goal(
+        completed: false,
+        type: _type!,
+        targetValue: double.parse(_targetValueController.text),
+        currentValue: 0.0,
+      );
+      await Database.createGoal(goal);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
