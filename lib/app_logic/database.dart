@@ -6,6 +6,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:progetto/app_logic/exceptions.dart';
+import 'package:progetto/model/session.dart';
 
 import '../model/place.dart';
 import '../model/proposal.dart';
@@ -30,7 +31,7 @@ class Database {
   static void updateUser(User user) async {
     try {
       final docUser =
-      FirebaseFirestore.instance.collection('users').doc(user.uid);
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
       await docUser.update(
         {
           'name': user.name,
@@ -86,8 +87,8 @@ class Database {
       futures.add(FirebaseFirestore.instance
           .collection("proposals")
           .where("owner", whereIn: splitRefs[i])
-      //TODO: unlock where clause on time
-      // .where("dateTime", isGreaterThanOrEqualTo: Timestamp.now())
+          //TODO: unlock where clause on time
+          // .where("dateTime", isGreaterThanOrEqualTo: Timestamp.now())
           .get());
     }
     // Get proposals from returned documents
@@ -99,7 +100,8 @@ class Database {
           if (proposal != null) proposals.add(proposal);
         }
       }, onError: (e) {
-        throw DatabaseException("Couldn't get friend proposals for current user.");
+        throw DatabaseException(
+            "Couldn't get friend proposals for current user.");
       });
     }
     return proposals;
@@ -153,7 +155,8 @@ class Database {
           if (proposal != null) newList.add(proposal);
         }
       }, onError: (e) {
-        throw DatabaseException("Couldn't get proposals within specified boundary.");
+        throw DatabaseException(
+            "Couldn't get proposals within specified boundary.");
       });
     }
     return newList;
@@ -183,7 +186,7 @@ class Database {
   static void addFriend(String user, String friend) async {
     final docUser = FirebaseFirestore.instance.collection("users").doc(user);
     final docFriend =
-    FirebaseFirestore.instance.collection("users").doc(friend);
+        FirebaseFirestore.instance.collection("users").doc(friend);
     try {
       await docUser.update(
         {
@@ -195,30 +198,39 @@ class Database {
     }
   }
 
-  static Stream<QuerySnapshot<Map<String, dynamic>>> getLatestSessions(
-      {int? limit}) {
-    final userDocRef = FirebaseFirestore.instance
-        .collection("users")
-        .doc(Auth().currentUser?.uid);
-    Query<Map<String, dynamic>> docSession = FirebaseFirestore.instance
+  static Future<List<Session?>> getLatestSessionsByUser(String uid,
+      {int? limit}) async {
+    List<Session?> sessions = [];
+    final userDocRef = FirebaseFirestore.instance.collection("users").doc(uid);
+    await FirebaseFirestore.instance
         .collection("sessions")
         .where("userID", isEqualTo: userDocRef)
-        .orderBy("startDT", descending: true);
-    if (limit != null) {
-      docSession = docSession.limit(limit);
-    }
-    return docSession.snapshots();
-  }
-
-  static Future<QuerySnapshot<Map<String, dynamic>>> getSessionsByUser(String uid) {
-    final userDocRef = FirebaseFirestore.instance
-        .collection("users")
-        .doc(uid);
-    Query<Map<String, dynamic>> docSession = FirebaseFirestore.instance
-        .collection("sessions")
-        .where("userID", isEqualTo: userDocRef)
-        .orderBy("startDT", descending: true);
-    return docSession.snapshots().first;
+        .orderBy("startDT", descending: true)
+        // limit query to parameter or to a very high number
+        // number could be even higher, but then it causes problems with Firestore
+        .limit(limit ?? 10000)
+        .get()
+        .then((snapshot) {
+      for (var doc in snapshot.docs) {
+        // create a Session object for each document
+        Map<String, dynamic> json = doc.data();
+        json['id'] = doc.id;
+        json['start'] = (json['startDT'] as Timestamp).toDate();
+        List<List<LatLng>> positions = [];
+        for (var sublist in (json['positions'] as List)) {
+          var list = (sublist as Map)['values'] as List;
+          var segment =
+              list.map((pos) => LatLng(pos.latitude, pos.longitude)).toList();
+          positions.add(segment);
+        }
+        json['positions'] = positions;
+        json['owner'] = null;
+        // print(json);
+        sessions.add(Session.fromJson(json));
+        print('finishing function');
+      }
+    });
+    return sessions;
   }
 
   static Stream<QuerySnapshot<Map<String, dynamic>>> getGoals() {
@@ -283,7 +295,7 @@ class Database {
     try {
       var uid = Auth().currentUser!.uid;
       DocumentReference userRef =
-      FirebaseFirestore.instance.collection('users').doc(uid);
+          FirebaseFirestore.instance.collection('users').doc(uid);
       await FirebaseFirestore.instance
           .collection('proposals')
           .doc(proposal.id)
@@ -299,7 +311,7 @@ class Database {
     try {
       var uid = Auth().currentUser!.uid;
       DocumentReference userRef =
-      FirebaseFirestore.instance.collection('users').doc(uid);
+          FirebaseFirestore.instance.collection('users').doc(uid);
       await FirebaseFirestore.instance
           .collection('proposals')
           .doc(proposal.id)
@@ -324,7 +336,8 @@ class Database {
         if (proposal != null) list.add(proposal);
       }
     }, onError: (e) {
-      throw DatabaseException("Couldn't get proposals for the requested place.");
+      throw DatabaseException(
+          "Couldn't get proposals for the requested place.");
     });
     return list;
   }
@@ -340,25 +353,38 @@ class Database {
     DateTime upperBound = now.add(const Duration(hours: 2));
     DateTime lowerBound = now.add(const Duration(hours: -2));
     // Sessions proposed by others
-    QuerySnapshot<Map<String, dynamic>> proposalsDocs = await FirebaseFirestore.instance.collection("proposals")
+    QuerySnapshot<Map<String, dynamic>> proposalsDocs = await FirebaseFirestore
+        .instance
+        .collection("proposals")
         .where("participants", arrayContains: currentUserRef)
-    .where("dateTime", isLessThanOrEqualTo: Timestamp.fromDate(upperBound))
-    .where("dateTime", isGreaterThanOrEqualTo: Timestamp.fromDate(lowerBound)) // TODO: Add filter for completed proposals
-    .get();
-    // Sessions proposed by the user
-    QuerySnapshot<Map<String, dynamic>> proposalsDocsOwned = await FirebaseFirestore.instance.collection("proposals")
-        .where("owner", isEqualTo: currentUserRef)
         .where("dateTime", isLessThanOrEqualTo: Timestamp.fromDate(upperBound))
-        .where("dateTime", isGreaterThanOrEqualTo: Timestamp.fromDate(lowerBound)) // TODO: Add filter for completed proposals
+        .where("dateTime",
+            isGreaterThanOrEqualTo: Timestamp.fromDate(
+                lowerBound)) // TODO: Add filter for completed proposals
         .get();
+    // Sessions proposed by the user
+    QuerySnapshot<Map<String, dynamic>> proposalsDocsOwned =
+        await FirebaseFirestore.instance
+            .collection("proposals")
+            .where("owner", isEqualTo: currentUserRef)
+            .where("dateTime",
+                isLessThanOrEqualTo: Timestamp.fromDate(upperBound))
+            .where("dateTime",
+                isGreaterThanOrEqualTo: Timestamp.fromDate(
+                    lowerBound)) // TODO: Add filter for completed proposals
+            .get();
 
-    for(QueryDocumentSnapshot<Map<String, dynamic>> doc in proposalsDocs.docs) {
+    for (QueryDocumentSnapshot<Map<String, dynamic>> doc
+        in proposalsDocs.docs) {
       proposalsTemp.add(await _proposalFromFirestore(doc));
     }
-    for(QueryDocumentSnapshot<Map<String, dynamic>> doc in proposalsDocsOwned.docs) {
-      proposalsTemp.add(await _proposalFromFirestore(doc)); // TODO: Not doing anything: fix this with a new version of _proposalFromFirestore
+    for (QueryDocumentSnapshot<Map<String, dynamic>> doc
+        in proposalsDocsOwned.docs) {
+      proposalsTemp.add(await _proposalFromFirestore(
+          doc)); // TODO: Not doing anything: fix this with a new version of _proposalFromFirestore
     }
-    for(Proposal? temp in proposalsTemp) { // TODO: Fix this with a new version of _proposalFromFirestore
+    for (Proposal? temp in proposalsTemp) {
+      // TODO: Fix this with a new version of _proposalFromFirestore
       if (temp != null) {
         proposals.add(temp);
       }
@@ -368,17 +394,19 @@ class Database {
 
   /*
   * Function to create a Proposal object starting from a Document from Firestore.
-  * Returns null if current user is owner or is not friend of the owner of the
-  * proposal.
+  * Can be set to exclude proposals from current user by setting parameter
+  * excludeUser to true. Returns null if current user is owner or is not friend
+  * of the owner of the proposal.
   * */
   static Future<Proposal?> _proposalFromFirestore(
-      QueryDocumentSnapshot<Map<String, dynamic>> doc) async {
+      QueryDocumentSnapshot<Map<String, dynamic>> doc,
+      {bool excludeUser = true}) async {
     // create convenience variables
     Map<String, dynamic> json = doc.data();
     String uid = Auth().currentUser!.uid;
     // discard proposal if current user is owner
     var ownerRef = json['owner'] as DocumentReference;
-    if (ownerRef.id == uid) {
+    if (excludeUser && ownerRef.id == uid) {
       return null;
     }
     // obtain information about proposal owner and discard if current user is

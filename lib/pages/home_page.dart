@@ -59,31 +59,33 @@ class _HomePageState extends State<HomePage> {
             // Widget that allows to insert a title and (optionally) a sub-title
             title: Text("Latest sessions"),
           ),
-          StreamBuilder(
-              stream: Database.getLatestSessions(limit: 2),
+          FutureBuilder(
+              future: Database.getLatestSessionsByUser(Auth().currentUser!.uid, limit: 2),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
+                  print('entering error section');
                   return const Text(
                     "Something went wrong. Please try again later.",
                     textAlign: TextAlign.center,
                   );
                 }
                 if (snapshot.hasData) {
-                  // This returns true even if there are no documents in the list
-                  if (snapshot.data!.docs.isEmpty) {
+                  print('entering correct section');
+                  // This returns true even if the list of sessions is empty
+                  if (snapshot.data!.isEmpty) {
                     // If there are no sessions, we print a message
                     return const Text(
                       "You do not have any completed session yet.",
                       textAlign: TextAlign.center,
                     );
                   }
-                  List<Widget> sessionList = [];
-                  for (var session in snapshot.data!.docs) {
+                  List<Widget> sessionCards = [];
+                  for (var session in snapshot.data!) {
                     // For each session, we create a card and append it to the array of children
-                    sessionList.add(SessionCard(session));
+                    sessionCards.add(SessionCard(session: session!));
                   }
                   return Column(
-                    children: sessionList,
+                    children: sessionCards,
                   );
                 } else {
                   return const Center(

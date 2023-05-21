@@ -5,33 +5,33 @@ import 'package:progetto/app_logic/auth.dart';
 
 import '../app_logic/database.dart';
 import '../model/proposal.dart';
+import '../model/session.dart';
 import '../pages/session_info_page.dart';
 import '../pages/goal_info_page.dart';
 
 class SessionCard extends StatelessWidget {
-  DocumentSnapshot sessionData;
+  Session session;
 
-  SessionCard(this.sessionData, {super.key});
+  SessionCard({super.key, required this.session});
 
   @override
   Widget build(BuildContext context) {
-    DateTime dateTime = sessionData["startDT"].toDate().toLocal();
-    String formattedDate = DateFormat("MMM d, y").format(dateTime);
+    String formattedDate = DateFormat("MMM d, y").format(session.start);
     String type = "";
-    try {
-      sessionData["proposalID"];
-      type = "Shared";
-    } on StateError catch (_) {
-      type = "Private";
-    }
-    String formattedDuration = "${sessionData["duration"] ~/ (60 * 60)} h ";
-    formattedDuration += "${(sessionData["duration"] ~/ 60)} min";
+    // try {
+    //   sessionData["proposalID"];
+    //   type = "Shared";
+    // } on StateError catch (_) {
+    //   type = "Private";
+    // }
+    String formattedDuration = "${session.duration ~/ (60 * 60)} h ";
+    formattedDuration += "${(session.duration ~/ 60)} min";
     return Card(
       child: InkWell(
         // This widget creates a feedback animation when the user taps on the card
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => SessionInfoPage(sessionData),
+            builder: (context) => SessionInfoPage(session),
           ),
         ),
         child: Column(
@@ -62,7 +62,7 @@ class SessionCard extends StatelessWidget {
                         color: Theme.of(context).primaryColor,
                       ),
                       Text(
-                          "${(sessionData["distance"] / 1000).toStringAsFixed(2)} km"),
+                          "${(session.distance / 1000).toStringAsFixed(2)} km"),
                     ],
                   ),
                 ],

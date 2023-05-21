@@ -1,35 +1,35 @@
 import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
-class SessionInfoPage extends StatelessWidget {
-  DocumentSnapshot sessionData;
+import '../model/session.dart';
 
-  SessionInfoPage(this.sessionData, {super.key});
+class SessionInfoPage extends StatelessWidget {
+  Session session;
+
+  SessionInfoPage(this.session, {super.key});
 
   @override
   Widget build(BuildContext context) {
-    DateTime dateTime = sessionData["startDT"].toDate().toLocal();
-    List<List<LatLng>> segments = [];
-    for (Map<String, dynamic> m in sessionData["positions"]) {
-      List<LatLng> points = [];
-      for (GeoPoint p in m["values"] ?? []) {
-        points.add(LatLng(p.latitude, p.longitude));
-      }
-      segments.add(points);
-    }
+    // List<List<LatLng>> segments = [];
+    // for (Map<String, dynamic> m in sessionData["positions"]) {
+    //   List<LatLng> points = [];
+    //   for (GeoPoint p in m["values"] ?? []) {
+    //     points.add(LatLng(p.latitude, p.longitude));
+    //   }
+    //   segments.add(points);
+    // }
     //String formattedDate =
     //"${dateTime.month}/${dateTime.day}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}";
-    String formattedDate = DateFormat("d MMM y").add_Hms().format(dateTime);
-    String formattedDuration = "${sessionData["duration"] ~/ (60 * 60)}";
+    String formattedDate = DateFormat("d MMM y").add_Hms().format(session.start);
+    String formattedDuration = "${session.duration ~/ (60 * 60)}";
     formattedDuration +=
-        ":${(sessionData["duration"] ~/ 60).toString().padLeft(2, "0")}";
+        ":${(session.duration ~/ 60).toString().padLeft(2, "0")}";
     formattedDuration +=
-        ":${(sessionData["duration"] % 60).toStringAsFixed(0).padLeft(2, "0")}";
+        ":${(session.duration % 60).toStringAsFixed(0).padLeft(2, "0")}";
     return Scaffold(
       appBar: AppBar(
         title: const Text("Session info"),
@@ -44,7 +44,7 @@ class SessionInfoPage extends StatelessWidget {
                 //center: segments.first.first,
                 //zoom: 18,
                 maxZoom: 18.4,
-                bounds: getBoundCorner(segments),
+                bounds: getBoundCorner(session.positions),
               ),
               children: [
                 TileLayer(
@@ -55,7 +55,7 @@ class SessionInfoPage extends StatelessWidget {
                 PolylineLayer(
                   polylineCulling: true,
                   polylines: [
-                    for (List<LatLng> posArray in segments)
+                    for (List<LatLng> posArray in session.positions)
                       Polyline(
                         points: posArray,
                         color: Colors.blue,
@@ -68,7 +68,7 @@ class SessionInfoPage extends StatelessWidget {
                     Marker(
                       // width: 50.0,
                       // height: 50.0,
-                      point: segments.first.first, // First point of the first segment
+                      point: session.positions.first.first, // First point of the first segment
                       builder: (ctx) => Icon(
                         Icons.assistant_direction,
                         color: Theme.of(context).primaryColor,
@@ -80,7 +80,7 @@ class SessionInfoPage extends StatelessWidget {
                       // width: 50.0,
                       // height: 50.0,
                       //
-                      point: segments.last.last, // Final destination
+                      point: session.positions.last.last, // Final destination
                       builder: (ctx) => Icon(
                         Icons.flag_circle_rounded,
                         color: Theme.of(context).primaryColor,
@@ -132,7 +132,7 @@ class SessionInfoPage extends StatelessWidget {
                     Column(
                       children: [
                         Text(
-                          "${(sessionData["distance"] / 1000).toStringAsFixed(2)} km",
+                          "${(session.distance / 1000).toStringAsFixed(2)} km",
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
