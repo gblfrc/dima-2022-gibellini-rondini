@@ -5,11 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:progetto/model/proposal.dart';
 
 import '../app_logic/auth.dart';
 
 class SessionPage extends StatefulWidget {
-  const SessionPage({super.key});
+  final Proposal? proposal;
+
+  const SessionPage({this.proposal, super.key});
 
   @override
   State<SessionPage> createState() => _SessionPageState();
@@ -200,9 +203,8 @@ class _SessionPageState extends State<SessionPage> {
                   LatLng pos = LatLng(position.latitude, position.longitude);
                   if (_positions.isNotEmpty) {
                     LatLng last = _positions.last;
-                    distance += Geolocator.distanceBetween(
-                        last.latitude, last.longitude, pos.latitude,
-                        pos.longitude);
+                    distance += Geolocator.distanceBetween(last.latitude,
+                        last.longitude, pos.latitude, pos.longitude);
                   }
                   _positions.add(pos);
                 });
@@ -311,7 +313,12 @@ class _SessionPageState extends State<SessionPage> {
         "distance": distance,
         "startDT": Timestamp.fromDate(startDT!),
         "duration": stopwatch.elapsedMilliseconds / 1000,
-        "positions": maps
+        "positions": maps,
+        "proposal": widget.proposal != null
+            ? FirebaseFirestore.instance
+                .collection("proposals")
+                .doc(widget.proposal!.id)
+            : null
       });
     } on FirebaseException {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

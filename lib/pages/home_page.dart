@@ -44,7 +44,7 @@ class _HomePageState extends State<HomePage> {
                 List<Widget> proposalList = [];
                 for (var proposal in snapshot.data!) {
                   // For each session, we create a card and append it to the array of children
-                  proposalList.add(TrainingProposalCard(proposal: proposal));
+                  proposalList.add(TrainingProposalCard(proposal: proposal, startButton: true,));
                 }
                 return Column(
                   children: List.from([const ListTile(title: Text("Upcoming sessions"),)])..addAll(proposalList),

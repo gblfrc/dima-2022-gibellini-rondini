@@ -8,6 +8,7 @@ import '../model/proposal.dart';
 import '../model/session.dart';
 import '../pages/session_info_page.dart';
 import '../pages/goal_info_page.dart';
+import '../pages/session_page.dart';
 
 class SessionCard extends StatelessWidget {
   Session session;
@@ -130,8 +131,10 @@ class GoalCard extends StatelessWidget {
 
 class TrainingProposalCard extends StatefulWidget {
   final Proposal proposal;
+  final bool? startButton;
 
-  const TrainingProposalCard({super.key, required this.proposal});
+  const TrainingProposalCard(
+      {super.key, required this.proposal, this.startButton});
 
   @override
   State<TrainingProposalCard> createState() => _TrainingProposalCardState();
@@ -141,6 +144,7 @@ class _TrainingProposalCardState extends State<TrainingProposalCard> {
   @override
   Widget build(BuildContext context) {
     Proposal proposal = widget.proposal;
+    bool? startButton = widget.startButton;
     bool joinable;
     if (!proposal.participants.contains(Auth().currentUser!.uid)) {
       joinable = true;
@@ -183,39 +187,50 @@ class _TrainingProposalCardState extends State<TrainingProposalCard> {
                       Text(formattedDate),
                     ],
                   ),
-                  ElevatedButton(
-                    onPressed: () {
-                      if (joinable) {
-                        try {
-                          Database.addParticipantToProposal(proposal);
-                          print('joined');
-                          proposal.participants.add(Auth().currentUser!.uid);
-                        } on Exception {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  "An error occurred. Couldn't join session"),
-                            ),
-                          );
-                        }
-                      } else {
-                        try {
-                          Database.removeParticipantFromProposal(proposal);
-                          print('joined');
-                          proposal.participants.remove(Auth().currentUser!.uid);
-                        } on Exception {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  "An error occurred. Couldn't leave session"),
-                            ),
-                          );
-                        }
-                      }
-                      setState(() {});
-                    },
-                    child: joinable ? const Text("Join") : const Text('Leave'),
-                  )
+                  startButton ?? false
+                      ? ElevatedButton(
+                          onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(builder: (context) => SessionPage(proposal: proposal))),
+                          child: const Text("Start"),
+                        )
+                      : ElevatedButton(
+                          onPressed: () {
+                            if (joinable) {
+                              try {
+                                Database.addParticipantToProposal(proposal);
+                                print('joined');
+                                proposal.participants
+                                    .add(Auth().currentUser!.uid);
+                              } on Exception {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        "An error occurred. Couldn't join session"),
+                                  ),
+                                );
+                              }
+                            } else {
+                              try {
+                                Database.removeParticipantFromProposal(
+                                    proposal);
+                                print('joined');
+                                proposal.participants
+                                    .remove(Auth().currentUser!.uid);
+                              } on Exception {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        "An error occurred. Couldn't leave session"),
+                                  ),
+                                );
+                              }
+                            }
+                            setState(() {});
+                          },
+                          child: joinable
+                              ? const Text("Join")
+                              : const Text('Leave'),
+                        ),
                 ],
               ),
             ),
