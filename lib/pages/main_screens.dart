@@ -35,10 +35,10 @@ class _MainScreensState extends State<MainScreens> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _curScreen,
-        backgroundColor: Theme.of(context).primaryColor,
-        selectedItemColor: Theme.of(context).colorScheme.onPrimary,
-        unselectedItemColor:
-            Theme.of(context).colorScheme.onPrimary.withOpacity(.6),
+        //backgroundColor: Theme.of(context).primaryColor,
+        //selectedItemColor: Theme.of(context).colorScheme.onPrimary,
+        //unselectedItemColor:
+            //Theme.of(context).colorScheme.onPrimary.withOpacity(.6),
         selectedFontSize: 14,
         unselectedFontSize: 14,
         onTap: (value) {

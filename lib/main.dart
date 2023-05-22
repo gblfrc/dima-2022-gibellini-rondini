@@ -4,6 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:progetto/app_logic/widget_tree.dart';
 import 'package:progetto/pages/edit_profile_page.dart';
 
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Permission.notification.isDenied.then((value) {
@@ -28,7 +29,9 @@ class MyApp extends StatelessWidget {
         EditProfilePage.routeName: (context) => const EditProfilePage(),
       },
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
+        fontFamily: "Montserrat"
         // elevatedButtonTheme: ElevatedButtonThemeData(
         //   style: ElevatedButton.styleFrom(
         //     backgroundColor: Theme.of(context).primaryColor,
