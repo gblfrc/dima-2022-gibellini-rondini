@@ -93,7 +93,7 @@ class GoalCard extends StatelessWidget {
     if (goal.type == "distanceGoal") {
       title += "for at least ${goal.targetValue} km";
     } else if (goal.type == "timeGoal") {
-      title += "for at least ${goal.targetValue} min";
+      title += "for at least ${goal.targetValue.toStringAsFixed(0)} min";
     } else {
       title +=
           "with an average speed of at least ${goal.targetValue} km/h";
@@ -117,7 +117,7 @@ class GoalCard extends StatelessWidget {
                 ? Padding(
                     padding: const EdgeInsets.all(16),
                     child: LinearProgressIndicator(
-                      value: goal.currentValue ?? 0 / goal.targetValue,
+                      value: (goal.currentValue ?? 0) / goal.targetValue,
                       backgroundColor: Theme.of(context).focusColor,
                     ),
                   )

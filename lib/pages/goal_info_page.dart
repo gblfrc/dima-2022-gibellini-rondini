@@ -13,10 +13,10 @@ class GoalInfoPage extends StatelessWidget {
     String current;
     if (goal.type == "distanceGoal") {
       target = "${goal.targetValue} km";
-      current = "${goal.currentValue} km";
+      current = "${goal.currentValue?.toStringAsFixed(1)} km";
     } else if (goal.type == "timeGoal") {
-      target = "${goal.targetValue} min";
-      current = "${goal.currentValue} min";
+      target = "${goal.targetValue.toStringAsFixed(0)} min";
+      current = "${goal.currentValue?.toStringAsFixed(0)} min";
     } else {
       target = "${goal.targetValue} km/h";
       current = "N/A";
@@ -40,7 +40,7 @@ class GoalInfoPage extends StatelessWidget {
                       children: [
                         goal.type != "speedGoal"
                             ? LinearProgressIndicator(
-                                value: goal.currentValue ?? 0 /
+                                value: (goal.currentValue ?? 0) /
                                     goal.targetValue,
                                 backgroundColor: Theme.of(context).focusColor,
                               )

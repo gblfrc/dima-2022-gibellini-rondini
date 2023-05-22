@@ -22,7 +22,7 @@ class Goal {
       owner: json['owner'],
       type: json['type'],
       targetValue: json['targetValue'],
-      currentValue: json['currentValue'],
+      currentValue: json['currentValue'].toDouble(),
       completed: json['completed'],
     );
   }
