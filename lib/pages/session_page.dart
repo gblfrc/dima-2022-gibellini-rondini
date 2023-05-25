@@ -107,7 +107,7 @@ class _SessionPageState extends State<SessionPage> {
                         children: [
                           TileLayer(
                             urlTemplate:
-                                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                            'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                             subdomains: const ['a', 'b', 'c'],
                           ),
                           PolylineLayer(

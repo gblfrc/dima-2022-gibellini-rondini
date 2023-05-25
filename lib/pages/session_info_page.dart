@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../components/session_map.dart';
 import '../model/session.dart';
 
 class SessionInfoPage extends StatelessWidget {
@@ -39,59 +40,7 @@ class SessionInfoPage extends StatelessWidget {
           Flexible(
             flex: 3,
             fit: FlexFit.tight,
-            child: FlutterMap(
-              options: MapOptions(
-                //center: segments.first.first,
-                //zoom: 18,
-                maxZoom: 18.4,
-                bounds: getBoundCorner(session.positions),
-              ),
-              children: [
-                TileLayer(
-                  urlTemplate:
-                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                  subdomains: const ['a', 'b', 'c'],
-                ),
-                PolylineLayer(
-                  polylineCulling: true,
-                  polylines: [
-                    for (List<LatLng> posArray in session.positions)
-                      Polyline(
-                        points: posArray,
-                        color: Colors.blue,
-                        strokeWidth: 7,
-                      )
-                  ],
-                ),
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      // width: 50.0,
-                      // height: 50.0,
-                      point: session.positions.first.first, // First point of the first segment
-                      builder: (ctx) => Icon(
-                        Icons.assistant_direction,
-                        color: Theme.of(context).primaryColor,
-                        shadows: const [Shadow(color:Colors.white, blurRadius: 30)],
-                        size: 30,
-                      ),
-                    ),
-                    Marker(
-                      // width: 50.0,
-                      // height: 50.0,
-                      //
-                      point: session.positions.last.last, // Final destination
-                      builder: (ctx) => Icon(
-                        Icons.flag_circle_rounded,
-                        color: Theme.of(context).primaryColor,
-                        shadows: const [Shadow(color:Colors.white, blurRadius: 30)],
-                        size: 30,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            child: SessionMap(session: session),
           ),
           Flexible(
             flex: 1,
