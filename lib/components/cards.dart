@@ -1,6 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:progetto/app_logic/auth.dart';
+import 'package:progetto/components/session_map.dart';
 
 import '../app_logic/database.dart';
 import '../model/goal.dart';
@@ -17,60 +21,122 @@ class SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String formattedDate = DateFormat("MMM d, y").format(session.start);
-    String type = "";
+    // initialize date string; print also year if different from current one
+    String date = "";
+    if (session.start.year < DateTime.now().year) {
+      date = DateFormat("MMM d, y").format(session.start).toUpperCase();
+    } else {
+      date = DateFormat("MMM d").format(session.start).toUpperCase();
+    }
+    // initialize length string; print length in meters if less than 1 km
+    String length = "";
+    if (session.distance < 1000) {
+      length = "${session.distance.round()} m";
+    } else {
+      length = "${(session.distance / 1000).toStringAsFixed(1)} km";
+    }
+    // initialize time string; print hours only if more than an hour was run
+    String time = "";
+    Duration duration = Duration(seconds: session.duration.round());
+    String hours = duration.inHours.toString();
+    String minutes =
+        duration.inMinutes.remainder(60).toString().padLeft(2, "0");
+    String seconds =
+        duration.inSeconds.remainder(60).toString().padLeft(2, "0");
+    if (session.duration < Duration.secondsPerHour) {
+      time = "$minutes:$seconds";
+    } else {
+      time = "$hours:$minutes:$seconds";
+    }
+    // String type = "";
     // try {
     //   sessionData["proposalID"];
     //   type = "Shared";
     // } on StateError catch (_) {
     //   type = "Private";
     // }
-    String formattedDuration = "${session.duration ~/ (60 * 60)} h ";
-    formattedDuration += "${(session.duration ~/ 60)} min";
     return Card(
-      child: InkWell(
-        // This widget creates a feedback animation when the user taps on the card
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => SessionInfoPage(session),
-          ),
-        ),
-        child: Column(
-          children: [
-            const FractionallySizedBox(widthFactor: 1),
-            // The box should take the entire width of the screen
-            ListTile(
-              title: Text("Session of $formattedDate"),
-              subtitle: Text(type),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.timer,
-                        color: Theme.of(context).primaryColor,
+      child: LayoutBuilder(
+        builder: (context, constraint) {
+          return SizedBox(
+            width: constraint.maxWidth,
+            height: MediaQuery.of(context).size.height / 6.5,
+            child: InkWell(
+              // This widget creates a feedback animation when the user taps on the card
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => SessionInfoPage(session),
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(
+                    max(MediaQuery.of(context).size.width / 30, 10)),
+                child: Flex(
+                  direction: Axis.horizontal,
+                  children: [
+                    Expanded(
+                      flex: 3,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                length,
+                                style: TextStyle(
+                                    height: 0,
+                                    // used to remove default padding
+                                    fontWeight: FontWeight.bold,
+                                    fontSize:
+                                        MediaQuery.of(context).textScaleFactor *
+                                            25),
+                              ),
+                              Text(
+                                date,
+                                style: TextStyle(
+                                    height: 0,
+                                    //used to remove default padding
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize:
+                                        MediaQuery.of(context).textScaleFactor *
+                                            15),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            "TIME: $time",
+                            style: TextStyle(
+                                height: 0,
+                                //used to remove default padding
+                                fontWeight: FontWeight.bold,
+                                fontSize:
+                                    MediaQuery.of(context).textScaleFactor *
+                                        15),
+                          ),
+                        ],
                       ),
-                      Text(formattedDuration),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.route,
-                        color: Theme.of(context).primaryColor,
+                    ),
+                    Expanded(
+                      flex: 4,
+                      child: Container(
+                        height: 150,
+                        decoration: BoxDecoration(color: Colors.red.shade100),
+                        child: SessionMap(
+                          session: session,
+                          useMarkers: false,
+                          interactiveFlags: InteractiveFlag.none,
+                        ),
                       ),
-                      Text(
-                          "${(session.distance / 1000).toStringAsFixed(2)} km"),
-                    ],
-                  ),
-                ],
+                    )
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -95,8 +161,7 @@ class GoalCard extends StatelessWidget {
     } else if (goal.type == "timeGoal") {
       title += "for at least ${goal.targetValue.toStringAsFixed(0)} min";
     } else {
-      title +=
-          "with an average speed of at least ${goal.targetValue} km/h";
+      title += "with an average speed of at least ${goal.targetValue} km/h";
     }
 
     return Card(
@@ -190,7 +255,9 @@ class _TrainingProposalCardState extends State<TrainingProposalCard> {
                   startButton ?? false
                       ? ElevatedButton(
                           onPressed: () => Navigator.of(context).push(
-                              MaterialPageRoute(builder: (context) => SessionPage(proposal: proposal))),
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      SessionPage(proposal: proposal))),
                           child: const Text("Start"),
                         )
                       : ElevatedButton(

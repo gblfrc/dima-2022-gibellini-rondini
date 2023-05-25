@@ -63,14 +63,12 @@ class _HomePageState extends State<HomePage> {
               future: Database.getLatestSessionsByUser(Auth().currentUser!.uid, limit: 2),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  print('entering error section');
                   return const Text(
                     "Something went wrong. Please try again later.",
                     textAlign: TextAlign.center,
                   );
                 }
                 if (snapshot.hasData) {
-                  print('entering correct section');
                   // This returns true even if the list of sessions is empty
                   if (snapshot.data!.isEmpty) {
                     // If there are no sessions, we print a message

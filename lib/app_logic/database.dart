@@ -228,7 +228,6 @@ class Database {
         json['owner'] = null;
         // print(json);
         sessions.add(Session.fromJson(json));
-        print('finishing function');
       }
     });
     return sessions;
