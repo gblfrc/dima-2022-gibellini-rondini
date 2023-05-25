@@ -121,15 +121,19 @@ class SessionCard extends StatelessWidget {
                     ),
                     Expanded(
                       flex: 4,
-                      child: Container(
-                        height: 150,
-                        decoration: BoxDecoration(color: Colors.red.shade100),
-                        child: SessionMap(
-                          session: session,
-                          useMarkers: false,
-                          interactiveFlags: InteractiveFlag.none,
-                        ),
-                      ),
+                      child: LayoutBuilder(
+                        builder: (context, constraint) {
+                          return Container(
+                            width: constraint.maxWidth,
+                            height: constraint.maxHeight,
+                            child: SessionMap(
+                              session: session,
+                              useMarkers: false,
+                              interactiveFlags: InteractiveFlag.none,
+                            ),
+                          );
+                        },
+                      )
                     )
                   ],
                 ),

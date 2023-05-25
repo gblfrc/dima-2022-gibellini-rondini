@@ -7,8 +7,16 @@ class Place {
   String? state;
   String? country;
   LatLng coords;
+  String? type;
 
-  Place({required this.id, required this.name, this.city, this.state, this.country, required this.coords});
+  Place(
+      {required this.id,
+      required this.name,
+      this.city,
+      this.state,
+      this.country,
+      required this.coords,
+      this.type});
 
   /*
   * Function to create a User object from a json map
@@ -20,15 +28,15 @@ class Place {
   *   String? country
   *   double lat,
   *   double lon
+  *   String? type
   * }
   * */
   static Place fromJson(Map<String, dynamic> json) => Place(
-        id: json['id'],
-        // name: json['display_place'] ?? json['display_name'],
-        name: json['name'],
-        city: json['city'],
-        state: json['state'],
-        country: json['country'],
-        coords: LatLng((json['lat']), (json['lon'])),
-      );
+      id: json['id'],
+      name: json['name'],
+      city: json['city'],
+      state: json['state'],
+      country: json['country'],
+      coords: LatLng((json['lat']), (json['lon'])),
+      type: json['type']);
 }

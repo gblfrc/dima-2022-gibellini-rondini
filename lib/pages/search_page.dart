@@ -64,10 +64,13 @@ class _SearchPageState extends State<SearchPage> {
                     ],
                   ),
                   Expanded(
-                    child: ListView(
-                      children: userList
-                          .map((user) => UserTile.fromUser(user, context))
-                          .toList(),
+                    child: ListView.separated(
+                      itemBuilder: (context, index) {
+                        return UserTile.fromUser(userList[index], context);
+                      },
+                      separatorBuilder: (context, index) {
+                        return const SizedBox(height: 10,);
+                      }, itemCount: userList.length,
                     ),
                   ),
                 ],
@@ -95,11 +98,14 @@ class _SearchPageState extends State<SearchPage> {
                     ],
                   ),
                   Expanded(
-                    child: ListView(
-                      children: placeList
-                          .map((place) => PlaceTile.fromPlace(place, context))
-                          .toList(),
-                      // TODO: find a finer way to implement the list without dividers, maybe with space between object
+                    child: ListView.separated(
+                      itemBuilder: (context, index) {
+                        return PlaceTile.fromPlace(placeList[index], context);
+                      },
+                      separatorBuilder: (context, index) {
+                        // return const SizedBox(height: 10,);
+                        return const SizedBox(height: 0,);
+                      }, itemCount: placeList.length,
                     ),
                   ),
                 ],

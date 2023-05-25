@@ -37,6 +37,7 @@ class SearchEngine {
   }
 
   static Future<List<Place>> getPlacesByName(String name) async {
+    if (name != "") {
     // query location iq for places with a given name
     var url = Uri.https(
       "eu1.locationiq.com",
@@ -60,6 +61,9 @@ class SearchEngine {
       json['country'] = json['address']['country'];
       places.add(Place.fromJson(json));
     }
-    return places;
+    return places;}
+    else {
+      return List.empty();
+    }
   }
 }

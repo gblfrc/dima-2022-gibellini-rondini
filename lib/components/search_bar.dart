@@ -22,7 +22,7 @@ class _SearchBarState extends State<SearchBar> {
       decoration: InputDecoration(
         contentPadding: EdgeInsets.zero,
         filled: true,
-        fillColor: Colors.grey[400],
+        fillColor: Colors.grey[300],
         prefixIcon: const Icon(Icons.search),
         hintText: 'Search',
         suffixIcon: IconButton(
