@@ -120,7 +120,7 @@ class ProposalFormState extends State<ProposalForm> {
                   )
                 ],
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () async {
                   if (dateTime != null && location != null) {
                     Proposal? proposal;

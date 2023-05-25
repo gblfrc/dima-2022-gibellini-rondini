@@ -185,7 +185,9 @@ class Database {
   }
 
   static void addFriend(String friend) async {
-    final docUser = FirebaseFirestore.instance.collection("users").doc(Auth().currentUser!.uid);
+    final docUser = FirebaseFirestore.instance
+        .collection("users")
+        .doc(Auth().currentUser!.uid);
     final docFriend =
         FirebaseFirestore.instance.collection("users").doc(friend);
     try {
@@ -200,9 +202,11 @@ class Database {
   }
 
   static void removeFriend(String friend) async {
-    final docUser = FirebaseFirestore.instance.collection("users").doc(Auth().currentUser!.uid);
+    final docUser = FirebaseFirestore.instance
+        .collection("users")
+        .doc(Auth().currentUser!.uid);
     final docFriend =
-    FirebaseFirestore.instance.collection("users").doc(friend);
+        FirebaseFirestore.instance.collection("users").doc(friend);
     try {
       await docUser.update(
         {
@@ -248,17 +252,21 @@ class Database {
     return sessions;
   }
 
-  static Stream<List<Goal>> getGoals() async* {
+  static Stream<List<Goal>> getGoals(bool inProgressOnly) async* {
     final userDocRef = FirebaseFirestore.instance
         .collection("users")
         .doc(Auth().currentUser?.uid);
-    final docGoals = FirebaseFirestore.instance
+    var docGoals = FirebaseFirestore.instance
         .collection("goals")
         .where("owner", isEqualTo: userDocRef);
+    if (inProgressOnly) {
+      docGoals = docGoals.where("completed", isEqualTo: false);
+    }
     /*return docUser.snapshots();*/
-    await for (QuerySnapshot<Map<String, dynamic>> snapshot in docGoals.snapshots()) {
+    await for (QuerySnapshot<Map<String, dynamic>> snapshot
+        in docGoals.snapshots()) {
       List<Goal> goals = [];
-      for(QueryDocumentSnapshot<Map<String, dynamic>> doc in snapshot.docs) {
+      for (QueryDocumentSnapshot<Map<String, dynamic>> doc in snapshot.docs) {
         Map<String, dynamic> json = doc.data();
         json['id'] = doc.id;
         json['owner'] = null; // TODO: Maybe it is better to add the user

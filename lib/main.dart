@@ -31,13 +31,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
-        fontFamily: "Montserrat"
-        // elevatedButtonTheme: ElevatedButtonThemeData(
-        //   style: ElevatedButton.styleFrom(
-        //     backgroundColor: Theme.of(context).primaryColor,
-        //     disabledBackgroundColor: Theme.of(context).primaryColor,
-        //   ),
-        // ),
+        fontFamily: "Montserrat",
+        snackBarTheme: const SnackBarThemeData(
+          behavior: SnackBarBehavior.floating,
+        )
       ),
       home: const WidgetTree(),
     );
