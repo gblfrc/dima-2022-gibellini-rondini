@@ -184,8 +184,8 @@ class Database {
     return friends;
   }
 
-  static void addFriend(String user, String friend) async {
-    final docUser = FirebaseFirestore.instance.collection("users").doc(user);
+  static void addFriend(String friend) async {
+    final docUser = FirebaseFirestore.instance.collection("users").doc(Auth().currentUser!.uid);
     final docFriend =
         FirebaseFirestore.instance.collection("users").doc(friend);
     try {
@@ -196,6 +196,21 @@ class Database {
       );
     } on Exception {
       throw DatabaseException('An error occurred while adding friend.');
+    }
+  }
+
+  static void removeFriend(String friend) async {
+    final docUser = FirebaseFirestore.instance.collection("users").doc(Auth().currentUser!.uid);
+    final docFriend =
+    FirebaseFirestore.instance.collection("users").doc(friend);
+    try {
+      await docUser.update(
+        {
+          'friends': FieldValue.arrayRemove([docFriend]),
+        },
+      );
+    } on Exception {
+      throw DatabaseException('An error occurred while removing friend.');
     }
   }
 

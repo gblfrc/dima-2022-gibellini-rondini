@@ -97,7 +97,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
             const SizedBox(
               height: 6,
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 createGoal();
               },
