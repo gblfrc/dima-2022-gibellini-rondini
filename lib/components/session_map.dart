@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:progetto/constants.dart';
 import 'package:progetto/model/session.dart';
 
 class SessionMap extends StatelessWidget {
@@ -26,7 +27,7 @@ class SessionMap extends StatelessWidget {
           interactiveFlags: interactiveFlags ?? InteractiveFlag.all),
       children: [
         TileLayer(
-          urlTemplate: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+          urlTemplate: mapUrl,
           subdomains: const ['a', 'b', 'c'],
         ),
         PolylineLayer(

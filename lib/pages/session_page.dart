@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:progetto/model/proposal.dart';
 
 import '../app_logic/auth.dart';
+import '../constants.dart';
 
 class SessionPage extends StatefulWidget {
   final Proposal? proposal;
@@ -107,7 +108,7 @@ class _SessionPageState extends State<SessionPage> {
                         children: [
                           TileLayer(
                             urlTemplate:
-                            'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                            mapUrl,
                             subdomains: const ['a', 'b', 'c'],
                           ),
                           PolylineLayer(

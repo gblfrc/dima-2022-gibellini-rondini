@@ -162,10 +162,15 @@ class _SearchPageState extends State<SearchPage> {
                                   ),
                                   children: [
                                     TileLayer(
-                                      urlTemplate:
-                                          mapUrl,
+                                      urlTemplate: mapUrl,
                                       subdomains: const ['a', 'b', 'c'],
                                     ),
+                                    MarkerLayer(
+                                      markers: proposalList
+                                          .map((proposal) =>
+                                              _markerFromProposal(proposal))
+                                          .toList(),
+                                    )
                                   ],
                                 );
                               } else if (snapshot.hasError) {
@@ -225,6 +230,18 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {
       placeList = newList;
     });
+  }
+
+  Marker _markerFromProposal(Proposal proposal) {
+    return Marker(
+      point: proposal.place.coords,
+      builder: (ctx) => Icon(
+        Icons.place,
+        color:
+            proposal.type == 'Public' ? Colors.green : Colors.yellow.shade600,
+        size: 30,
+      ),
+    );
   }
 
   /*

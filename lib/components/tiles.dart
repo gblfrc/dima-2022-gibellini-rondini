@@ -17,13 +17,15 @@ class Tile extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Function? onTap;
+  final Widget? trailing;
 
   const Tile(
       {super.key,
       required this.leading,
       required this.title,
       this.subtitle,
-      required this.onTap});
+      required this.onTap,
+      this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +48,13 @@ class Tile extends StatelessWidget {
         onTap: () {
           if (onTap != null) onTap!();
         },
+        trailing: SizedBox(
+          width: constraint.maxWidth / 6,
+          height: constraint.maxHeight / 14,
+          child: Center(
+            child: trailing,
+          ),
+        ),
       );
     });
   }
@@ -57,7 +66,8 @@ class UserTile extends Tile {
       required super.leading,
       required super.title,
       super.subtitle,
-      required super.onTap});
+      required super.onTap,
+      super.trailing});
 
   static Tile fromUser(User user, BuildContext context) {
     return Tile(
@@ -102,7 +112,8 @@ class PlaceTile extends Tile {
       required super.leading,
       required super.title,
       required super.subtitle,
-      required super.onTap});
+      required super.onTap,
+      super.trailing});
 
   static Tile fromPlace(Place place, BuildContext context) {
     return Tile(
@@ -179,27 +190,47 @@ class ProposalTile extends Tile {
       {super.key,
       required super.leading,
       required super.title,
-      required super.subtitle,
-      required super.onTap});
+      super.subtitle,
+      required super.onTap,
+      super.trailing});
 
   static Tile fromProposal(Proposal proposal, BuildContext context) {
     return Tile(
-        leading: FutureBuilder(
-          future: rootBundle.loadString(calendarSvgPath),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              String svg = snapshot.data!;
-              svg = svg.replaceAll("MONTH", DateFormat("MMM").format(proposal.dateTime).toUpperCase());
-              svg = svg.replaceAll("DAY", DateFormat("d").format(proposal.dateTime));
-              return SvgPicture.string(svg);
-            } else {
-              return const CircularProgressIndicator();
-            }
-          },
-        ),
-        title: proposal.place.name,
-        subtitle: "Organizer: ${proposal.owner.name} ${proposal.owner.surname}",
-        onTap: null);
+      leading: FutureBuilder(
+        future: rootBundle.loadString(calendarSvgPath),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            String svg = snapshot.data!;
+            svg = svg.replaceAll("MONTH",
+                DateFormat("MMM").format(proposal.dateTime).toUpperCase());
+            svg = svg.replaceAll(
+                "DAY", DateFormat("d").format(proposal.dateTime));
+            return SvgPicture.string(svg);
+          } else {
+            return const CircularProgressIndicator();
+          }
+        },
+      ),
+      title: proposal.place.name,
+      subtitle: "Organizer: ${proposal.owner.name} ${proposal.owner.surname}",
+      onTap: null,
+      trailing: LayoutBuilder(
+        builder: (context, constraint) {
+          if (proposal.type == 'Public') {
+            return Icon(
+              MdiIcons.lockOpen,
+              size: constraint.maxHeight,
+              color: Colors.green,
+            );
+          } else {
+            return Icon(
+              Icons.lock,
+              size: constraint.maxHeight,
+              color: Colors.yellow.shade600,
+            );
+          }
+        },
+      ),
+    );
   }
-
 }
