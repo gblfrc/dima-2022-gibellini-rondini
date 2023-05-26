@@ -22,10 +22,11 @@ class _AccountPageState extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isMyAccount = (widget.uid == Auth().currentUser!.uid);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My account'),
-        actions: widget.uid == Auth().currentUser!.uid
+        title: isMyAccount ? const Text('My account') : const Text('Account details'),
+        actions: isMyAccount
             ? [
                 IconButton(
                   onPressed: () {
@@ -100,32 +101,38 @@ class _AccountPageState extends State<AccountPage> {
               }
             },
           ),
-          widget.uid == Auth().currentUser!.uid
+          isMyAccount
               ? Container()
               : Column(
                   children: [
-                    ElevatedButton(
-                      onPressed: () {
-                        try {
-                          Database.addFriend(
-                              Auth().currentUser!.uid, widget.uid);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Added to friends!"),
-                            ),
-                          );
-                          Navigator.of(context).pop();
-                        } on DatabaseException {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  "Something went wrong. Please try again."),
-                            ),
-                          );
-                        }
-                      },
-                      child: const Text("Add to friends"),
-                    ),
+                    FutureBuilder(
+                        future: Database.getFriends(),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            return const Text(
+                              "Something went wrong while checking friend list. Please try again later.",
+                              textAlign: TextAlign.center,
+                            );
+                          }
+                          if (snapshot.hasData) {
+                            for (User friend in snapshot.data!) {
+                              if (friend.uid == widget.uid) {
+                                return ElevatedButton(
+                                  onPressed: removeFriend,
+                                  child: const Text("Remove friend"),
+                                );
+                              }
+                            }
+                            return FilledButton(
+                              onPressed: addFriend,
+                              child: const Text("Add to friends"),
+                            );
+                          } else {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        }),
                   ],
                 ),
           Text(
@@ -172,5 +179,41 @@ class _AccountPageState extends State<AccountPage> {
         ],
       ),
     );
+  }
+
+  void addFriend() {
+    try {
+      Database.addFriend(widget.uid);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Added to friends!"),
+        ),
+      );
+      Navigator.of(context).pop();
+    } on DatabaseException {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong. Please try again."),
+        ),
+      );
+    }
+  }
+
+  void removeFriend() {
+    try {
+      Database.removeFriend(widget.uid);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Friend removed."),
+        ),
+      );
+      Navigator.of(context).pop();
+    } on DatabaseException {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Something went wrong. Please try again."),
+        ),
+      );
+    }
   }
 }

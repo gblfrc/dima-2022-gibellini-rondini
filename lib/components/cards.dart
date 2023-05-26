@@ -257,14 +257,14 @@ class _TrainingProposalCardState extends State<TrainingProposalCard> {
                     ],
                   ),
                   startButton ?? false
-                      ? ElevatedButton(
+                      ? FilledButton(
                           onPressed: () => Navigator.of(context).push(
                               MaterialPageRoute(
                                   builder: (context) =>
                                       SessionPage(proposal: proposal))),
                           child: const Text("Start"),
                         )
-                      : ElevatedButton(
+                      : FilledButton(
                           onPressed: () {
                             if (joinable) {
                               try {

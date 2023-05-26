@@ -97,7 +97,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
             const SizedBox(
               height: 6,
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: () {
                 createGoal();
               },
@@ -127,7 +127,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          // TODO: Maybe it is better to use behavior: SnackBarBehavior.floating (after having fixed double scaffold problem),
+          // TODO: consider fixing double scaffold problem to avoid overlap with FAB,
           content: Text("Goal created!"),
         ),
       );

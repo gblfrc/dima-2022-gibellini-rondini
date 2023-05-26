@@ -363,7 +363,7 @@ class _LowerButtonBar extends StatelessWidget {
         if (start)
           Flexible(
             child: Center(
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: () {
                   onStart();
                 },
@@ -397,7 +397,7 @@ class _LowerButtonBar extends StatelessWidget {
         if (resume)
           Flexible(
             child: Center(
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: () {
                   onResume();
                 },
@@ -414,7 +414,7 @@ class _LowerButtonBar extends StatelessWidget {
         if (stop)
           Flexible(
             child: Center(
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: () {
                   onStop();
                 },

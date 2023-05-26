@@ -32,32 +32,28 @@ class _MainScreensState extends State<MainScreens> {
       //),
       body: screens[_curScreen],
       // The actual body of the Scaffold depends on the currently selected tab in bottom navigation
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _curScreen,
-        //backgroundColor: Theme.of(context).primaryColor,
-        //selectedItemColor: Theme.of(context).colorScheme.onPrimary,
-        //unselectedItemColor:
-            //Theme.of(context).colorScheme.onPrimary.withOpacity(.6),
-        selectedFontSize: 14,
-        unselectedFontSize: 14,
-        onTap: (value) {
+      bottomNavigationBar: NavigationBar(
+        //type: BottomNavigationBarType.fixed,
+        selectedIndex: _curScreen,
+        //selectedFontSize: 14,
+        //unselectedFontSize: 14,
+        onDestinationSelected: (value) {
           setState(() => {_curScreen = value}); // The current screen is changed
         },
-        items: const [
-          BottomNavigationBarItem(
+        destinations: const [
+          NavigationDestination(
             label: 'Home',
             icon: Icon(Icons.home),
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             label: 'Search',
             icon: Icon(Icons.search),
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             label: 'Friends',
             icon: Icon(Icons.people),
           ),
-          BottomNavigationBarItem(
+          NavigationDestination(
             label: 'Account',
             icon: Icon(Icons.person),
           ),
