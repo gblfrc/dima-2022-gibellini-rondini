@@ -109,6 +109,8 @@ class Database {
   }
 
   static Future<List<Proposal>> getProposalsWithinBoundsGivenUser(
+      // TODO: find an implementation such that all the places in the bounds are found
+      // TODO: see example with liceo mascheroni (very hard to find)
       LatLngBounds bounds, String uid) async {
     // collect hashes for the four corners and for the center
     List<String> hashes = [];

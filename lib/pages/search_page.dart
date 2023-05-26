@@ -8,6 +8,7 @@ import 'package:progetto/app_logic/search_engine.dart';
 
 import '../components/search_bar.dart';
 import '../components/tiles.dart';
+import '../constants.dart';
 import '../model/place.dart';
 import '../model/proposal.dart';
 import '../model/user.dart';
@@ -69,8 +70,11 @@ class _SearchPageState extends State<SearchPage> {
                         return UserTile.fromUser(userList[index], context);
                       },
                       separatorBuilder: (context, index) {
-                        return const SizedBox(height: 10,);
-                      }, itemCount: userList.length,
+                        return const SizedBox(
+                          height: 10,
+                        );
+                      },
+                      itemCount: userList.length,
                     ),
                   ),
                 ],
@@ -104,75 +108,91 @@ class _SearchPageState extends State<SearchPage> {
                       },
                       separatorBuilder: (context, index) {
                         // return const SizedBox(height: 10,);
-                        return const SizedBox(height: 0,);
-                      }, itemCount: placeList.length,
+                        return const SizedBox(
+                          height: 0,
+                        );
+                      },
+                      itemCount: placeList.length,
                     ),
                   ),
                 ],
               ),
             ),
-            Flex(
-              direction: Axis.vertical,
-              children: [
-                Flexible(
-                  flex: 2,
-                  child: Padding(
-                    padding:
-                        EdgeInsets.all(MediaQuery.of(context).size.width / 20),
-                    child: FutureBuilder(
-                        future: _initPosition(context),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            Position position = snapshot.data!;
-                            _initialPosition =
-                                LatLng(position.latitude, position.longitude);
-                            return FlutterMap(
-                              mapController: _mapController,
-                              options: MapOptions(
-                                center: _initialPosition,
-                                zoom: 15,
-                                maxZoom: 18.4,
-                                onMapEvent: (e) {
-                                  if (e is MapEventDoubleTapZoomEnd ||
-                                      e is MapEventFlingAnimationEnd ||
-                                      e is MapEventMoveEnd ||
-                                      e is MapEventRotateEnd) {
-                                    _updateProposalList(_mapController.bounds!,
-                                        Auth().currentUser!.uid);
-                                  }
-                                },
-                              ),
-                              children: [
-                                TileLayer(
-                                  urlTemplate:
-                                      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                                  subdomains: const ['a', 'b', 'c'],
-                                ),
-                              ],
-                            );
-                          } else if (snapshot.hasError) {
-                            return const Text(
-                              "Something went wrong. Please try again later.",
-                              textAlign: TextAlign.center,
-                            );
-                          } else {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                        }),
+            // TODO: fix bug for which map tab expands on opening
+            Padding(
+              padding: EdgeInsets.all(padding),
+              child: Flex(
+                direction: Axis.vertical,
+                children: [
+                  Flexible(
+                    flex: 2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade400),
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(padding),
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius:
+                            BorderRadius.all(Radius.circular(padding)),
+                        child: FutureBuilder(
+                            future: _initPosition(context),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                Position position = snapshot.data!;
+                                _initialPosition = LatLng(
+                                    position.latitude, position.longitude);
+                                return FlutterMap(
+                                  mapController: _mapController,
+                                  options: MapOptions(
+                                    center: _initialPosition,
+                                    zoom: 15,
+                                    maxZoom: 18.4,
+                                    onMapEvent: (e) {
+                                      if (e is MapEventDoubleTapZoomEnd ||
+                                          e is MapEventFlingAnimationEnd ||
+                                          e is MapEventMoveEnd ||
+                                          e is MapEventRotateEnd) {
+                                        _updateProposalList(
+                                            _mapController.bounds!,
+                                            Auth().currentUser!.uid);
+                                      }
+                                    },
+                                  ),
+                                  children: [
+                                    TileLayer(
+                                      urlTemplate:
+                                          mapUrl,
+                                      subdomains: const ['a', 'b', 'c'],
+                                    ),
+                                  ],
+                                );
+                              } else if (snapshot.hasError) {
+                                return const Text(
+                                  "Something went wrong. Please try again later.",
+                                  textAlign: TextAlign.center,
+                                );
+                              } else {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                            }),
+                      ),
+                    ),
                   ),
-                ),
-                Flexible(
-                  flex: 3,
-                  child: ListView(
-                    children: proposalList
-                        .map((proposal) =>
-                            ProposalTile.fromProposal(proposal, context))
-                        .toList(),
+                  Flexible(
+                    flex: 3,
+                    child: ListView(
+                      children: proposalList
+                          .map((proposal) =>
+                              ProposalTile.fromProposal(proposal, context))
+                          .toList(),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -256,19 +276,3 @@ class _SearchPageState extends State<SearchPage> {
         desiredAccuracy: LocationAccuracy.high);
   }
 }
-
-/*
-* {place_id: 321172780204,
-* osm_id: 11694848,
-* osm_type: relation,
-* licence: https://locationiq.com/attribution,
-* lat: 45.70169115,
-* lon: 9.67716459,
-* boundingbox: [45.7006306, 45.7027429, 9.6754815, 9.6778017],
-* class: leisure,
-* type: park,
-* display_name: Parco Suardi, Italy,
-* display_place: Parco Suardi,
-* display_address: Italy,
-* address: {name: Parco Suardi, country: Italy, country_code: it}}
-* */

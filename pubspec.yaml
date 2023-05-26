@@ -54,6 +54,7 @@ dependencies:
   dart_geohash: 2.0.2
   flutter_expandable_fab: 1.7.1
   material_design_icons_flutter: ^6.0.7096
+  flutter_svg: 2.0.5
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:progetto/constants.dart';
 import 'package:progetto/pages/account_page.dart';
 
 import '../model/place.dart';
@@ -180,14 +184,22 @@ class ProposalTile extends Tile {
 
   static Tile fromProposal(Proposal proposal, BuildContext context) {
     return Tile(
-        leading: LayoutBuilder(
-          // TODO: Replace the place icon with calendar with the proposed date
-          builder: (context, constraint) {
-            return Icon(Icons.place, size: constraint.maxHeight);
+        leading: FutureBuilder(
+          future: rootBundle.loadString(calendarSvgPath),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              String svg = snapshot.data!;
+              svg = svg.replaceAll("MONTH", DateFormat("MMM").format(proposal.dateTime).toUpperCase());
+              svg = svg.replaceAll("DAY", DateFormat("d").format(proposal.dateTime));
+              return SvgPicture.string(svg);
+            } else {
+              return const CircularProgressIndicator();
+            }
           },
         ),
         title: proposal.place.name,
         subtitle: "Organizer: ${proposal.owner.name} ${proposal.owner.surname}",
         onTap: null);
   }
+
 }
