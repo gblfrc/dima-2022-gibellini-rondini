@@ -60,7 +60,7 @@ class SessionCard extends StatelessWidget {
         builder: (context, constraint) {
           return SizedBox(
             width: constraint.maxWidth,
-            height: MediaQuery.of(context).size.height / 6.5,
+            height: MediaQuery.of(context).size.longestSide / 6.5,
             child: InkWell(
               // This widget creates a feedback animation when the user taps on the card
               onTap: () => Navigator.of(context).push(
@@ -70,7 +70,7 @@ class SessionCard extends StatelessWidget {
               ),
               child: Padding(
                 padding: EdgeInsets.all(
-                    max(MediaQuery.of(context).size.width / 30, 10)),
+                    max(MediaQuery.of(context).size.shortestSide / 30, 10)),
                 child: Flex(
                   direction: Axis.horizontal,
                   children: [
@@ -311,8 +311,4 @@ class _TrainingProposalCardState extends State<TrainingProposalCard> {
     );
   }
 
-/*Future<String> getPlaceName(DocumentReference place) async {
-    final placeDoc = await place.get();
-    return placeDoc.get("name");
-  }*/
 }
