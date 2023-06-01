@@ -111,7 +111,8 @@ class Database {
   static Future<List<Proposal>> getProposalsWithinBoundsGivenUser(
       // TODO: find an implementation such that all the places in the bounds are found
       // TODO: see example with liceo mascheroni (very hard to find)
-      LatLngBounds bounds, String uid) async {
+      LatLngBounds bounds,
+      String uid) async {
     // collect hashes for the four corners and for the center
     List<String> hashes = [];
     var northEast = bounds.northEast ?? LatLng(bounds.north, bounds.east);
@@ -220,19 +221,21 @@ class Database {
     }
   }
 
-  static Future<List<Session?>> getLatestSessionsByUser(String uid,
-      {int? limit}) async {
+  static Stream<List<Session?>> getLatestSessionsByUser(String uid,
+      {int? limit}) async* {
     List<Session?> sessions = [];
     final userDocRef = FirebaseFirestore.instance.collection("users").doc(uid);
-    await FirebaseFirestore.instance
+    var sessionDocs = FirebaseFirestore.instance
         .collection("sessions")
         .where("userID", isEqualTo: userDocRef)
         .orderBy("startDT", descending: true)
         // limit query to parameter or to a very high number
         // number could be even higher, but then it causes problems with Firestore
-        .limit(limit ?? 10000)
-        .get()
-        .then((snapshot) {
+        .limit(limit ?? 10000);
+    // process snapshots
+    await for (var snapshot in sessionDocs.snapshots()) {
+      // clean session array for each snapshot
+      sessions = [];
       for (var doc in snapshot.docs) {
         // create a Session object for each document
         Map<String, dynamic> json = doc.data();
@@ -247,11 +250,10 @@ class Database {
         }
         json['positions'] = positions;
         json['owner'] = null;
-        // print(json);
         sessions.add(Session.fromJson(json));
       }
-    });
-    return sessions;
+      yield sessions;
+    }
   }
 
   static Stream<List<Goal>> getGoals(bool inProgressOnly) async* {
@@ -377,7 +379,7 @@ class Database {
     return list;
   }
 
-  static Future<List<Proposal>> getUpcomingProposals() async {
+  static Stream<List<Proposal>> getUpcomingProposals() async* {
     List<Proposal?> proposalsTemp = [];
     List<Proposal> proposals = [];
     final currentUserRef = FirebaseFirestore.instance
@@ -424,7 +426,7 @@ class Database {
         proposals.add(temp);
       }
     }
-    return proposals;
+    yield proposals;
   }
 
   /*

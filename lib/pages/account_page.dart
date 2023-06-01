@@ -142,8 +142,8 @@ class _AccountPageState extends State<AccountPage> {
               fontSize: 23 * MediaQuery.of(context).textScaleFactor,
             ),
           ),
-          FutureBuilder(
-              future: Database.getLatestSessionsByUser(widget.uid),
+          StreamBuilder(
+              stream: Database.getLatestSessionsByUser(widget.uid),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   print('I entered the error section');

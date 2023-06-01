@@ -26,8 +26,8 @@ class _HomePageState extends State<HomePage> {
       ),
       body: ListView(
         children: <Widget>[
-          FutureBuilder(
-            future: Database.getUpcomingProposals(),
+          StreamBuilder(
+            stream: Database.getUpcomingProposals(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
                 return const Text(
@@ -59,8 +59,8 @@ class _HomePageState extends State<HomePage> {
             // Widget that allows to insert a title and (optionally) a sub-title
             title: Text("Latest sessions"),
           ),
-          FutureBuilder(
-              future: Database.getLatestSessionsByUser(Auth().currentUser!.uid, limit: 2),
+          StreamBuilder(
+              stream: Database.getLatestSessionsByUser(Auth().currentUser!.uid, limit: 2),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return const Text(

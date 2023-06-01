@@ -209,7 +209,7 @@ class _SearchPageState extends State<SearchPage> {
   * Function to update list of users shown in user search tab
   */
   void _updateUserList(String name) async {
-    // get uid of currrently logged user
+    // get uid of currently logged user
     String? uid = Auth().currentUser?.uid;
     // get all users except the logged one
     List<User> newList =
