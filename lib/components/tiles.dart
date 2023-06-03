@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:progetto/components/profile_picture.dart';
 import 'package:progetto/constants.dart';
 import 'package:progetto/pages/account_page.dart';
 
@@ -10,7 +11,6 @@ import '../model/place.dart';
 import '../model/proposal.dart';
 import '../model/user.dart';
 import '../pages/place_page.dart';
-import '../app_logic/storage.dart';
 
 class Tile extends StatelessWidget {
   final Widget leading;
@@ -71,31 +71,7 @@ class UserTile extends Tile {
 
   static Tile fromUser(User user, BuildContext context) {
     return Tile(
-      leading: FutureBuilder(
-          future: Storage.downloadURL(user.uid),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              return LayoutBuilder(builder: (context, constraint) {
-                return CircleAvatar(
-                  radius: constraint.maxHeight * 0.48,
-                  backgroundColor: Theme.of(context).primaryColor,
-                  child: CircleAvatar(
-                    radius: constraint.maxHeight * 0.42,
-                    backgroundColor: Colors.white,
-                    foregroundImage: NetworkImage(snapshot.data!),
-                  ),
-                );
-              });
-            } else {
-              return LayoutBuilder(builder: (context, constraint) {
-                return Icon(
-                  size: constraint.maxHeight,
-                  Icons.account_circle,
-                  color: Colors.grey.shade500,
-                );
-              });
-            }
-          }),
+      leading: ProfilePicture(uid: user.uid),
       title: "${user.name} ${user.surname}",
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
