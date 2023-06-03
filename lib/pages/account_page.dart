@@ -22,10 +22,17 @@ class _AccountPageState extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    // style definition for text titles
+    TextStyle sectionTitleStyle = TextStyle(
+        fontSize: MediaQuery.of(context).textScaleFactor * 18,
+        fontWeight: FontWeight.bold);
+    // boolean to determine whether current user is the owner of the account page
     bool isMyAccount = (widget.uid == Auth().currentUser!.uid);
     return Scaffold(
       appBar: AppBar(
-        title: isMyAccount ? const Text('My account') : const Text('Account details'),
+        title: isMyAccount
+            ? const Text('My account')
+            : const Text('Account details'),
         actions: isMyAccount
             ? [
                 IconButton(
@@ -77,106 +84,103 @@ class _AccountPageState extends State<AccountPage> {
               ]
             : [],
       ),
-      body: ListView(
-        children: [
-          StreamBuilder(
-            stream: Database.getUser(widget.uid),
-            builder: (context, snapshot) {
-              if (snapshot.hasError) {
-                return const Center(
-                  child: Text('An error has occurred'),
-                );
-              } else if (snapshot.hasData) {
-                user = snapshot.data!;
-                return Column(
-                  children: [
-                    ContactCard(user: user!),
-                    // TODO: insert list of sessions
-                  ],
-                );
-              } else {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-            },
-          ),
-          isMyAccount
-              ? Container()
-              : Column(
-                  children: [
-                    FutureBuilder(
-                        future: Database.getFriends(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasError) {
-                            return const Text(
-                              "Something went wrong while checking friend list. Please try again later.",
-                              textAlign: TextAlign.center,
-                            );
-                          }
-                          if (snapshot.hasData) {
-                            for (User friend in snapshot.data!) {
-                              if (friend.uid == widget.uid) {
-                                return ElevatedButton(
-                                  onPressed: removeFriend,
-                                  child: const Text("Remove friend"),
-                                );
-                              }
-                            }
-                            return FilledButton(
-                              onPressed: addFriend,
-                              child: const Text("Add to friends"),
-                            );
-                          } else {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-                        }),
-                  ],
-                ),
-          Text(
-            'Sessions',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 23 * MediaQuery.of(context).textScaleFactor,
-            ),
-          ),
-          StreamBuilder(
-              stream: Database.getLatestSessionsByUser(widget.uid),
+      body: Padding(
+        padding: EdgeInsets.all(MediaQuery.of(context).size.shortestSide / 30),
+        child: ListView(
+          children: [
+            StreamBuilder(
+              stream: Database.getUser(widget.uid),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
-                  print('I entered the error section');
-                  print(snapshot);
-                  return const Text(
-                    "Something went wrong. Please try again later.",
-                    textAlign: TextAlign.center,
+                  return const Center(
+                    child: Text('An error has occurred'),
                   );
-                }
-                if (snapshot.hasData) {
-                  // This returns true even if the list of sessions is empty
-                  if (snapshot.data!.isEmpty) {
-                    // If there are no sessions, we print a message
-                    return const Text(
-                      "You do not have any completed session yet.",
-                      textAlign: TextAlign.center,
-                    );
-                  }
-                  List<Widget> sessionCards = [];
-                  for (var session in snapshot.data!) {
-                    // For each session, we create a card and append it to the array of children
-                    sessionCards.add(SessionCard(session: session!));
-                  }
+                } else if (snapshot.hasData) {
+                  user = snapshot.data!;
                   return Column(
-                    children: sessionCards,
+                    children: [
+                      ContactCard(user: user!),
+                    ],
                   );
                 } else {
                   return const Center(
                     child: CircularProgressIndicator(),
                   );
                 }
-              }),
-        ],
+              },
+            ),
+            isMyAccount
+                ? Container()
+                : Column(
+                    children: [
+                      FutureBuilder(
+                          future: Database.getFriends(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) {
+                              return const Text(
+                                "Something went wrong while checking friend list. Please try again later.",
+                                textAlign: TextAlign.center,
+                              );
+                            }
+                            if (snapshot.hasData) {
+                              for (User friend in snapshot.data!) {
+                                if (friend.uid == widget.uid) {
+                                  return ElevatedButton(
+                                    onPressed: removeFriend,
+                                    child: const Text("Remove friend"),
+                                  );
+                                }
+                              }
+                              return FilledButton(
+                                onPressed: addFriend,
+                                child: const Text("Add to friends"),
+                              );
+                            } else {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+                          }),
+                    ],
+                  ),
+            Text(
+              'Sessions',
+              style: sectionTitleStyle,
+            ),
+            StreamBuilder(
+                stream: Database.getLatestSessionsByUser(widget.uid),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return const Text(
+                      "Something went wrong. Please try again later.",
+                      textAlign: TextAlign.center,
+                    );
+                  }
+                  if (snapshot.hasData) {
+                    // This returns true even if the list of sessions is empty
+                    if (snapshot.data!.isEmpty) {
+                      // If there are no sessions, we print a message
+                      return const Text(
+                        "You do not have any completed session yet.",
+                        textAlign: TextAlign.center,
+                      );
+                    }
+                    List<Widget> sessionCards = [];
+                    for (var session in snapshot.data!) {
+                        // For each session, we create a card and append it to the array of children
+                        sessionCards.add(SessionCard(session: session!));
+                    }
+                    return Column(
+                      children: sessionCards,
+                    );
+                  } else {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                }),
+          ],
+        ),
       ),
     );
   }

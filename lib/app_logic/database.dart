@@ -250,7 +250,8 @@ class Database {
         }
         json['positions'] = positions;
         json['owner'] = null;
-        sessions.add(Session.fromJson(json));
+        var session = Session.fromJson(json);
+        if (session != null) sessions.add(session);
       }
       yield sessions;
     }

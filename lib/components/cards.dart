@@ -15,9 +15,9 @@ import '../pages/goal_info_page.dart';
 import '../pages/session_page.dart';
 
 class SessionCard extends StatelessWidget {
-  Session session;
+  final Session session;
 
-  SessionCard({super.key, required this.session});
+  const SessionCard({super.key, required this.session});
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +123,7 @@ class SessionCard extends StatelessWidget {
                       flex: 4,
                       child: LayoutBuilder(
                         builder: (context, constraint) {
-                          return Container(
+                          return SizedBox(
                             width: constraint.maxWidth,
                             height: constraint.maxHeight,
                             child: SessionMap(
@@ -147,9 +147,9 @@ class SessionCard extends StatelessWidget {
 }
 
 class GoalCard extends StatelessWidget {
-  Goal goal;
+  final Goal goal;
 
-  GoalCard(this.goal, {super.key});
+  const GoalCard(this.goal, {super.key});
 
   @override
   Widget build(BuildContext context) {

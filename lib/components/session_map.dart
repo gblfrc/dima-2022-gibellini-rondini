@@ -20,58 +20,66 @@ class SessionMap extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     useMarkers = useMarkers ?? true;
-    return FlutterMap(
-      options: MapOptions(
-          maxZoom: 18.4,
-          bounds: getBoundCorner(session.positions),
-          interactiveFlags: interactiveFlags ?? InteractiveFlag.all),
-      children: [
-        TileLayer(
-          urlTemplate: mapUrl,
-          subdomains: const ['a', 'b', 'c'],
-        ),
-        PolylineLayer(
-          polylineCulling: true,
-          polylines: [
-            for (List<LatLng> posArray in session.positions)
-              Polyline(
-                points: posArray,
-                color: Theme.of(context).primaryColor,
-                strokeWidth: 7,
-              )
-          ],
-        ),
-        MarkerLayer(
-          markers: useMarkers!
-              ? [
-                  Marker(
-                    point: session.positions.first.first,
-                    // First point of the first segment
-                    builder: (ctx) => Icon(
+      return FlutterMap(
+        options: MapOptions(
+            maxZoom: 18.4,
+            bounds: getBoundCorner(session.positions),
+            interactiveFlags: interactiveFlags ?? InteractiveFlag.all),
+        children: [
+          TileLayer(
+            urlTemplate: mapUrl,
+            subdomains: const ['a', 'b', 'c'],
+          ),
+          PolylineLayer(
+            polylineCulling: true,
+            polylines: [
+              for (List<LatLng> posArray in session.positions)
+                Polyline(
+                  points: posArray,
+                  color: Theme
+                      .of(context)
+                      .primaryColor,
+                  strokeWidth: 7,
+                )
+            ],
+          ),
+          MarkerLayer(
+            markers: useMarkers!
+                ? [
+              Marker(
+                point: session.positions.first.first,
+                // First point of the first segment
+                builder: (ctx) =>
+                    Icon(
                       Icons.assistant_direction,
-                      color: Theme.of(context).primaryColor,
+                      color: Theme
+                          .of(context)
+                          .primaryColor,
                       shadows: const [
                         Shadow(color: Colors.white, blurRadius: 30)
                       ],
                       size: 30,
                     ),
-                  ),
-                  Marker(
-                    point: session.positions.last.last, // Final destination
-                    builder: (ctx) => Icon(
+              ),
+              Marker(
+                point: session.positions.last.last, // Final destination
+                builder: (ctx) =>
+                    Icon(
                       Icons.flag_circle_rounded,
-                      color: Theme.of(context).primaryColor,
+                      color: Theme
+                          .of(context)
+                          .primaryColor,
                       shadows: const [
                         Shadow(color: Colors.white, blurRadius: 30)
                       ],
                       size: 30,
                     ),
-                  ),
-                ]
-              : [],
-        ),
-      ],
-    );
+              ),
+            ]
+                : [],
+          ),
+        ],
+      );
   }
 
   LatLngBounds getBoundCorner(List<List<LatLng>> segments) {
