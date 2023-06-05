@@ -6,6 +6,7 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:progetto/components/profile_picture.dart';
 import 'package:progetto/constants.dart';
 import 'package:progetto/pages/account_page.dart';
+import 'package:progetto/pages/proposal_page.dart';
 
 import '../model/place.dart';
 import '../model/proposal.dart';
@@ -69,8 +70,8 @@ class UserTile extends Tile {
       required super.onTap,
       super.trailing});
 
-  static Tile fromUser(User user, BuildContext context) {
-    return Tile(
+  static UserTile fromUser(User user, BuildContext context) {
+    return UserTile(
       leading: ProfilePicture(uid: user.uid),
       title: "${user.name} ${user.surname}",
       onTap: () => Navigator.of(context).push(
@@ -91,17 +92,20 @@ class PlaceTile extends Tile {
       required super.onTap,
       super.trailing});
 
-  static Tile fromPlace(Place place, BuildContext context) {
-    return Tile(
+  static PlaceTile fromPlace(Place place, BuildContext context) {
+    return PlaceTile(
       leading: LayoutBuilder(
         builder: (context, constraint) {
           return Icon(_getIconByPlace(place), size: constraint.maxHeight);
         },
       ),
       title: place.name,
-      subtitle: "${place.city != null ? "${place.city}, " : ""}"
-          "${place.state != null ? "${place.state}, " : ""}"
-          "${place.country != null ? "${place.country}" : ""}",
+      subtitle:
+          place.city != null || place.state != null || place.country != null
+              ? "${place.city != null ? "${place.city}, " : ""}"
+                  "${place.state != null ? "${place.state}, " : ""}"
+                  "${place.country != null ? "${place.country}" : ""}"
+              : null,
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => PlacePage(place: place),
@@ -170,8 +174,8 @@ class ProposalTile extends Tile {
       required super.onTap,
       super.trailing});
 
-  static Tile fromProposal(Proposal proposal, BuildContext context) {
-    return Tile(
+  static ProposalTile fromProposal(Proposal proposal, BuildContext context) {
+    return ProposalTile(
       leading: FutureBuilder(
         future: rootBundle.loadString(calendarSvgPath),
         builder: (context, snapshot) {
@@ -189,7 +193,10 @@ class ProposalTile extends Tile {
       ),
       title: proposal.place.name,
       subtitle: "Organizer: ${proposal.owner.name} ${proposal.owner.surname}",
-      onTap: null,
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => ProposalPage(proposal: proposal)));
+      },
       trailing: LayoutBuilder(
         builder: (context, constraint) {
           if (proposal.type == 'Public') {

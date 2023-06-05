@@ -6,9 +6,9 @@ import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/search_engine.dart';
 
+import '../components/custom_small_map.dart';
 import '../components/search_bar.dart';
 import '../components/tiles.dart';
-import '../constants.dart';
 import '../model/place.dart';
 import '../model/proposal.dart';
 import '../model/user.dart';
@@ -126,66 +126,43 @@ class _SearchPageState extends State<SearchPage> {
                 children: [
                   Flexible(
                     flex: 2,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(padding),
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius:
-                            BorderRadius.all(Radius.circular(padding)),
-                        child: FutureBuilder(
-                            future: _initPosition(context),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                Position position = snapshot.data!;
-                                _initialPosition = LatLng(
-                                    position.latitude, position.longitude);
-                                return FlutterMap(
-                                  mapController: _mapController,
-                                  options: MapOptions(
-                                    center: _initialPosition,
-                                    zoom: 15,
-                                    maxZoom: 18.4,
-                                    onMapEvent: (e) {
-                                      if (e is MapEventDoubleTapZoomEnd ||
-                                          e is MapEventFlingAnimationEnd ||
-                                          e is MapEventMoveEnd ||
-                                          e is MapEventRotateEnd) {
-                                        _updateProposalList(
-                                            _mapController.bounds!,
-                                            Auth().currentUser!.uid);
-                                      }
-                                    },
-                                  ),
-                                  children: [
-                                    TileLayer(
-                                      urlTemplate: mapUrl,
-                                      subdomains: const ['a', 'b', 'c'],
-                                    ),
-                                    MarkerLayer(
-                                      markers: proposalList
-                                          .map((proposal) =>
-                                              _markerFromProposal(proposal))
-                                          .toList(),
-                                    )
-                                  ],
-                                );
-                              } else if (snapshot.hasError) {
-                                return const Text(
-                                  "Something went wrong. Please try again later.",
-                                  textAlign: TextAlign.center,
-                                );
-                              } else {
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-                            }),
-                      ),
-                    ),
+                    child: FutureBuilder(
+                        future: _initPosition(context),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            Position position = snapshot.data!;
+                            _initialPosition = LatLng(
+                                position.latitude, position.longitude);
+                            return CustomSmallMap(
+                              mapController: _mapController,
+                              options: MapOptions(
+                                center: _initialPosition,
+                                zoom: 15,
+                                maxZoom: 18.4,
+                                onMapEvent: (e) {
+                                  if (e is MapEventDoubleTapZoomEnd ||
+                                      e is MapEventFlingAnimationEnd ||
+                                      e is MapEventMoveEnd ||
+                                      e is MapEventRotateEnd) {
+                                    _updateProposalList(
+                                        _mapController.bounds!,
+                                        Auth().currentUser!.uid);
+                                  }
+                                },
+                              ),
+                              proposalsForMarkers: proposalList,
+                            );
+                          } else if (snapshot.hasError) {
+                            return const Text(
+                              "Something went wrong. Please try again later.",
+                              textAlign: TextAlign.center,
+                            );
+                          } else {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        }),
                   ),
                   Flexible(
                     flex: 3,
@@ -230,18 +207,6 @@ class _SearchPageState extends State<SearchPage> {
     setState(() {
       placeList = newList;
     });
-  }
-
-  Marker _markerFromProposal(Proposal proposal) {
-    return Marker(
-      point: proposal.place.coords,
-      builder: (ctx) => Icon(
-        Icons.place,
-        color:
-            proposal.type == 'Public' ? Colors.green : Colors.yellow.shade600,
-        size: 30,
-      ),
-    );
   }
 
   /*

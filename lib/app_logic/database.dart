@@ -318,7 +318,11 @@ class Database {
             "id": proposal.place.id,
             "latitude": proposal.place.coords.latitude,
             "longitude": proposal.place.coords.longitude,
-            "name": proposal.place.name
+            "name": proposal.place.name,
+            "city": proposal.place.city,
+            "state": proposal.place.state,
+            "country": proposal.place.country,
+            "type": proposal.place.type
           },
           "participants": [],
           "type": proposal.type,

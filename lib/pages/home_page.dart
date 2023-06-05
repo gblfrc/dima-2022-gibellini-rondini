@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
-import 'package:progetto/pages/proposal_page.dart';
+import 'package:progetto/pages/create_proposal_page.dart';
 import 'package:progetto/pages/session_page.dart';
 import '../app_logic/database.dart';
 import '../components/cards.dart';
@@ -200,7 +200,7 @@ class _HomePageState extends State<HomePage> {
           ),
           FloatingActionButton(
             onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const ProposalPage())),
+                MaterialPageRoute(builder: (context) => const CreateProposalPage())),
             tooltip: 'New proposal',
             heroTag: 'new-session-button',
             child: const Icon(Icons.calendar_month),

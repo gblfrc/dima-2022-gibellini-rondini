@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:progetto/components/cards.dart';
+import 'package:progetto/components/custom_small_map.dart';
+import 'package:progetto/components/tiles.dart';
 
 import '../app_logic/database.dart';
 import '../model/place.dart';
@@ -17,17 +18,14 @@ class PlacePage extends StatelessWidget {
       appBar: AppBar(
         title: Text(place.name),
       ),
-      body: Flex(
-        direction: Axis.vertical,
-        children: [
-          Flexible(
-            flex: 2,
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                vertical: (MediaQuery.of(context).size.width / 20),
-                horizontal: (MediaQuery.of(context).size.width / 20),
-              ),
-              child: FlutterMap(
+      body: Padding(
+        padding: EdgeInsets.all(MediaQuery.of(context).size.shortestSide / 20),
+        child: Flex(
+          direction: Axis.vertical,
+          children: [
+            Flexible(
+              flex: 3,
+              child: CustomSmallMap(
                 // mapController: _mapController,
                 options: MapOptions(
                   center: place.coords,
@@ -35,34 +33,23 @@ class PlacePage extends StatelessWidget {
                   maxZoom: 18.4,
                 ),
                 children: [
-                  TileLayer(
-                    urlTemplate:
-                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                    subdomains: const ['a', 'b', 'c'],
-                  ),
                   MarkerLayer(
                     markers: [
                       Marker(
                         point: place.coords,
-                        builder: (ctx) => Icon(
+                        builder: (context) => const Icon(
                           Icons.place,
-                          color: Colors.red.shade600,
                           size: 30,
+                          color: Colors.red,
                         ),
                       ),
                     ],
-                  ),
+                  )
                 ],
               ),
             ),
-          ),
-          Flexible(
-            flex: 3,
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                vertical: (MediaQuery.of(context).size.width / 20),
-                horizontal: (MediaQuery.of(context).size.width / 20),
-              ),
+            Flexible(
+              flex: 5,
               child: FutureBuilder(
                 future: Database.getProposalsByPlace(place),
                 builder: (context, snapshot) {
@@ -78,17 +65,15 @@ class PlacePage extends StatelessWidget {
                       return const Text(
                           'There are no proposals for the requested location');
                     } else {
-                      List<TrainingProposalCard> cards = [];
+                      List<ProposalTile> tiles = [];
                       for (int i = 0; i < snapshot.data!.length; i++) {
                         Proposal? current = snapshot.data![i];
-                        cards.add(
-                          TrainingProposalCard(
-                            proposal: current!,
-                          ),
+                        tiles.add(
+                          ProposalTile.fromProposal(current!, context),
                         );
                       }
                       return ListView(
-                        children: cards,
+                        children: tiles,
                       );
                     }
                   } else {
@@ -97,8 +82,8 @@ class PlacePage extends StatelessWidget {
                 },
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
