@@ -267,6 +267,7 @@ class Database {
     if (inProgressOnly) {
       docGoals = docGoals.where("completed", isEqualTo: false);
     }
+    docGoals = docGoals.orderBy("createdAt", descending: true);
     /*return docUser.snapshots();*/
     await for (QuerySnapshot<Map<String, dynamic>> snapshot
         in docGoals.snapshots()) {
@@ -275,6 +276,7 @@ class Database {
         Map<String, dynamic> json = doc.data();
         json['id'] = doc.id;
         json['owner'] = null; // TODO: Maybe it is better to add the user
+        json['createdAt'] = (json['createdAt'] as Timestamp).toDate();
         goals.add(Goal.fromJson(json));
       }
       yield goals;
@@ -290,6 +292,7 @@ class Database {
         "currentValue": goal.currentValue,
         "targetValue": goal.targetValue,
         "type": goal.type,
+        "createdAt": Timestamp.fromDate(goal.creationDate),
         "owner": docUser,
         // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
       };

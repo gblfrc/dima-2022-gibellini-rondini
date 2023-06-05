@@ -120,6 +120,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
         completed: false,
         type: _type!,
         targetValue: double.parse(_targetValueController.text),
+        creationDate: DateTime.now(),
         currentValue: 0.0,
       );
       await Database.createGoal(goal);

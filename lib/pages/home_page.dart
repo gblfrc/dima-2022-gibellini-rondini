@@ -132,8 +132,8 @@ class _HomePageState extends State<HomePage> {
                   stream: Database.getGoals(true),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      return const Text(
-                        "An error occurred while loading goals.",
+                      return Text(
+                        "An error occurred while loading goals. ${snapshot.error}",
                         textAlign: TextAlign.center,
                       );
                     }

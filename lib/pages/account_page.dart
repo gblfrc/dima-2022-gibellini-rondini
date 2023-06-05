@@ -219,7 +219,7 @@ class _GoalTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database.getGoals(true),
+      stream: Database.getGoals(false),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text(

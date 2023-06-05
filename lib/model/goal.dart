@@ -6,6 +6,7 @@ class Goal {
   String type;
   double targetValue;
   double? currentValue;
+  DateTime creationDate;
   bool completed;
 
   Goal(
@@ -14,6 +15,7 @@ class Goal {
       required this.type,
       required this.targetValue,
       this.currentValue,
+      required this.creationDate,
       required this.completed});
 
   static fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class Goal {
       type: json['type'],
       targetValue: json['targetValue'],
       currentValue: json['currentValue'].toDouble(),
+      creationDate: json['createdAt'],
       completed: json['completed'],
     );
   }
