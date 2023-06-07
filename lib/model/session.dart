@@ -10,7 +10,7 @@ class Session {
   DateTime start;
   User? owner;
 
-  // constructor; throws exception id 'positions' array is empty or contains
+  // constructor; throws exception if 'positions' array is empty or contains
   // no positions.
   Session(
       {required this.id,
@@ -18,21 +18,7 @@ class Session {
       required this.duration,
       required this.positions,
       required this.start,
-      this.owner}) {
-    // check positions array contains at least one position
-    bool empty = true;
-    if (positions.isNotEmpty) {
-      for (var array in positions) {
-        if (array.isNotEmpty) {
-          empty = false;
-          break;
-        }
-      }
-    }
-    if (empty) {
-      throw ArgumentError('Positions array cannot be empty.');
-    }
-  }
+      this.owner});
 
   /*
   * Function to create a Session object from a json map
@@ -57,6 +43,8 @@ class Session {
         owner: json['owner'],
       );
     } on Error {
+      // if the list of positions doesn't include at least one position, an error
+      // is thrown because no List<List<LatLng>> can be inferred
       return null;
     }
   }

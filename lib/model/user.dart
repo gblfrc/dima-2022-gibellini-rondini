@@ -20,7 +20,7 @@ class User {
       name: json['name'],
       surname: json['surname'],
       // dart can parse dates only formatted as yyyy-MM-dd
-      birthday: DateTime.parse(json['birthday']),
+      birthday: json['birthday'] != null ? DateTime.parse(json['birthday']) : null,
       uid: json['uid'],
     );
   }

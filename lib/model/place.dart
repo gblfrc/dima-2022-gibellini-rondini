@@ -37,6 +37,6 @@ class Place {
       city: json['city'],
       state: json['state'],
       country: json['country'],
-      coords: LatLng((json['lat']), (json['lon'])),
+      coords: LatLng(json['lat'].toDouble(), json['lon'].toDouble()), // cast to double if numbers passed are integers
       type: json['type']);
 }
