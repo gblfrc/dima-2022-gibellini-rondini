@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
+import 'package:progetto/components/tiles.dart';
 import 'package:progetto/pages/create_proposal_page.dart';
 import 'package:progetto/pages/session_page.dart';
 import '../app_logic/database.dart';
@@ -35,49 +36,39 @@ class _HomePageState extends State<HomePage> {
         padding: EdgeInsets.all(MediaQuery.of(context).size.shortestSide / 30),
         child: ListView(
           children: [
-            Text(
-              'Upcoming trainings',
-              style: sectionTitleStyle,
-            ),
             StreamBuilder(
                 stream: Database.getUpcomingProposals(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return const Text(
-                      "An error occurred while loading trainings.",
-                      textAlign: TextAlign.center,
-                    );
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text(
+                            'An error occurred while loading trainings.')));
                   }
                   if (snapshot.hasData) {
                     // This returns true even if there are no elements in the list
                     if (snapshot.data!.isEmpty) {
-                      // If there are no upcoming proposals, show message stating that there are no proposals
-                      return Padding(
-                        padding: EdgeInsets.symmetric(
-                            vertical:
-                                MediaQuery.of(context).size.shortestSide / 40),
-                        child: const Text(
-                          // "You currently have no scheduled training. Find one in the Search page or create one of your own by tapping on the \"+\" icon.",
-                          "No training scheduled yet.",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(),
-                        ),
-                      );
+                      // If there are no upcoming proposals, don't show anything
+                      return Container();
+                    } else {
+                      List<Widget> proposalList = [];
+                      for (var proposal in snapshot.data!) {
+                        // For each session, we create a card and append it to the array of children
+                        proposalList.add(ProposalTile.fromProposal(
+                          proposal, context,
+                          startable: true,
+                        ));
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                        Text(
+                          'Upcoming trainings',
+                          style: sectionTitleStyle,
+                        ), ...proposalList,
+                      ]);
                     }
-                    List<Widget> proposalList = [];
-                    for (var proposal in snapshot.data!) {
-                      // For each session, we create a card and append it to the array of children
-                      proposalList.add(TrainingProposalCard(
-                        proposal: proposal,
-                        startButton: true,
-                      ));
-                    }
-                    return Column(children: proposalList);
-                  } else {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
                   }
+                  return Container();
                 }),
             Text(
               "Recent sessions",
@@ -199,8 +190,8 @@ class _HomePageState extends State<HomePage> {
             foregroundColor: buttonForegroundColor,
           ),
           FloatingActionButton(
-            onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const CreateProposalPage())),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => const CreateProposalPage())),
             tooltip: 'New proposal',
             heroTag: 'new-session-button',
             child: const Icon(Icons.calendar_month),

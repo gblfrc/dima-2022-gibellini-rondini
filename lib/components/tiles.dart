@@ -12,6 +12,7 @@ import '../model/place.dart';
 import '../model/proposal.dart';
 import '../model/user.dart';
 import '../pages/place_page.dart';
+import '../pages/session_page.dart';
 
 class Tile extends StatelessWidget {
   final Widget leading;
@@ -32,6 +33,7 @@ class Tile extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, constraint) {
       return ListTile(
+        contentPadding: EdgeInsets.all(MediaQuery.of(context).size.shortestSide / 50),
         leading: SizedBox(
           width: constraint.maxWidth / 6,
           height: constraint.maxHeight / 14,
@@ -42,15 +44,15 @@ class Tile extends StatelessWidget {
         title: Text(title),
         subtitle: subtitle != null
             ? Text(
-                subtitle!,
-                style: TextStyle(color: Colors.grey),
-              )
+          subtitle!,
+          style: const TextStyle(color: Colors.grey),
+        )
             : null,
         onTap: () {
           if (onTap != null) onTap!();
         },
         trailing: SizedBox(
-          width: constraint.maxWidth / 6,
+          width: constraint.maxWidth / 5,
           height: constraint.maxHeight / 14,
           child: Center(
             child: trailing,
@@ -174,7 +176,7 @@ class ProposalTile extends Tile {
       required super.onTap,
       super.trailing});
 
-  static ProposalTile fromProposal(Proposal proposal, BuildContext context) {
+  static ProposalTile fromProposal(Proposal proposal, BuildContext context, {startable = false}) {
     return ProposalTile(
       leading: FutureBuilder(
         future: rootBundle.loadString(calendarSvgPath),
@@ -199,17 +201,27 @@ class ProposalTile extends Tile {
       },
       trailing: LayoutBuilder(
         builder: (context, constraint) {
-          if (proposal.type == 'Public') {
-            return Icon(
-              MdiIcons.lockOpen,
-              size: constraint.maxHeight,
-              color: Colors.green,
-            );
+          if (!startable){
+            if (proposal.type == 'Public') {
+              return Icon(
+                MdiIcons.lockOpen,
+                size: constraint.maxHeight,
+                color: Colors.green,
+              );
+            } else {
+              return Icon(
+                Icons.lock,
+                size: constraint.maxHeight,
+                color: Colors.yellow.shade600,
+              );
+            }
           } else {
-            return Icon(
-              Icons.lock,
-              size: constraint.maxHeight,
-              color: Colors.yellow.shade600,
+            return FilledButton(
+              onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          SessionPage(proposal: proposal))),
+              child: const Text("Start"),
             );
           }
         },
