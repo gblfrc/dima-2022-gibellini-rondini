@@ -21,7 +21,7 @@ class Goal {
   static fromJson(Map<String, dynamic> json) {
     return Goal(
       id: json['id'],
-      owner: json['owner'],
+      owner: json['owner'] == null ? null : User.fromJson(json['owner']),
       type: json['type'],
       targetValue: json['targetValue'],
       currentValue: json['currentValue'].toDouble(),
