@@ -25,12 +25,25 @@ class SessionInfoPage extends StatelessWidget {
     // }
     //String formattedDate =
     //"${dateTime.month}/${dateTime.day}/${dateTime.year} ${dateTime.hour}:${dateTime.minute}:${dateTime.second}";
-    String formattedDate = DateFormat("d MMM y").add_Hms().format(session.start);
-    String formattedDuration = "${session.duration ~/ (60 * 60)}";
-    formattedDuration +=
-        ":${(session.duration ~/ 60).toString().padLeft(2, "0")}";
-    formattedDuration +=
-        ":${(session.duration % 60).toStringAsFixed(0).padLeft(2, "0")}";
+    String formattedDate = DateFormat("d MMM y").add_Hm().format(session.start);
+    String time = "";
+    Duration duration = Duration(seconds: session.duration.round());
+    String hours = duration.inHours.toString();
+    String minutes =
+    duration.inMinutes.remainder(60).toString().padLeft(2, "0");
+    String seconds =
+    duration.inSeconds.remainder(60).toString().padLeft(2, "0");
+    if (session.duration < Duration.secondsPerHour) {
+      time = "$minutes:$seconds";
+    } else {
+      time = "$hours:$minutes:$seconds";
+    }
+    String length = "";
+    if (session.distance < 1000) {
+      length = "${session.distance.round()} m";
+    } else {
+      length = "${(session.distance / 1000).toStringAsFixed(2)} km";
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text("Session info"),
@@ -69,7 +82,7 @@ class SessionInfoPage extends StatelessWidget {
                     Column(
                       children: [
                         Text(
-                          formattedDuration,
+                          time,
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -81,7 +94,7 @@ class SessionInfoPage extends StatelessWidget {
                     Column(
                       children: [
                         Text(
-                          "${(session.distance / 1000).toStringAsFixed(2)} km",
+                          length,
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
