@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:progetto/components/custom_small_map.dart';
 
-import '../components/forms/proposal_form.dart';
+import '../components/forms/create_proposal_form.dart';
+import '../model/place.dart';
 
-class CreateProposalPage extends StatelessWidget {
+class CreateProposalPage extends StatefulWidget {
   const CreateProposalPage({super.key});
+
+  @override
+  State<CreateProposalPage> createState() => _CreateProposalPageState();
+}
+
+class _CreateProposalPageState extends State<CreateProposalPage> {
+  Place? location;
+  final MapController _mapController = MapController();
 
   @override
   Widget build(BuildContext context) {
@@ -11,11 +22,50 @@ class CreateProposalPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Proposal"),
       ),
-      body: LayoutBuilder(
-        builder: (context, constraint) => Container(
-          height: constraint.maxHeight,
-          padding: EdgeInsets.all(MediaQuery.of(context).size.width / 20),
-          child: const ProposalForm(),
+      body: Padding(
+        padding: EdgeInsets.all(MediaQuery.of(context).size.width / 20),
+        child: ListView(
+          children: [
+            CreateProposalForm(
+              propagateLocation: (Place place) {
+                setState(() {
+                  location = place;
+                  _mapController.move(location!.coords, 15);
+                });
+              },
+            ),
+            SizedBox(
+              height: MediaQuery.of(context).size.shortestSide,
+              child: location != null
+                  ? CustomSmallMap(
+                      mapController: _mapController,
+                      options: MapOptions(
+                        zoom: 15,
+                        maxZoom: 18.4,
+                        center: location!.coords,
+                      ),
+                      children: [
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                                point: location!.coords,
+                                builder: (context) {
+                                  return Icon(
+                                    Icons.place,
+                                    size: MediaQuery.of(context)
+                                            .size
+                                            .shortestSide /
+                                        12,
+                                    color: Theme.of(context).primaryColor,
+                                  );
+                                })
+                          ],
+                        )
+                      ],
+                    )
+                  : Container(),
+            ),
+          ],
         ),
       ),
     );

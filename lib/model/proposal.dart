@@ -15,8 +15,11 @@ class Proposal {
       required this.owner,
       required this.place,
       required this.type,
-      required this.participants});
-
+      required this.participants}) {
+    if (type != 'Public' && type != 'Friends') {
+      throw ArgumentError('Illegal proposal type');
+    }
+  }
 
   /*
   * Function to create a Proposal object from a json map
@@ -33,15 +36,20 @@ class Proposal {
     // create participants list
     // an empty list is a list of dynamic and cannot be converted to list of String
     // convert list of dynamic to list of String
-    List<String>? participants = (json['participants'] as List).map((item) => item as String).toList();
-    // create proposal object
-    return Proposal(
-      id: json['pid'],
-      dateTime: DateTime.parse(json['dateTime']),
-      owner: User.fromJson(json['owner']),
-      place: Place.fromJson(json['place']),
-      participants: participants,
-      type: json['type'],
-    );
+    try {
+      List<String>? participants =
+          (json['participants'] as List).map((item) => item as String).toList();
+      // create proposal object
+      return Proposal(
+        id: json['pid'],
+        dateTime: DateTime.parse(json['dateTime']),
+        owner: User.fromJson(json['owner']),
+        place: Place.fromJson(json['place']),
+        participants: participants,
+        type: json['type'],
+      );
+    } on Error {
+      return null;
+    }
   }
 }

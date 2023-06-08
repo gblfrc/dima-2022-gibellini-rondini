@@ -10,15 +10,8 @@ main() {
     json = {
       'pid': 'test_proposal',
       'dateTime': "2023-05-23 21:35:06",
-      'owner': {
-        'name': 'Mario',
-        'surname': 'Rossi',
-        'uid': 'mario_rossi'},
-      'place': {
-        'id': 'a place',
-        'name': 'Parco Suardi',
-        'lat': 45,
-        'lon': 9},
+      'owner': {'name': 'Mario', 'surname': 'Rossi', 'uid': 'mario_rossi'},
+      'place': {'id': 'a place', 'name': 'Parco Suardi', 'lat': 45, 'lon': 9},
       'participants': ['first_participant', 'second_participant'],
       'type': 'Public'
     };
@@ -36,7 +29,10 @@ main() {
       expect(proposal.place.coords, LatLng(45, 9));
       expect(proposal.place.id, 'a place');
       expect(proposal.participants.length, 2);
-      expect(const ListEquality().equals(proposal.participants, ['first_participant', 'second_participant']), true);
+      expect(
+          const ListEquality().equals(proposal.participants,
+              ['first_participant', 'second_participant']),
+          true);
     });
 
     test('empty participant list', () {
@@ -54,7 +50,23 @@ main() {
     });
   });
 
+  group('type test', () {
+    test('legal output, public', () {
+      json['type'] = 'Public';
+      Proposal proposal = Proposal.fromJson(json);
+      expect(proposal, isNot(null));
+    });
 
+    test('legal output, friends', () {
+      json['type'] = 'Friends';
+      Proposal proposal = Proposal.fromJson(json);
+      expect(proposal, isNot(null));
+    });
 
-  
+    test('illegal output', () {
+      json['type'] = 'test';
+      Proposal? proposal = Proposal.fromJson(json);
+      expect(proposal, null);
+    });
+  });
 }
