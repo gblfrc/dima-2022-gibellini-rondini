@@ -304,6 +304,16 @@ class Database {
     }
   }
 
+  static Future<void> deleteGoal(Goal goal) async {
+    try {
+      await FirebaseFirestore.instance.collection('goals').doc(goal.id).delete();
+    } on Error {
+      throw DatabaseException("An error occurred while deleting goal.");
+    } on Exception {
+      throw DatabaseException("An error occurred while deleting goal.");
+    }
+  }
+
   static void createProposal(Proposal proposal) async {
     try {
       await FirebaseFirestore.instance.collection("proposals").add(
