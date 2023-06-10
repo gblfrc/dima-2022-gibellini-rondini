@@ -120,7 +120,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
               const SizedBox(
                 height: 6,
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: createUserWithEmailAndPassword,
                 child: const Text(
                   'REGISTER',
@@ -129,10 +129,11 @@ class _RegistrationFormState extends State<RegistrationForm> {
                   ),
                 ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                // mainAxisSize: MainAxisSize.max,
+                // mainAxisAlignment: MainAxisAlignment.center,
+                // crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     'Already registered?',

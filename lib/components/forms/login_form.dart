@@ -65,7 +65,7 @@ class _LoginFormState extends State<LoginForm> {
               const SizedBox(
                 height: 6,
               ),
-              ElevatedButton(
+              FilledButton(
                 onPressed: () {
                   signInWithEmailAndPassword(context);
                 },
@@ -104,31 +104,33 @@ class _LoginFormState extends State<LoginForm> {
                   )
                 ],
               ),
-              const Divider(
-                thickness: 2,
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 4),
-                child: Text(
-                  'Login with:',
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ),
-              Container(
-                height: widget.width / 4,
-                width: widget.width / 4,
-                padding: EdgeInsets.zero,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: Colors.grey.shade400, width: 2),
-                ),
-                child: IconButton(
-                  onPressed: null,
-                  icon: Image.asset('./assets/google-logo.png'),
-                ),
-              ),
+              // section for Google login
+              // (keep commented until Google sign in is not implemented)
+              // const Divider(
+              //   thickness: 2,
+              // ),
+              // Padding(
+              //   padding: const EdgeInsets.fromLTRB(0, 0, 0, 4),
+              //   child: Text(
+              //     'Login with:',
+              //     style: TextStyle(
+              //       color: Colors.grey[700],
+              //     ),
+              //   ),
+              // ),
+              // Container(
+              //   height: widget.width / 4,
+              //   width: widget.width / 4,
+              //   padding: EdgeInsets.zero,
+              //   decoration: BoxDecoration(
+              //     borderRadius: BorderRadius.circular(4),
+              //     border: Border.all(color: Colors.grey.shade400, width: 2),
+              //   ),
+              //   child: IconButton(
+              //     onPressed: null,
+              //     icon: Image.asset('./assets/google-logo.png'),
+              //   ),
+              // ),
             ],
           ),
         ),
