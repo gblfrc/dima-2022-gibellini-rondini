@@ -1,5 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:progetto/app_logic/exceptions.dart';
 import '../../app_logic/auth.dart';
 import 'custom_form_field.dart';
 
@@ -25,7 +25,7 @@ class _LoginFormState extends State<LoginForm> {
         email: _controllerEmail.text,
         password: _controllerPassword.text,
       );
-    } on FirebaseAuthException catch (e) {
+    } on AuthenticationException catch (e) {
       //widget.errorCallback(e.message);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
