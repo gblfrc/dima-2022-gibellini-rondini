@@ -66,13 +66,7 @@ main() {
             () => mockFirebaseAuth.createUserWithEmailAndPassword(
             email: email, password: password),
       ).thenThrow(FirebaseAuthException(code: 'invalid-email'));
-      try {
-        await auth.createUserWithEmailAndPassword(
-            email: email, password: password);
-        expect(false, true);
-      } on AuthenticationException {
-        expect(true, true);
-      }
+      expect(auth.createUserWithEmailAndPassword(email: email, password: password), throwsA(isA<AuthenticationException>()));
     });
   });
 
@@ -99,13 +93,7 @@ main() {
             () => mockFirebaseAuth.signInWithEmailAndPassword(
             email: email, password: password),
       ).thenThrow(FirebaseAuthException(code: 'invalid-email'));
-      try {
-        await auth.signInWithEmailAndPassword(
-            email: email, password: password);
-        expect(false, true);
-      } on AuthenticationException {
-        expect(true, true);
-      }
+      expect(auth.signInWithEmailAndPassword(email: email, password: password), throwsA(isA<AuthenticationException>()));
     });
   });
 

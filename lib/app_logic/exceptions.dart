@@ -9,3 +9,9 @@ class AuthenticationException implements Exception {
 
   AuthenticationException(this.message);
 }
+
+class StorageException implements Exception {
+  String? message;
+
+  StorageException(this.message);
+}

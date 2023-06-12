@@ -43,6 +43,8 @@ class _EditProfileFormState extends State<EditProfileForm> {
 
   @override
   Widget build(BuildContext context) {
+    String pictureUrl = "profile-pictures/${Auth().currentUser!.uid}";
+
     return ListView(
       children: [
         Column(
@@ -51,7 +53,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
               height: MediaQuery.of(context).size.height / 4,
               child: _image ??
                   FutureBuilder(
-                    future: Storage.downloadURL(widget.user.uid),
+                    future: Storage().downloadURL(pictureUrl),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         return Image.network(snapshot.data!);
@@ -73,7 +75,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
               direction: Axis.horizontal,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
+                FilledButton(
                   onPressed: () async {
                     final result = await FilePicker.platform.pickFiles(
                       allowMultiple: false,
@@ -95,11 +97,11 @@ class _EditProfileFormState extends State<EditProfileForm> {
                   },
                   child: const Text('Pick picture'),
                 ),
-                ElevatedButton(
+                FilledButton(
                   onPressed: () async {
                     if (_imagePath != null) {
-                      await Storage.uploadFile(
-                          _imagePath!, Auth().currentUser!.uid);
+                      await Storage().uploadFile(
+                          _imagePath!, pictureUrl);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content:
@@ -108,7 +110,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
                       );
                     }
                   },
-                  child: const Text('Update profile picture'),
+                  child: const Text('Save picture'),
                 ),
               ],
             ),
@@ -157,7 +159,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
                   const SizedBox(
                     height: 6,
                   ),
-                  ElevatedButton(
+                  FilledButton(
                     onPressed: () async {
                       try {
                         Database.updateUser(
