@@ -69,8 +69,8 @@ class Auth {
       UserCredential credential = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
       return credential;
-    } on FirebaseAuthException {
-      throw AuthenticationException("Couldn't authenticate user.");
+    } on FirebaseAuthException catch (fae) {
+      throw AuthenticationException(fae.message);
     }
   }
 

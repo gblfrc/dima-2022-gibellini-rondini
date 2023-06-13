@@ -30,7 +30,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
         email: _controllerEmail.text,
         password: _controllerPassword.text,
       );
-      Database.createUser(
+      Database().createUser(
         model_user.User(
           name: _controllerName.text,
           surname: _controllerSurname.text,

@@ -172,14 +172,14 @@ class CreateProposalFormState extends State<CreateProposalForm> {
                 Proposal? proposal;
                 try {
                   User? user =
-                      await Database.getUser(Auth().currentUser!.uid).first;
+                      await Database().getUser(Auth().currentUser!.uid).first;
                   proposal = Proposal(
                       dateTime: dateTime,
                       owner: user!,
                       place: location!,
                       participants: [],
                       type: type);
-                  Database.createProposal(proposal);
+                  Database().createProposal(proposal);
                   if (mounted) {
                     Navigator.pop(context);
                   }

@@ -163,7 +163,7 @@ class _EditProfileFormState extends State<EditProfileForm> {
                   FilledButton(
                     onPressed: () async {
                       try {
-                        Database.updateUser(
+                        Database().updateUser(
                           User(
                             name: _nameController.text,
                             surname: _surnameController.text,

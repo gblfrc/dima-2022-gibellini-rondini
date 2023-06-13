@@ -14,14 +14,55 @@ import '../model/proposal.dart';
 import '../model/user.dart';
 import 'auth.dart';
 
+/*
+* This class aims at being a singleton interface for the interaction with the
+* database, currently provided by the Firebase Firestore service.
+*/
 class Database {
-  static void createUser(User user) async {
+  static late Database _instance;
+  late FirebaseFirestore _database;
+
+  /*
+  * Factory method to create the instance of the singleton.
+  * If parameter firebaseFirestore is not passed, the singleton will work with
+  * usual Firebase Firestore services. Setting a different parameter to the
+  * constructor is mainly needed in testing phases.
+  */
+  factory Database({FirebaseFirestore? firebaseFirestore}) {
     try {
-      await FirebaseFirestore.instance.collection("users").doc(user.uid).set(
+      return _instance;
+    } on Error {
+      _instance = Database._internal(firebaseFirestore: firebaseFirestore);
+      return _instance;
+    }
+  }
+
+  /*
+  * Internal constructor; follows common naming convention for dart singletons.
+  * For parameter meaning, see factory constructor above.
+  */
+  Database._internal({FirebaseFirestore? firebaseFirestore}) {
+    _database = firebaseFirestore ?? FirebaseFirestore.instance;
+  }
+
+  // Getter for the type of database, mainly needed for testing and debugging.
+  Type get databaseType => _database.runtimeType;
+
+  /*
+  * Method to save on the database the instance of a user which is not already
+  * present on the database.
+  * Throws a database exception if something wrong happens in the communication
+  * with the database.
+  */
+  void createUser(User user) async {
+    try {
+      await _database.collection("users").doc(user.uid).set(
         {
           "name": user.name,
           "surname": user.surname,
-          "birthday": DateFormat('yyyy-MM-dd').format(user.birthday!),
+          "birthday": user.birthday != null
+              ? DateFormat('yyyy-MM-dd').format(user.birthday!)
+              : null,
         },
       );
     } on FirebaseException {
@@ -29,33 +70,54 @@ class Database {
     }
   }
 
-  static void updateUser(User user) async {
+  /*
+  * Method to update the information on the database for a user which is already
+  * present on the database.
+  * Throws a database exception if something wrong happens in the communication
+  * with the database.
+  */
+  void updateUser(User user) async {
     try {
-      final docUser =
-          FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final docUser = _database.collection('users').doc(user.uid);
       await docUser.update(
         {
           'name': user.name,
           'surname': user.surname,
-          'birthday': DateFormat('yyyy-MM-dd').format(user.birthday!),
+          'birthday': user.birthday != null
+              ? DateFormat('yyyy-MM-dd').format(user.birthday!)
+              : null,
         },
       );
-    } on Exception {
+    } on FirebaseException {
       throw DatabaseException(
           'An error occurred while updating user information.');
     }
   }
 
-  static Stream<User?> getUser(String uid) {
-    final docUser = FirebaseFirestore.instance.collection("users").doc(uid);
-    return docUser.snapshots().map((doc) {
-      Map<String, dynamic> json = doc.data()!;
-      json['uid'] = uid;
-      return User.fromJson(json);
-    });
+  /*
+  * Method to obtain the instance of a User from the database having the uid
+  * which can be specified as parameter. Throws a Database exception if something
+  * wrong happens in the communication with the database. Returns a null object
+  * instead of a User if some of the extracted data are illegal.
+  */
+  Stream<User?> getUser(String uid) {
+    try {
+      final docUser = _database.collection("users").doc(uid);
+      return docUser.snapshots().map((doc) {
+        try {
+          Map<String, dynamic> json = doc.data()!;
+          json['uid'] = uid;
+          return User.fromJson(json);
+        } on Exception {
+          return null;
+        }
+      });
+    } on FirebaseException catch (fe) {
+      throw DatabaseException(fe.message);
+    }
   }
 
-  static Future<List<Proposal?>> getFriendProposals() async {
+  Future<List<Proposal?>> getFriendProposals() async {
     // Create document reference for current user
     final currentUserRef = FirebaseFirestore.instance
         .collection("users")
@@ -108,7 +170,7 @@ class Database {
     return proposals;
   }
 
-  static Future<List<Proposal>> getProposalsWithinBoundsGivenUser(
+  Future<List<Proposal>> getProposalsWithinBoundsGivenUser(
       // TODO: find an implementation such that all the places in the bounds are found
       // TODO: see example with liceo mascheroni (very hard to find)
       LatLngBounds bounds,
@@ -187,7 +249,7 @@ class Database {
     return friends;
   }
 
-  static void addFriend(String friend) async {
+  void addFriend(String friend) async {
     final docUser = FirebaseFirestore.instance
         .collection("users")
         .doc(Auth().currentUser!.uid);
@@ -221,7 +283,7 @@ class Database {
     }
   }
 
-  static Stream<List<Session?>> getLatestSessionsByUser(String uid,
+  Stream<List<Session?>> getLatestSessionsByUser(String uid,
       {int? limit}) async* {
     List<Session?> sessions = [];
     final userDocRef = FirebaseFirestore.instance.collection("users").doc(uid);
@@ -257,7 +319,7 @@ class Database {
     }
   }
 
-  static Stream<List<Goal>> getGoals(bool inProgressOnly) async* {
+  Stream<List<Goal>> getGoals(bool inProgressOnly) async* {
     final userDocRef = FirebaseFirestore.instance
         .collection("users")
         .doc(Auth().currentUser?.uid);
@@ -283,7 +345,7 @@ class Database {
     }
   }
 
-  static Future<void> createGoal(Goal goal) async {
+  Future<void> createGoal(Goal goal) async {
     try {
       final uid = Auth().currentUser?.uid;
       final docUser = FirebaseFirestore.instance.collection('users').doc(uid);
@@ -304,9 +366,12 @@ class Database {
     }
   }
 
-  static Future<void> deleteGoal(Goal goal) async {
+  Future<void> deleteGoal(Goal goal) async {
     try {
-      await FirebaseFirestore.instance.collection('goals').doc(goal.id).delete();
+      await FirebaseFirestore.instance
+          .collection('goals')
+          .doc(goal.id)
+          .delete();
     } on Error {
       throw DatabaseException("An error occurred while deleting goal.");
     } on Exception {
@@ -314,7 +379,7 @@ class Database {
     }
   }
 
-  static void createProposal(Proposal proposal) async {
+  void createProposal(Proposal proposal) async {
     try {
       await FirebaseFirestore.instance.collection("proposals").add(
         {
@@ -346,7 +411,7 @@ class Database {
     }
   }
 
-  static void addParticipantToProposal(Proposal proposal) async {
+  void addParticipantToProposal(Proposal proposal) async {
     try {
       var uid = Auth().currentUser!.uid;
       DocumentReference userRef =
@@ -362,7 +427,7 @@ class Database {
     }
   }
 
-  static void removeParticipantFromProposal(Proposal proposal) async {
+  void removeParticipantFromProposal(Proposal proposal) async {
     try {
       var uid = Auth().currentUser!.uid;
       DocumentReference userRef =
@@ -378,7 +443,7 @@ class Database {
     }
   }
 
-  static Future<List<Proposal?>> getProposalsByPlace(Place place) async {
+  Future<List<Proposal?>> getProposalsByPlace(Place place) async {
     // future for public proposals
     List<Proposal?> list = [];
     var future = FirebaseFirestore.instance
@@ -397,7 +462,7 @@ class Database {
     return list;
   }
 
-  static Stream<List<Proposal>> getUpcomingProposals() async* {
+  Stream<List<Proposal>> getUpcomingProposals() async* {
     List<Proposal?> proposalsTemp = [];
     List<Proposal> proposals = [];
     final currentUserRef = FirebaseFirestore.instance
@@ -453,7 +518,7 @@ class Database {
   * excludeUser to true. Returns null if current user is owner or is not friend
   * of the owner of the proposal.
   * */
-  static Future<Proposal?> _proposalFromFirestore(
+  Future<Proposal?> _proposalFromFirestore(
       QueryDocumentSnapshot<Map<String, dynamic>> doc,
       {bool excludeUser = true}) async {
     // create convenience variables

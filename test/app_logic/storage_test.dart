@@ -15,8 +15,6 @@ import 'package:progetto/app_logic/storage.dart';
 ])
 import 'storage_test.mocks.dart';
 
-// class MockFirebaseStorage2 extends Mock implements FirebaseStorage {}
-
 main() {
   late Storage storage;
   late MockFirebaseStorage mockFirebaseStorage;
@@ -24,14 +22,11 @@ main() {
   setUpAll(() {
     mockFirebaseStorage = MockFirebaseStorage();
     storage = Storage(firebaseStorage: mockFirebaseStorage);
-    // registerFallbackValue(File('assets/test/flutter_logo.png'));
   });
 
   test('singleton properties', () {
     var storage1 = Storage();
-    // var storage2 = Storage(firebaseStorage: MockFirebaseStorage2());
     expect(storage, storage1);
-    // expect(storage, storage2);
     expect(storage.storageType, mockFirebaseStorage.runtimeType);
   });
 

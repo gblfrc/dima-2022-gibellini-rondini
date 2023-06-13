@@ -123,7 +123,7 @@ class _GoalInfoPageState extends State<GoalInfoPage> {
   void deleteGoal() async {
     Goal goal = widget.goal;
     try {
-      await Database.deleteGoal(goal);
+      await Database().deleteGoal(goal);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

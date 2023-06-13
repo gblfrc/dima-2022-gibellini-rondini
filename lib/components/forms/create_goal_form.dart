@@ -123,7 +123,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
         creationDate: DateTime.now(),
         currentValue: 0.0,
       );
-      await Database.createGoal(goal);
+      await Database().createGoal(goal);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

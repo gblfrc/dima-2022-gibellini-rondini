@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           children: [
             StreamBuilder(
-                stream: Database.getUpcomingProposals(),
+                stream: Database().getUpcomingProposals(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.symmetric(
                   vertical: MediaQuery.of(context).size.shortestSide / 50),
               child: StreamBuilder(
-                  stream: Database.getLatestSessionsByUser(
+                  stream: Database().getLatestSessionsByUser(
                       Auth().currentUser!.uid,
                       limit: 2),
                   builder: (context, snapshot) {
@@ -120,7 +120,7 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.symmetric(
                   vertical: MediaQuery.of(context).size.shortestSide / 40),
               child: StreamBuilder(
-                  stream: Database.getGoals(true),
+                  stream: Database().getGoals(true),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       return const Text(

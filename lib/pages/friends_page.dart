@@ -29,7 +29,7 @@ class FriendsPage extends StatelessWidget {
               children: [
                 Padding(padding: EdgeInsets.all(padding)),
                 FutureBuilder(
-                    future: Database.getFriendProposals(),
+                    future: Database().getFriendProposals(),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         return const Text(

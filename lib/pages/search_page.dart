@@ -215,7 +215,7 @@ class _SearchPageState extends State<SearchPage> {
   void _updateProposalList(LatLngBounds bounds, String uid) async {
     // get all proposals for logged user within boundaries of the map
     List<Proposal> newList =
-        await Database.getProposalsWithinBoundsGivenUser(bounds, uid);
+        await Database().getProposalsWithinBoundsGivenUser(bounds, uid);
     // call setState to update widget
     setState(() {
       proposalList = newList;

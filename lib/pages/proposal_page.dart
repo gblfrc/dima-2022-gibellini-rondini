@@ -125,7 +125,7 @@ class _ProposalPageState extends State<ProposalPage> {
                     ? Column(
                         children: widget.proposal.participants.map((uid) {
                           return StreamBuilder(
-                              stream: Database.getUser(uid!),
+                              stream: Database().getUser(uid!),
                               builder: (context, snapshot) {
                                 if (snapshot.hasData) {
                                   return UserTile.fromUser(
@@ -148,7 +148,7 @@ class _ProposalPageState extends State<ProposalPage> {
                     onPressed: () {
                       if (joinable) {
                         try {
-                          Database.addParticipantToProposal(widget.proposal);
+                          Database().addParticipantToProposal(widget.proposal);
                           widget.proposal.participants
                               .add(Auth().currentUser!.uid);
                         } on Exception {
@@ -161,7 +161,7 @@ class _ProposalPageState extends State<ProposalPage> {
                         }
                       } else {
                         try {
-                          Database.removeParticipantFromProposal(
+                          Database().removeParticipantFromProposal(
                               widget.proposal);
                           widget.proposal.participants
                               .remove(Auth().currentUser!.uid);

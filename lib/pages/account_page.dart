@@ -99,7 +99,7 @@ class _AccountPageState extends State<AccountPage> {
                 flexibleSpace: Padding(
                   padding: EdgeInsets.symmetric(horizontal: padding),
                   child: StreamBuilder(
-                    stream: Database.getUser(widget.uid),
+                    stream: Database().getUser(widget.uid),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         return const Center(
@@ -177,7 +177,7 @@ class _SessionTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database.getLatestSessionsByUser(uid),
+      stream: Database().getLatestSessionsByUser(uid),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text(
@@ -219,7 +219,7 @@ class _GoalTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database.getGoals(false),
+      stream: Database().getGoals(false),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text(

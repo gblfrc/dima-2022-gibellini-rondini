@@ -268,7 +268,7 @@ class _TrainingProposalCardState extends State<TrainingProposalCard> {
                           onPressed: () {
                             if (joinable) {
                               try {
-                                Database.addParticipantToProposal(proposal);
+                                Database().addParticipantToProposal(proposal);
                                 print('joined');
                                 proposal.participants
                                     .add(Auth().currentUser!.uid);
@@ -282,7 +282,7 @@ class _TrainingProposalCardState extends State<TrainingProposalCard> {
                               }
                             } else {
                               try {
-                                Database.removeParticipantFromProposal(
+                                Database().removeParticipantFromProposal(
                                     proposal);
                                 print('joined');
                                 proposal.participants

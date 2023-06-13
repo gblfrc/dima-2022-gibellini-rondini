@@ -105,7 +105,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
   void addFriend() {
     try {
-      Database.addFriend(widget.user.uid);
+      Database().addFriend(widget.user.uid);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Added to friends!"),

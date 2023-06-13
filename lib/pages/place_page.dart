@@ -51,7 +51,7 @@ class PlacePage extends StatelessWidget {
             Flexible(
               flex: 5,
               child: FutureBuilder(
-                future: Database.getProposalsByPlace(place),
+                future: Database().getProposalsByPlace(place),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return Container(
