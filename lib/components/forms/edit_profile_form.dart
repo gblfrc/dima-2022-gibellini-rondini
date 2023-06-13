@@ -100,8 +100,9 @@ class _EditProfileFormState extends State<EditProfileForm> {
                 FilledButton(
                   onPressed: () async {
                     if (_imagePath != null) {
+                      File file = File(_imagePath!);
                       await Storage().uploadFile(
-                          _imagePath!, pictureUrl);
+                          file, pictureUrl);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content:

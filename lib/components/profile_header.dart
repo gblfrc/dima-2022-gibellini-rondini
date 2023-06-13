@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:progetto/components/profile_picture.dart';
 
 import '../app_logic/auth.dart';
+import '../app_logic/storage.dart';
 import '../app_logic/database.dart';
 import '../app_logic/exceptions.dart';
 import '../model/user.dart';
@@ -29,7 +30,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         children: [
           Expanded(
             flex: 1,
-            child: ProfilePicture(uid: widget.user.uid),
+            child: ProfilePicture(uid: widget.user.uid, storage: Storage(),),
           ),
           Expanded(
             flex: 2,

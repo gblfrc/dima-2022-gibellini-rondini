@@ -45,8 +45,7 @@ class Storage {
   * If no error occurs during the upload, the method returns smoothly, otherwise
   * it throws a StorageException.
   */
-  Future<void> uploadFile(String localPath, String remotePath) async {
-    File file = File(localPath);
+  Future<void> uploadFile(File file, String remotePath) async {
     try {
       await _storage.ref(remotePath).putFile(file);
     } on FirebaseException catch (fe) {
