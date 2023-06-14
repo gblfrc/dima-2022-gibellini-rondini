@@ -74,4 +74,54 @@ main() {
     expect(subtitleFinder, findsOneWidget);
     expect(progressBarFinder, findsOneWidget);
   });
+
+  Goal timeGoal = Goal(
+      id: "abcd",
+      owner: User(uid: "xcvb", name: "Mario", surname: "Rossi"),
+      type: 'timeGoal',
+      targetValue: 75,
+      currentValue: 78.54,
+      completed: true,
+      creationDate: DateTime.now());
+
+  testWidgets("Goal card - time goal", (tester) async {
+    GlobalKey<NavigatorState> navigatorKey = GlobalKey();
+    await tester.pumpWidget(MediaQuery(
+        data: const MediaQueryData(),
+        child: Builder(builder: (BuildContext context) { return MaterialApp(
+            navigatorKey: navigatorKey, home: GoalCard(timeGoal));})));
+    final titleFinder = find.text('Run for at least 75 min');
+    final subtitleFinder = find.text('Completed');
+    final progressBarFinder = find.byWidgetPredicate((widget) =>
+    widget is LinearProgressIndicator && widget.value == 78.54/75);
+
+    expect(titleFinder, findsOneWidget);
+    expect(subtitleFinder, findsOneWidget);
+    expect(progressBarFinder, findsOneWidget);
+  });
+
+  Goal speedGoal = Goal(
+      id: "abcd",
+      owner: User(uid: "xcvb", name: "Mario", surname: "Rossi"),
+      type: 'speedGoal',
+      targetValue: 12.5,
+      currentValue: 0,
+      completed: false,
+      creationDate: DateTime.now());
+
+  testWidgets("Goal card - speed goal", (tester) async {
+    GlobalKey<NavigatorState> navigatorKey = GlobalKey();
+    await tester.pumpWidget(MediaQuery(
+        data: const MediaQueryData(),
+        child: Builder(builder: (BuildContext context) { return MaterialApp(
+            navigatorKey: navigatorKey, home: GoalCard(speedGoal));})));
+    final titleFinder = find.text('Run with an average speed of at least 12.5 km/h');
+    final subtitleFinder = find.text('In progress');
+    final progressBarFinder = find.byWidgetPredicate((widget) =>
+    widget is LinearProgressIndicator);
+
+    expect(titleFinder, findsOneWidget);
+    expect(subtitleFinder, findsOneWidget);
+    expect(progressBarFinder, findsNothing);
+  });
 }
