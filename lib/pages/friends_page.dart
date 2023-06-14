@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../app_logic/auth.dart';
 import '../app_logic/database.dart';
 import '../components/tiles.dart';
-import '../components/cards.dart';
 import '../model/user.dart';
 
 class FriendsPage extends StatelessWidget {
@@ -50,7 +49,7 @@ class FriendsPage extends StatelessWidget {
                           List<Widget> trainings = [];
                           for (var proposal in snapshot.data!) {
                             trainings.add(
-                              TrainingProposalCard(proposal: proposal!),
+                              ProposalTile.fromProposal(proposal!, context),
                             );
                           }
                           return Column(
