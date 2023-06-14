@@ -26,17 +26,13 @@ class _AccountPageState extends State<AccountPage> {
     // boolean to determine whether current user is the owner of the account page
     bool isMyAccount = (widget.uid == Auth().currentUser!.uid);
     // define tabs
-    List<Tab> tabs = isMyAccount
-        ? const [Tab(text: 'Sessions'), Tab(text: 'Goals')]
-        : const [Tab(text: 'Sessions')];
+    List<Tab> tabs = isMyAccount ? const [Tab(text: 'Sessions'), Tab(text: 'Goals')] : const [Tab(text: 'Sessions')];
 
     return DefaultTabController(
       length: tabs.length,
       child: Scaffold(
         appBar: AppBar(
-          title: isMyAccount
-              ? const Text('My account')
-              : const Text('Account details'),
+          title: isMyAccount ? const Text('My account') : const Text('Account details'),
           actions: isMyAccount
               ? [
                   IconButton(
@@ -51,12 +47,10 @@ class _AccountPageState extends State<AccountPage> {
                                 iconColor: Colors.white,
                                 textColor: Colors.white,
                                 onTap: () async {
-                                  ScaffoldMessenger.of(context)
-                                      .removeCurrentSnackBar();
+                                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                   await Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          const EditProfilePage(),
+                                      builder: (context) => const EditProfilePage(),
                                       settings: RouteSettings(
                                         arguments: user,
                                       ),
@@ -71,8 +65,7 @@ class _AccountPageState extends State<AccountPage> {
                                 iconColor: Colors.white,
                                 textColor: Colors.white,
                                 onTap: () async {
-                                  ScaffoldMessenger.of(context)
-                                      .removeCurrentSnackBar();
+                                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                   await Auth().signOut();
                                 },
                               ),
@@ -130,16 +123,15 @@ class _AccountPageState extends State<AccountPage> {
               )
             ];
           },
-          body: TabBarView(
-            children: [
-              _SessionTab(uid: widget.uid),
-              if (isMyAccount) const _GoalTab()
-            ],
+          body: Padding(
+            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.shortestSide / 60),
+            child: TabBarView(
+              children: [_SessionTab(uid: widget.uid), if (isMyAccount) const _GoalTab()],
+            ),
           ),
         ),
       ),
     );
-
   }
 }
 
@@ -149,8 +141,7 @@ class _ScrollDelegate extends SliverPersistentHeaderDelegate {
   const _ScrollDelegate(this.tabBar);
 
   @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: Theme.of(context).colorScheme.background,
       child: tabBar,

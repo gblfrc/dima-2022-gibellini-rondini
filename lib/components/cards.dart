@@ -3,16 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
-import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/components/session_map.dart';
 
-import '../app_logic/database.dart';
 import '../model/goal.dart';
-import '../model/proposal.dart';
 import '../model/session.dart';
 import '../pages/session_info_page.dart';
 import '../pages/goal_info_page.dart';
-import '../pages/session_page.dart';
 
 class SessionCard extends StatelessWidget {
   final Session session;
@@ -198,117 +194,3 @@ class GoalCard extends StatelessWidget {
   }
 }
 
-class TrainingProposalCard extends StatefulWidget {
-  final Proposal proposal;
-  final bool? startButton;
-
-  const TrainingProposalCard(
-      {super.key, required this.proposal, this.startButton});
-
-  @override
-  State<TrainingProposalCard> createState() => _TrainingProposalCardState();
-}
-
-class _TrainingProposalCardState extends State<TrainingProposalCard> {
-  @override
-  Widget build(BuildContext context) {
-    Proposal proposal = widget.proposal;
-    bool? startButton = widget.startButton;
-    bool joinable;
-    if (!proposal.participants.contains(Auth().currentUser!.uid)) {
-      joinable = true;
-    } else {
-      joinable = false;
-    }
-    DateTime dateTime = proposal.dateTime.toLocal();
-    String formattedDate = DateFormat("MMM d, y ").add_Hm().format(dateTime);
-    //"${dateTime.month}/${dateTime.day}, ${dateTime.year} ${dateTime.hour}:${dateTime.minute}";
-    return Card(
-      child: InkWell(
-        onTap: () => print("Card tap"),
-        child: Column(
-          children: [
-            const FractionallySizedBox(widthFactor: 1),
-            ListTile(
-              title: Text("Proposed session at ${proposal.place.name}"),
-              subtitle: Text(proposal.type),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.person,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      Text(
-                          "Proposed by ${proposal.owner.name} ${proposal.owner.surname}")
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.calendar_today,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                      Text(formattedDate),
-                    ],
-                  ),
-                  startButton ?? false
-                      ? FilledButton(
-                          onPressed: () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      SessionPage(proposal: proposal))),
-                          child: const Text("Start"),
-                        )
-                      : FilledButton(
-                          onPressed: () {
-                            if (joinable) {
-                              try {
-                                Database().addParticipantToProposal(proposal);
-                                print('joined');
-                                proposal.participants
-                                    .add(Auth().currentUser!.uid);
-                              } on Exception {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        "An error occurred. Couldn't join session"),
-                                  ),
-                                );
-                              }
-                            } else {
-                              try {
-                                Database().removeParticipantFromProposal(
-                                    proposal);
-                                print('joined');
-                                proposal.participants
-                                    .remove(Auth().currentUser!.uid);
-                              } on Exception {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                        "An error occurred. Couldn't leave session"),
-                                  ),
-                                );
-                              }
-                            }
-                            setState(() {});
-                          },
-                          child: joinable
-                              ? const Text("Join")
-                              : const Text('Leave'),
-                        ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-}
