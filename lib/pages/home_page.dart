@@ -37,7 +37,7 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           children: [
             StreamBuilder(
-                stream: Database().getUpcomingProposals(),
+                stream: Database().getUpcomingProposals(Auth().currentUser!.uid),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

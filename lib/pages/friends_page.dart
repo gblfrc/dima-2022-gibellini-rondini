@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../app_logic/auth.dart';
 import '../app_logic/database.dart';
 import '../components/tiles.dart';
 import '../components/cards.dart';
@@ -29,7 +31,7 @@ class FriendsPage extends StatelessWidget {
               children: [
                 Padding(padding: EdgeInsets.all(padding)),
                 FutureBuilder(
-                    future: Database().getFriendProposals(),
+                    future: Database().getFriendProposalsAfterTimestamp(Auth().currentUser!.uid, after: Timestamp.now()),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         return const Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/components/custom_small_map.dart';
 import 'package:progetto/components/tiles.dart';
 
@@ -51,7 +52,7 @@ class PlacePage extends StatelessWidget {
             Flexible(
               flex: 5,
               child: FutureBuilder(
-                future: Database().getProposalsByPlace(place),
+                future: Database().getProposalsByPlace(place, Auth().currentUser!.uid),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return Container(
