@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:progetto/app_logic/database.dart';
@@ -22,6 +24,7 @@ main() {
   late Database database;
   late FirebaseFirestore mockFirebaseFirestore;
   late Timestamp testTimestamp;
+  late LatLngBounds testBounds;
   late User testUser;
   late Map<String, dynamic> mockUserJson0;
   late Map<String, dynamic> mockUserJson1;
@@ -94,16 +97,17 @@ main() {
       'dateTime': Timestamp.fromDate(DateTime(2023, 6, 6)),
       'owner': mockOwnerDocumentReference1,
       'place': {
-        'coords': const GeoPoint(45.70169115, 9.67716459),
-        'geohash': 'u0ngupe8',
-        'id': '11694848',
-        'name': 'Parco Suardi',
-        'latitude': 45.70169115,
-        'longitude': 9.67716459,
+        'coords': const GeoPoint(45.70373305, 9.67972074),
+        'geohash': 'u0nuh20e9',
+        'id': '81252122',
+        'name': 'Liceo Mascheroni',
+        'latitude': 45.70373305,
+        'longitude': 9.67972074,
       },
       'participants': [],
       'type': 'Public'
     };
+    testBounds = LatLngBounds(LatLng(45.706529, 9.688445), LatLng(45.699355, 9.67264));
   });
 
   test('singleton properties', () {
@@ -158,9 +162,7 @@ main() {
     });
   });
 
-
   group('getting user from database', () {
-
     test('correct output', () async {
       when(mockFirebaseFirestore.collection('users')).thenAnswer((realInvocation) => mockCollection);
       when(mockCollection.doc(mockUserJson0['uid'])).thenAnswer((realInvocation) => mockReference);
@@ -255,6 +257,77 @@ main() {
       when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test'));
       expect(() => database.getFriendProposalsAfterTimestamp('test', after: testTimestamp),
           throwsA(isA<DatabaseException>()));
+    });
+  });
+
+  void proposalWithinBoundsInit() {
+    when(mockFirebaseFirestore.collection('proposals')).thenAnswer((realInvocation) => mockCollection);
+    when(mockCollection.where('place.geohash', isGreaterThanOrEqualTo: anyNamed('isGreaterThanOrEqualTo')))
+        .thenAnswer((realInvocation) => mockQuery0);
+    when(mockQuery0.where('place.geohash', isLessThanOrEqualTo: anyNamed('isLessThanOrEqualTo')))
+        .thenAnswer((realInvocation) => mockQuery0);
+    when(mockQuery0.where('type', isEqualTo: 'Friends')).thenAnswer((realInvocation) => mockQuery0);
+    when(mockQuery0.where('type', isEqualTo: 'Public')).thenAnswer((realInvocation) => mockQuery1);
+    when(mockQuery0.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot0));
+    when(mockQuery1.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot1));
+    when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotProposal0]);
+    when(mockQuerySnapshot1.docs).thenReturn([mockQueryDocumentSnapshotProposal1]);
+    when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockUserFirestoreProposal0);
+    when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockUserFirestoreProposal1);
+  }
+
+  group('find proposal within bounds', () {
+    test('correct output', () async {
+      proposalWithinBoundsInit();
+      List<Proposal?> proposals = await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']);
+      expect(proposals.length, 2);
+    });
+
+    test('one of the proposals lies out of bounds', () async {
+      mockUserFirestoreProposal1['place']['coords'] = const GeoPoint(45.698, 9.68);
+      mockUserFirestoreProposal1['place']['latitude'] = 45.698;
+      mockUserFirestoreProposal1['place']['longitude'] = 9.68;
+      proposalWithinBoundsInit();
+      List<Proposal?> proposals = await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']);
+      expect(proposals.length, 1);
+    });
+
+    test('proposals are returned in order', () async {
+      // set proposal 1 to take place before proposal 0
+      mockUserFirestoreProposal1['dateTime'] = Timestamp.fromDate(DateTime(2023, 1, 1));
+      proposalWithinBoundsInit();
+      List<Proposal?> proposals = await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']);
+      expect(proposals.length, 2);
+      expect(proposals[0]!.type, 'Public');
+      expect(proposals[1]!.type, 'Friends');
+    });
+
+    test('illegal coords field in json', () async {
+      mockUserFirestoreProposal1['place']['coords'] = 10;
+      proposalWithinBoundsInit();
+      List<Proposal?> proposals = await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']);
+      expect(proposals.length, 1);
+    });
+
+    test('illegal dateTime field in json', () async {
+      mockUserFirestoreProposal1['dateTime'] = 10;
+      proposalWithinBoundsInit();
+      List<Proposal?> proposals = await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']);
+      expect(proposals.length, 1);
+    });
+
+    test('correct behavior with outdated proposals', () async {
+      Timestamp testAfter = Timestamp.fromDate(DateTime(2023, 5, 30));
+      proposalWithinBoundsInit();
+      List<Proposal?> proposals =
+          await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid'], after: testAfter);
+      expect(proposals.length, 1);
+    });
+
+    test('throws exception', () {
+      when(mockFirebaseFirestore.collection('proposals')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
+      expect(
+          () => database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']), throwsA(isA<DatabaseException>()));
     });
   });
 }

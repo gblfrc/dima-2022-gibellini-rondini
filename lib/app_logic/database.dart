@@ -169,52 +169,60 @@ class Database {
     }
   }
 
-  Future<List<Proposal>> getProposalsWithinBoundsGivenUser(
-      // TODO: find an implementation such that all the places in the bounds are found
-      // TODO: see example with liceo mascheroni (very hard to find)
-      LatLngBounds bounds,
-      String uid) async {
+  Future<List<Proposal>> getProposalsWithinBounds(LatLngBounds bounds, String uid, {Timestamp? after}) async {
     // collect hashes for the four corners and for the center
     List<String> hashes = [];
     var northEast = bounds.northEast ?? LatLng(bounds.north, bounds.east);
     var southWest = bounds.southWest ?? LatLng(bounds.south, bounds.west);
-    hashes.add(GeoHasher().encode(bounds.northWest.longitude, bounds.northWest.latitude, precision: 6));
-    hashes.add(GeoHasher().encode(northEast.longitude, northEast.latitude, precision: 6));
-    hashes.add(GeoHasher().encode(southWest.longitude, southWest.latitude, precision: 6));
-    hashes.add(GeoHasher().encode(bounds.southEast.longitude, bounds.southEast.latitude, precision: 6));
-    hashes.add(GeoHasher().encode(bounds.center.longitude, bounds.center.latitude, precision: 6));
+    hashes.add(GeoHasher().encode(bounds.northWest.longitude, bounds.northWest.latitude, precision: 9));
+    hashes.add(GeoHasher().encode(northEast.longitude, northEast.latitude, precision: 9));
+    hashes.add(GeoHasher().encode(southWest.longitude, southWest.latitude, precision: 9));
+    hashes.add(GeoHasher().encode(bounds.southEast.longitude, bounds.southEast.latitude, precision: 9));
+    hashes.add(GeoHasher().encode(bounds.center.longitude, bounds.center.latitude, precision: 9));
     // sort alphabetically
     hashes.sort();
     List<Proposal> newList = [];
     List<Future<QuerySnapshot<Map<String, dynamic>>>> futures = [];
     // future for public proposals
-    futures.add(FirebaseFirestore.instance
-        .collection("proposals")
-        .where('place.geohash', isGreaterThanOrEqualTo: hashes[0])
-        .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length - 1])
-        .where('type', isEqualTo: 'Friends')
-        .get());
-    futures.add(FirebaseFirestore.instance
-        .collection("proposals")
-        .where('place.geohash', isGreaterThanOrEqualTo: hashes[0])
-        .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length - 1])
-        .where('type', isEqualTo: 'Public')
-        .get());
+    try {
+      futures.add(_database
+          .collection("proposals")
+          .where('place.geohash', isGreaterThanOrEqualTo: hashes[0].substring(0, 6))
+          .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length - 1])
+          .where('type', isEqualTo: 'Friends')
+          .get());
+      futures.add(_database
+          .collection("proposals")
+          .where('place.geohash', isGreaterThanOrEqualTo: hashes[0].substring(0, 6))
+          .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length - 1])
+          .where('type', isEqualTo: 'Public')
+          .get());
+    } on FirebaseException catch (fe) {
+      throw DatabaseException(fe.message);
+    }
     for (var future in futures) {
       await future.then((snapshot) async {
         for (var doc in snapshot.docs) {
-          // exclude out-of-bound proposals
-          var placeGeoPoint = doc.data()['place']['coords'] as GeoPoint;
-          if (!bounds.contains(LatLng(placeGeoPoint.latitude, placeGeoPoint.longitude))) {
+          // exclude proposals if they are out of bounds or before the timestamp specified in the after parameter
+          try {
+            var placeGeoPoint = doc.data()['place']['coords'] as GeoPoint;
+            var dateTime = (doc.data()['dateTime'] as Timestamp).toDate();
+            if (!bounds.contains(LatLng(placeGeoPoint.latitude, placeGeoPoint.longitude)) ||
+                (after != null && dateTime.isBefore(after.toDate()))) {
+              continue;
+            }
+          } on Error {
             continue;
           }
           Proposal? proposal = await _proposalFromFirestore(doc, currentUserUid: uid);
-          if (proposal != null) newList.add(proposal);
+          if (proposal != null) {
+            newList.add(proposal);
+          }
         }
-      }, onError: (e) {
-        throw DatabaseException("Couldn't get proposals within specified boundary.");
       });
     }
+    // sort output list to return proposals ordered by date
+    newList.sort((a,b) => a.dateTime.compareTo(b.dateTime));
     return newList;
   }
 

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
@@ -214,8 +215,9 @@ class _SearchPageState extends State<SearchPage> {
   */
   void _updateProposalList(LatLngBounds bounds, String uid) async {
     // get all proposals for logged user within boundaries of the map
+    var now = Timestamp.now();
     List<Proposal> newList =
-        await Database().getProposalsWithinBoundsGivenUser(bounds, uid);
+        await Database().getProposalsWithinBounds(bounds, uid, after: now);
     // call setState to update widget
     setState(() {
       proposalList = newList;
