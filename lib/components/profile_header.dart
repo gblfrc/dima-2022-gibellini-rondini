@@ -55,7 +55,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: FutureBuilder(
-                          future: Database.getFriends(),
+                          future: Database().getFriends(Auth().currentUser!.uid),
                           builder: (context, snapshot) {
                             if (snapshot.hasError) {
                               return const Text(
@@ -105,7 +105,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
   void addFriend() {
     try {
-      Database().addFriend(widget.user.uid);
+      Database().addFriend(widget.user.uid, Auth().currentUser!.uid);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Added to friends!"),
@@ -123,7 +123,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
   void removeFriend() {
     try {
-      Database.removeFriend(widget.user.uid);
+      Database().removeFriend(widget.user.uid);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Friend removed."),

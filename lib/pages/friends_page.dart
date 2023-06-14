@@ -71,7 +71,7 @@ class FriendsPage extends StatelessWidget {
                 children: [
                   Padding(padding: EdgeInsets.all(padding)),
                   FutureBuilder(
-                      future: Database.getFriends(),
+                      future: Database().getFriends(Auth().currentUser!.uid),
                       builder: (context, snapshot) {
                         if (snapshot.hasError) {
                           return const Text(
