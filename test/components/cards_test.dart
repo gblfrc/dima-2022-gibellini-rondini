@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:progetto/components/cards.dart';
+import 'package:progetto/model/goal.dart';
 import 'package:progetto/model/session.dart';
+import 'package:progetto/model/user.dart';
 
 main() {
   late Session session;
-  session = Session(id: "abcd",
+  session = Session(
+      id: "abcd",
       distance: 3419.99,
       duration: 603,
       positions: [
@@ -16,28 +19,59 @@ main() {
           LatLng(45.6, 9.1),
           LatLng(45.6, 9.2),
         ],
-        [LatLng(45.8, 9.3), LatLng(46, 9.3),]
+        [
+          LatLng(45.8, 9.3),
+          LatLng(46, 9.3),
+        ]
       ],
       start: DateTime(2023, 5, 23, 21, 35, 06));
 
-  testWidgets('Card with a session', (tester) async {
+  testWidgets('Session Card', (tester) async {
     await tester.pumpWidget(MediaQuery(
         data: const MediaQueryData(),
-        child: MaterialApp(home: SessionCard(session: session,))
-    ));
+        child: MaterialApp(
+            home: SessionCard(
+              session: session,
+            ))));
 
     final distanceFinder = find.text('3.4 km');
     final timeFinder = find.text('TIME: 10:03');
     Finder dateFinder;
-    if(session.start.year < DateTime.now().year) {
+    if (session.start.year < DateTime
+        .now()
+        .year) {
       dateFinder = find.text('MAY 23, 2023');
-    }
-    else {
+    } else {
       dateFinder = find.text('MAY 23');
     }
 
     expect(distanceFinder, findsOneWidget);
     expect(timeFinder, findsOneWidget);
     expect(dateFinder, findsOneWidget);
+  });
+
+  Goal distanceGoal = Goal(
+      id: "abcd",
+      owner: User(uid: "xcvb", name: "Mario", surname: "Rossi"),
+      type: 'distanceGoal',
+      targetValue: 8.0,
+      currentValue: 5.3,
+      completed: false,
+      creationDate: DateTime.now());
+
+  testWidgets("Goal card - distance goal", (tester) async {
+    GlobalKey<NavigatorState> navigatorKey = GlobalKey();
+    await tester.pumpWidget(MediaQuery(
+        data: const MediaQueryData(),
+        child: Builder(builder: (BuildContext context) { return MaterialApp(
+            navigatorKey: navigatorKey, home: GoalCard(distanceGoal));})));
+    final titleFinder = find.text('Run for at least 8.0 km');
+    final subtitleFinder = find.text('In progress');
+    final progressBarFinder = find.byWidgetPredicate((widget) =>
+      widget is LinearProgressIndicator && widget.value == 5.3/8);
+
+    expect(titleFinder, findsOneWidget);
+    expect(subtitleFinder, findsOneWidget);
+    expect(progressBarFinder, findsOneWidget);
   });
 }
