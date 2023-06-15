@@ -8,6 +8,7 @@ import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/exceptions.dart';
 import 'package:progetto/model/place.dart';
 import 'package:progetto/model/proposal.dart';
+import 'package:progetto/model/session.dart';
 import 'package:progetto/model/user.dart';
 
 @GenerateNiceMocks([
@@ -37,9 +38,10 @@ main() {
   late DocumentReference<Map<String, dynamic>> mockOwnerDocumentReference1;
   late Map<String, dynamic> mockFirestoreProposal0;
   late Map<String, dynamic> mockFirestoreProposal1;
+  late Map<String, dynamic> mockFirestoreSession0;
+  late Map<String, dynamic> mockFirestoreSession1;
   final CollectionReference<Map<String, dynamic>> mockCollection = MockCollectionReference();
   final CollectionReference<Map<String, dynamic>> mockUserCollection = MockCollectionReference();
-  final CollectionReference<Map<String, dynamic>> mockProposalCollection = MockCollectionReference();
   final DocumentReference<Map<String, dynamic>> mockReference = MockDocumentReference();
   final Query<Map<String, dynamic>> mockQuery0 = MockQuery();
   final QuerySnapshot<Map<String, dynamic>> mockQuerySnapshot0 = MockQuerySnapshot();
@@ -51,6 +53,8 @@ main() {
   final QuerySnapshot<Map<String, dynamic>> mockQuerySnapshot1 = MockQuerySnapshot();
   final QueryDocumentSnapshot<Map<String, dynamic>> mockQueryDocumentSnapshotProposal0 = MockQueryDocumentSnapshot();
   final QueryDocumentSnapshot<Map<String, dynamic>> mockQueryDocumentSnapshotProposal1 = MockQueryDocumentSnapshot();
+  final QueryDocumentSnapshot<Map<String, dynamic>> mockQueryDocumentSnapshotSession0 = MockQueryDocumentSnapshot();
+  final QueryDocumentSnapshot<Map<String, dynamic>> mockQueryDocumentSnapshotSession1 = MockQueryDocumentSnapshot();
   final DocumentSnapshot<Map<String, dynamic>> mockSnapshot0 = MockDocumentSnapshot();
   final DocumentSnapshot<Map<String, dynamic>> mockSnapshot1 = MockDocumentSnapshot();
 
@@ -140,6 +144,43 @@ main() {
     });
     testLowerBound = DateTime(2023, 6, 15, 10);
     testUpperBound = DateTime(2023, 6, 15, 12);
+    mockFirestoreSession0 = {
+      'distance': 182.01853264834955,
+      'duration': 42.859,
+      'positions': [
+        {
+          'values': [
+            const GeoPoint(37.36, 122.07),
+            const GeoPoint(37.37, 122.08),
+            const GeoPoint(37.39, 122.08),
+            const GeoPoint(37.40, 122.08),
+          ]
+        },
+        {
+          'values': [
+            const GeoPoint(37.41, 122.07),
+            const GeoPoint(37.42, 122.08),
+            const GeoPoint(37.42, 122.10),
+          ]
+        }
+      ],
+      'startDT': Timestamp.fromDate(DateTime(2023, 6, 15, 10, 12, 33)),
+      'userID': mockOwnerDocumentReference0
+    };
+    mockFirestoreSession1 = {
+      'distance': 18.16,
+      'duration': 42516,
+      'positions': [
+        {
+          'values': [
+            const GeoPoint(37.51, 122.07),
+            const GeoPoint(37.52, 122.08),
+          ],
+        },
+      ],
+      'startDT': Timestamp.fromDate(DateTime(2023, 6, 5, 18, 22, 33)),
+      'userID': mockOwnerDocumentReference0
+    };
   });
 
   test('singleton properties', () {
@@ -253,7 +294,7 @@ main() {
     test('correct output, not empty list', () async {
       proposalExtractionInit();
       List<Proposal?> proposals =
-      await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testDateTime);
+          await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testDateTime);
       expect(proposals.length, 2);
     });
 
@@ -262,7 +303,7 @@ main() {
         mockUserJson1['friends'] = [];
         proposalExtractionInit();
         List<Proposal?> proposals =
-        await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testDateTime);
+            await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testDateTime);
         expect(proposals.length, 1);
         expect(proposals[0]!.type, 'Public');
       });
@@ -272,7 +313,7 @@ main() {
         mockFirestoreProposal1['dateTime'] = null;
         proposalExtractionInit();
         List<Proposal?> proposals =
-        await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testDateTime);
+            await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testDateTime);
         expect(proposals.length, 1);
         expect(proposals[0]!.type, 'Friends');
       });
@@ -345,15 +386,14 @@ main() {
       DateTime testAfter = DateTime(2023, 5, 30);
       proposalWithinBoundsInit();
       List<Proposal?> proposals =
-      await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid'], after: testAfter);
+          await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid'], after: testAfter);
       expect(proposals.length, 1);
     });
 
     test('throws exception', () {
       when(mockFirebaseFirestore.collection('proposals')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
       expect(
-              () => database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']),
-          throwsA(isA<DatabaseException>()));
+          () => database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']), throwsA(isA<DatabaseException>()));
     });
   });
 
@@ -430,7 +470,7 @@ main() {
       when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockFirestoreProposal0);
       when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockFirestoreProposal1);
       List<Proposal?> proposals =
-      await database.getProposalsByPlace(testPlace, mockUserJson0['uid'], after: DateTime(2023, 5, 30));
+          await database.getProposalsByPlace(testPlace, mockUserJson0['uid'], after: DateTime(2023, 5, 30));
       expect(proposals.length, 1);
       expect(proposals[0]!.type, 'Public');
     });
@@ -443,7 +483,7 @@ main() {
       when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotProposal0]);
       when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockFirestoreProposal0);
       List<Proposal?> proposals =
-      await database.getProposalsByPlace(testPlace, mockUserJson0['uid'], after: DateTime(2023, 5, 30));
+          await database.getProposalsByPlace(testPlace, mockUserJson0['uid'], after: DateTime(2023, 5, 30));
       expect(proposals.length, 0);
     });
 
@@ -464,25 +504,26 @@ main() {
       when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
       when(mockUserCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference);
       // extraction of proposals with user in participants - Query 0
-      when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockProposalCollection);
-      when(mockProposalCollection.where('participants', arrayContains: mockReference)).thenReturn(mockQuery0);
+      when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);
+      when(mockCollection.where('participants', arrayContains: mockReference)).thenReturn(mockQuery0);
       when(mockQuery0.where('dateTime', isLessThanOrEqualTo: testUpperBound)).thenReturn(mockQuery0);
       when(mockQuery0.where('dateTime', isGreaterThanOrEqualTo: testLowerBound)).thenReturn(mockQuery0);
       when(mockQuery0.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot0));
       when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotProposal1]);
       when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockFirestoreProposal1);
       // extraction of proposals owned by user - Query 1
-      when(mockProposalCollection.where('owner', isEqualTo: mockReference)).thenReturn(mockQuery1);
+      when(mockCollection.where('owner', isEqualTo: mockReference)).thenReturn(mockQuery1);
       when(mockQuery1.where('dateTime', isLessThanOrEqualTo: testUpperBound)).thenReturn(mockQuery1);
       when(mockQuery1.where('dateTime', isGreaterThanOrEqualTo: testLowerBound)).thenReturn(mockQuery1);
       when(mockQuery1.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot1));
       when(mockQuerySnapshot1.docs).thenReturn([mockQueryDocumentSnapshotProposal0]);
       when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockFirestoreProposal0);
       // call method
-      List<Proposal?> proposals = await database.getProposalsWithinInterval(mockUserJson0['uid'], after: testLowerBound, before: testUpperBound).first;
+      List<Proposal?> proposals = await database
+          .getProposalsWithinInterval(mockUserJson0['uid'], after: testLowerBound, before: testUpperBound)
+          .first;
       expect(proposals.length, 2);
     });
-
 
     test('throws argument exception', () {
       expect(database.getProposalsWithinInterval('test', after: testUpperBound, before: testLowerBound),
@@ -493,6 +534,55 @@ main() {
       when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test'));
       expect(database.getProposalsWithinInterval('test', after: testLowerBound, before: testUpperBound),
           emitsError(isA<DatabaseException>()));
+    });
+  });
+
+  void sessionInit(){
+    // user collection
+    when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
+    when(mockUserCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference);
+    // session collection
+    when(mockFirebaseFirestore.collection('sessions')).thenReturn(mockCollection);
+    when(mockCollection.where('userID', isEqualTo: mockReference)).thenReturn(mockQuery0);
+    when(mockQuery0.orderBy("startDT", descending: true)).thenReturn(mockQuery0);
+    when(mockQuery0.limit(2)).thenReturn(mockQuery0);
+    // stream of snapshots
+    when(mockQuery0.snapshots()).thenAnswer((realInvocation) => Stream.fromIterable([mockQuerySnapshot0]));
+    // snapshot (list of sessions)
+    when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotSession0, mockQueryDocumentSnapshotSession1]);
+    when(mockQueryDocumentSnapshotSession0.data()).thenReturn(mockFirestoreSession0);
+    when(mockQueryDocumentSnapshotSession0.id).thenReturn('test_session_0');
+    when(mockQueryDocumentSnapshotSession1.data()).thenReturn(mockFirestoreSession1);
+    when(mockQueryDocumentSnapshotSession1.id).thenReturn('test_session_1');
+  }
+
+
+  group('get user sessions', () {
+    test('returns sessions', () async {
+      sessionInit();
+      List<Session?> sessions = await database.getLatestSessionsByUser(mockUserJson0['uid'], limit: 2).first;
+      expect(sessions.length, 2);
+    });
+
+    test('one session is null because of errors in the json', () async {
+      sessionInit();
+      mockFirestoreSession0['distance'] = 'test';
+      List<Session?> sessions = await database.getLatestSessionsByUser(mockUserJson0['uid'], limit: 2).first;
+      expect(sessions.length, 1);
+      expect(sessions[0]!.distance, 18.16); // distance is the one of the second mock session
+    });
+
+    test('one session is null because no positions are saved in the arrays', () async {
+      sessionInit();
+      mockFirestoreSession0['positions'] = [{'values':[]}];
+      List<Session?> sessions = await database.getLatestSessionsByUser(mockUserJson0['uid'], limit: 2).first;
+      expect(sessions.length, 1);
+      expect(sessions[0]!.distance, 18.16); // distance is the one of the second mock session
+    });
+
+    test('throws exception', () {
+      when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
+      expect(database.getLatestSessionsByUser('test'), emitsError(isA<DatabaseException>()));
     });
   });
 }

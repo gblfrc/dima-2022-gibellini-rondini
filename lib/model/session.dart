@@ -18,9 +18,22 @@ class Session {
       required this.duration,
       required this.positions,
       required this.start,
-      this.owner});
+      this.owner}) {
+    if (positions.isEmpty) {
+      throw ArgumentError('Empty list of positions');
+    } else {
+      for (int i = positions.length-1; i>=0; i--){
+        if (positions[i].isEmpty){
+          positions.remove(positions[i]);
+        }
+      }
+      if (positions.isEmpty) {
+        throw ArgumentError('Empty list of positions');
+      }
+    }
+  }
 
-  /*
+/*
   * Function to create a Session object from a json map
   * Required json structure: {
   *   String id,

@@ -279,35 +279,48 @@ class Database {
 
   Stream<List<Session?>> getLatestSessionsByUser(String uid, {int? limit}) async* {
     List<Session?> sessions = [];
-    final userDocRef = _database.collection("users").doc(uid);
-    var sessionDocs = _database
-        .collection("sessions")
-        .where("userID", isEqualTo: userDocRef)
-        .orderBy("startDT", descending: true)
-        // limit query to parameter or to a very high number
-        // number could be even higher, but then it causes problems with Firestore
-        .limit(limit ?? 10000);
-    // process snapshots
-    await for (var snapshot in sessionDocs.snapshots()) {
-      // clean session array for each snapshot
-      sessions = [];
-      for (var doc in snapshot.docs) {
-        // create a Session object for each document
-        Map<String, dynamic> json = doc.data();
-        json['id'] = doc.id;
-        json['start'] = (json['startDT'] as Timestamp).toDate();
-        List<List<LatLng>> positions = [];
-        for (var sublist in (json['positions'] as List)) {
-          var list = (sublist as Map)['values'] as List;
-          var segment = list.map((pos) => LatLng(pos.latitude, pos.longitude)).toList();
-          positions.add(segment);
+    Query<Map<String, dynamic>> sessionQuery;
+    try {
+      final userDocRef = _database.collection("users").doc(uid);
+      sessionQuery = _database
+          .collection("sessions")
+          .where("userID", isEqualTo: userDocRef)
+          .orderBy("startDT", descending: true)
+          // limit query to parameter or to a very high number
+          // number could be even higher, but then it causes problems with Firestore
+          .limit(limit ?? 10000);
+      // process snapshots
+      await for (var snapshot in sessionQuery.snapshots()) {
+        // clean session array for each snapshot
+        sessions = [];
+        for (var doc in snapshot.docs) {
+          // create a Session object for each document
+          Map<String, dynamic> json = doc.data();
+          Session? session;
+          try {
+            json['id'] = doc.id;
+            json['start'] = (json['startDT'] as Timestamp).toDate();
+            List<List<LatLng>> positions = [];
+            for (var sublist in (json['positions'] as List)) {
+              var list = (sublist as Map)['values'] as List;
+              var segment = list.map((pos) => LatLng(pos.latitude, pos.longitude)).toList();
+              positions.add(segment);
+            }
+            json['positions'] = positions;
+            json['owner'] = null;
+            // ensure duration and distance are double (might be saved as int on the database)
+            json['duration'] = json['duration'].toDouble();
+            json['distance'] = json['distance'].toDouble();
+            session = Session.fromJson(json);
+          } on Error {
+            continue;
+          }
+          if (session != null) sessions.add(session);
         }
-        json['positions'] = positions;
-        json['owner'] = null;
-        var session = Session.fromJson(json);
-        if (session != null) sessions.add(session);
+        yield sessions;
       }
-      yield sessions;
+    } on FirebaseException catch (fe) {
+      throw DatabaseException(fe.message);
     }
   }
 
@@ -436,13 +449,14 @@ class Database {
     }
   }
 
-  Stream<List<Proposal>> getProposalsWithinInterval(String uid, {required DateTime after, required DateTime before}) async* {
+  Stream<List<Proposal>> getProposalsWithinInterval(String uid,
+      {required DateTime after, required DateTime before}) async* {
     // sanity check on incoming parameters: "after" parameter must be before "before" parameter
     if (!after.isBefore(before)) throw ArgumentError("'after' parameter must precede 'before' parameter");
     // initialize lists
     List<Proposal> proposals = [];
-    QuerySnapshot<Map<String, dynamic>> proposalsDocs;        // Sessions proposed by others
-    QuerySnapshot<Map<String, dynamic>> proposalsDocsOwned;   // Sessions proposed by the user
+    QuerySnapshot<Map<String, dynamic>> proposalsDocs; // Sessions proposed by others
+    QuerySnapshot<Map<String, dynamic>> proposalsDocsOwned; // Sessions proposed by the user
     try {
       // get reference to current user document
       final currentUserRef = _database.collection("users").doc(uid);
