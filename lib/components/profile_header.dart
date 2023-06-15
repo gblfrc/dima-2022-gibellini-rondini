@@ -30,72 +30,75 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         children: [
           Expanded(
             flex: 1,
-            child: ProfilePicture(uid: widget.user.uid, storage: Storage(),),
+            child: ProfilePicture(
+              uid: widget.user.uid,
+              storage: Storage(),
+            ),
           ),
           Expanded(
             flex: 2,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: padding),
               child: Stack(
-                  alignment: Alignment.topRight,
-                  // crossAxisAlignment: CrossAxisAlignment.start,
-                  // mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "${widget.user.name} ${widget.user.surname}",
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).textScaleFactor * 22,
-                          fontWeight: FontWeight.bold,
-                        ),
+                alignment: Alignment.topRight,
+                // crossAxisAlignment: CrossAxisAlignment.start,
+                // mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "${widget.user.name} ${widget.user.surname}",
+                      style: TextStyle(
+                        fontSize: MediaQuery.of(context).textScaleFactor * 22,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (!isCurrentUser)
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: FutureBuilder(
-                          future: Database().getFriends(Auth().currentUser!.uid),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasError) {
-                              return const Text(
-                                "Something went wrong while checking friend list. Please try again later.",
-                                textAlign: TextAlign.center,
-                              );
-                            }
-                            if (snapshot.hasData) {
-                              for (User friend in snapshot.data!) {
-                                if (friend.uid == widget.user.uid) {
-                                  return ElevatedButton(
-                                    onPressed: removeFriend,
-                                    child: const Text("Remove friend"),
-                                  );
-                                }
+                  ),
+                  if (!isCurrentUser)
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: FutureBuilder(
+                        future: Database().getFriends(Auth().currentUser!.uid),
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            return const Text(
+                              "Something went wrong while checking friend list. Please try again later.",
+                              textAlign: TextAlign.center,
+                            );
+                          }
+                          if (snapshot.hasData) {
+                            for (User friend in snapshot.data!) {
+                              if (friend.uid == widget.user.uid) {
+                                return ElevatedButton(
+                                  onPressed: removeFriend,
+                                  child: const Text("Remove friend"),
+                                );
                               }
-                              return FilledButton(
-                                onPressed: addFriend,
-                                child: const Text("Add to friends"),
-                              );
-                            } else {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
                             }
-                          },
-                        ),
-                        // child: Container(
-                        //     color: Colors.green.shade100,
-                        //     height: 20,
-                        //     width: 20),
+                            return FilledButton(
+                              onPressed: addFriend,
+                              child: const Text("Add to friends"),
+                            );
+                          } else {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                        },
                       ),
-                    // Text(
-                    //   DateFormat.yMd().format(user.birthday!),
-                    //   style: TextStyle(
-                    //     fontSize: MediaQuery.of(context).textScaleFactor * 15,
-                    //   ),
-                    // ),
-                  ],
-                ),
+                      // child: Container(
+                      //     color: Colors.green.shade100,
+                      //     height: 20,
+                      //     width: 20),
+                    ),
+                  // Text(
+                  //   DateFormat.yMd().format(user.birthday!),
+                  //   style: TextStyle(
+                  //     fontSize: MediaQuery.of(context).textScaleFactor * 15,
+                  //   ),
+                  // ),
+                ],
+              ),
             ),
           ),
         ],
@@ -105,7 +108,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
   void addFriend() {
     try {
-      Database().addFriend(widget.user.uid, Auth().currentUser!.uid);
+      Database().addFriend(
+        currentUserUid: Auth().currentUser!.uid,
+        friendUid: widget.user.uid,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Added to friends!"),
@@ -123,7 +129,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
   void removeFriend() {
     try {
-      Database().removeFriend(widget.user.uid);
+      Database().removeFriend(
+        currentUserUid: Auth().currentUser!.uid,
+        friendUid: widget.user.uid,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Friend removed."),

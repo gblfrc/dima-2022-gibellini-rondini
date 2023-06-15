@@ -83,7 +83,7 @@ main() {
       'surname': 'Verdi',
       'uid': 'luigi_verdi',
       'birthday': '1999-04-03',
-      'friends': [],
+      'friends': [mockUserJson0['uid']],
     };
     mockOwnerDocumentReference0 = MockDocumentReference();
     var tempSnapshot0 = MockDocumentSnapshot();
@@ -95,7 +95,6 @@ main() {
     when(mockOwnerDocumentReference1.id).thenReturn(mockUserJson1['uid']);
     when(mockOwnerDocumentReference1.get()).thenAnswer((realInvocation) => Future.value(tempSnapshot1));
     when(tempSnapshot1.data()).thenReturn(mockUserJson1);
-    mockUserJson1['friends'] = [mockOwnerDocumentReference0];
     mockFirestoreProposal0 = {
       'dateTime': Timestamp.fromDate(DateTime(2023, 5, 5)),
       'owner': mockOwnerDocumentReference1,
@@ -432,13 +431,17 @@ main() {
 
   group('get friends from database', () {
     test('correct output', () async {
-      when(mockFirebaseFirestore.collection('users')).thenReturn(mockCollection);
-      when(mockCollection.doc(mockUserJson1['uid'])).thenReturn(mockReference0);
-      when(mockReference0.get()).thenAnswer((realInvocation) => Future.value(mockSnapshot0));
-      when(mockSnapshot0.get('friends')).thenReturn(mockUserJson1['friends']);
-      when(mockOwnerDocumentReference0.get()).thenAnswer((realInvocation) => Future.value(mockSnapshot1));
-      when(mockSnapshot1.get('name')).thenReturn(mockUserJson0['name']);
-      when(mockSnapshot1.get('surname')).thenReturn(mockUserJson0['surname']);
+      // user collection and current user document
+      when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
+      when(mockUserCollection.doc(mockUserJson1['uid'])).thenReturn(mockReference1);
+      // snaspshot and list of friend uids
+      when(mockReference1.get()).thenAnswer((realInvocation) => Future.value(mockSnapshot1));
+      when(mockSnapshot1.get('friends')).thenReturn(mockUserJson1['friends']);
+      // friend documents
+      when(mockUserCollection.doc(mockUserJson0['uid'])).thenReturn(mockOwnerDocumentReference0);
+      when(mockOwnerDocumentReference0.get()).thenAnswer((realInvocation) => Future.value(mockSnapshot0));
+      when(mockSnapshot0.get('name')).thenReturn(mockUserJson0['name']);
+      when(mockSnapshot0.get('surname')).thenReturn(mockUserJson0['surname']);
       List<User?> users = await database.getFriends(mockUserJson1['uid']);
       expect(users.length, 1);
       expect(users[0]!.name, mockUserJson0['name']);
@@ -453,16 +456,56 @@ main() {
   });
 
   group('add friends', () {
-    // this test is currently not working because of a missing _delegate in MockDocumentReference
-    // test('correct output', () async {
-    //   when(mockFirebaseFirestore.collection('users')).thenReturn(mockCollection);
-    //   when(mockCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference);
-    //   expect(() => database.addFriend(mockUserJson1['uid'], mockUserJson0['uid']), returnsNormally);
-    // });
+    // this test is the reason why the Database class doesn't have 100% coverage. The FieldValue turned out to be
+    // unmockable because of a missing _delegate getter in MockDocumentReference.
+    test('correct output', () async {
+      when(mockFirebaseFirestore.collection('users')).thenReturn(mockCollection);
+      when(mockCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference0);
+      expect(() => database.addFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']), returnsNormally);
+    });
 
     test('throw exception', () {
       when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
-      expect(() => database.addFriend(mockUserJson1['uid'], mockUserJson0['uid']), throwsA(isA<DatabaseException>()));
+      expect(() => database.addFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']), throwsA(isA<DatabaseException>()));
+    });
+  });
+
+  group('remove friends', () {
+    test('correct output', () async {
+      when(mockFirebaseFirestore.collection('users')).thenReturn(mockCollection);
+      when(mockCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference0);
+      expect(() => database.removeFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']), returnsNormally);
+    });
+
+    test('throw exception', () {
+      when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
+      expect(() => database.removeFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']), throwsA(isA<DatabaseException>()));
+    });
+  });
+
+
+  group('add participants to proposals', () {
+    test('correct output', () async {
+      when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);
+      when(mockCollection.doc(testProposal.id)).thenReturn(mockReference0);
+      expect(() => database.addParticipantToProposal(testProposal, mockUserJson0['uid']), returnsNormally);
+    });
+
+    test('throw exception', () {
+      when(mockFirebaseFirestore.collection('proposals')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
+      expect(() => database.addParticipantToProposal(testProposal, mockUserJson0['uid']), throwsA(isA<DatabaseException>()));
+    });
+  });
+  group('remove participants to proposals', () {
+    test('correct output', () async {
+      when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);
+      when(mockCollection.doc(testProposal.id)).thenReturn(mockReference0);
+      expect(() => database.removeParticipantFromProposal(testProposal, mockUserJson0['uid']), returnsNormally);
+    });
+
+    test('throw exception', () {
+      when(mockFirebaseFirestore.collection('proposals')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
+      expect(() => database.removeParticipantFromProposal(testProposal, mockUserJson0['uid']), throwsA(isA<DatabaseException>()));
     });
   });
 
@@ -532,13 +575,13 @@ main() {
       mockFirestoreProposal0['owner'] = mockOwnerDocumentReference0;
       mockFirestoreProposal0['dateTime'] = Timestamp.fromDate(testLowerBound.add(const Duration(hours: 1)));
       mockFirestoreProposal1['dateTime'] = Timestamp.fromDate(testLowerBound.add(const Duration(hours: 1)));
-      mockFirestoreProposal1['participants'] = [mockOwnerDocumentReference0];
+      mockFirestoreProposal1['participants'] = [mockUserJson0['uid']];
       // extraction of user reference
       when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
       when(mockUserCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference);
       // extraction of proposals with user in participants - Query 0
       when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);
-      when(mockCollection.where('participants', arrayContains: mockReference)).thenReturn(mockQuery0);
+      when(mockCollection.where('participants', arrayContains: mockUserJson0['uid'])).thenReturn(mockQuery0);
       when(mockQuery0.where('dateTime', isLessThanOrEqualTo: testUpperBound)).thenReturn(mockQuery0);
       when(mockQuery0.where('dateTime', isGreaterThanOrEqualTo: testLowerBound)).thenReturn(mockQuery0);
       when(mockQuery0.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot0));

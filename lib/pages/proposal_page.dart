@@ -148,7 +148,7 @@ class _ProposalPageState extends State<ProposalPage> {
                     onPressed: () {
                       if (joinable) {
                         try {
-                          Database().addParticipantToProposal(widget.proposal);
+                          Database().addParticipantToProposal(widget.proposal, Auth().currentUser!.uid);
                           widget.proposal.participants
                               .add(Auth().currentUser!.uid);
                         } on Exception {
@@ -162,7 +162,7 @@ class _ProposalPageState extends State<ProposalPage> {
                       } else {
                         try {
                           Database().removeParticipantFromProposal(
-                              widget.proposal);
+                              widget.proposal, Auth().currentUser!.uid);
                           widget.proposal.participants
                               .remove(Auth().currentUser!.uid);
                         } on Exception {
