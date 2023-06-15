@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../app_logic/auth.dart';
 import '../../app_logic/database.dart';
 import '../../model/goal.dart';
 import 'custom_form_field.dart';
@@ -123,7 +124,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
         creationDate: DateTime.now(),
         currentValue: 0.0,
       );
-      await Database().createGoal(goal);
+      await Database().createGoal(Auth().currentUser!.uid, goal);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

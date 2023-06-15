@@ -6,6 +6,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/exceptions.dart';
+import 'package:progetto/model/goal.dart';
 import 'package:progetto/model/place.dart';
 import 'package:progetto/model/proposal.dart';
 import 'package:progetto/model/session.dart';
@@ -32,6 +33,7 @@ main() {
   late User testUser;
   late Proposal testProposal;
   late Place testPlace;
+  late Goal testGoal;
   late Map<String, dynamic> mockUserJson0;
   late Map<String, dynamic> mockUserJson1;
   late DocumentReference<Map<String, dynamic>> mockOwnerDocumentReference0;
@@ -40,6 +42,8 @@ main() {
   late Map<String, dynamic> mockFirestoreProposal1;
   late Map<String, dynamic> mockFirestoreSession0;
   late Map<String, dynamic> mockFirestoreSession1;
+  late Map<String, dynamic> mockFirestoreGoal0;
+  late Map<String, dynamic> mockFirestoreGoal1;
   final CollectionReference<Map<String, dynamic>> mockCollection = MockCollectionReference();
   final CollectionReference<Map<String, dynamic>> mockUserCollection = MockCollectionReference();
   final DocumentReference<Map<String, dynamic>> mockReference = MockDocumentReference();
@@ -55,6 +59,8 @@ main() {
   final QueryDocumentSnapshot<Map<String, dynamic>> mockQueryDocumentSnapshotProposal1 = MockQueryDocumentSnapshot();
   final QueryDocumentSnapshot<Map<String, dynamic>> mockQueryDocumentSnapshotSession0 = MockQueryDocumentSnapshot();
   final QueryDocumentSnapshot<Map<String, dynamic>> mockQueryDocumentSnapshotSession1 = MockQueryDocumentSnapshot();
+  final QueryDocumentSnapshot<Map<String, dynamic>> mockQueryDocumentSnapshotGoal0 = MockQueryDocumentSnapshot();
+  final QueryDocumentSnapshot<Map<String, dynamic>> mockQueryDocumentSnapshotGoal1 = MockQueryDocumentSnapshot();
   final DocumentSnapshot<Map<String, dynamic>> mockSnapshot0 = MockDocumentSnapshot();
   final DocumentSnapshot<Map<String, dynamic>> mockSnapshot1 = MockDocumentSnapshot();
 
@@ -181,6 +187,33 @@ main() {
       'startDT': Timestamp.fromDate(DateTime(2023, 6, 5, 18, 22, 33)),
       'userID': mockOwnerDocumentReference0
     };
+    mockFirestoreGoal0 = {
+      'id': 'test_goal_0',
+      'owner': mockOwnerDocumentReference0,
+      'type': 'distanceGoal',
+      'targetValue': 8.0,
+      'currentValue': 5.3,
+      'completed': false,
+      'createdAt': Timestamp.fromDate(DateTime(2023, 5, 23, 21, 35, 06)),
+    };
+    mockFirestoreGoal1 = {
+      'id': 'test_goal_1',
+      'owner': mockOwnerDocumentReference0,
+      'type': 'distanceGoal',
+      'targetValue': 60,
+      'currentValue': 60,
+      'completed': true,
+      'createdAt': Timestamp.fromDate(DateTime(2023, 5, 29, 18, 15, 22)),
+    };
+    testGoal = Goal.fromJson({
+      'id': 'test',
+      'owner': {'name': 'Mario', 'surname': 'Rossi', 'uid': 'mario_rossi'},
+      'type': 'distanceGoal',
+      'targetValue': 8.0,
+      'currentValue': 5.3,
+      'completed': false,
+      'createdAt': DateTime(2023, 5, 23, 21, 35, 06),
+    });
   });
 
   test('singleton properties', () {
@@ -537,7 +570,7 @@ main() {
     });
   });
 
-  void sessionInit(){
+  void sessionInit() {
     // user collection
     when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
     when(mockUserCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference);
@@ -556,7 +589,6 @@ main() {
     when(mockQueryDocumentSnapshotSession1.id).thenReturn('test_session_1');
   }
 
-
   group('get user sessions', () {
     test('returns sessions', () async {
       sessionInit();
@@ -574,7 +606,9 @@ main() {
 
     test('one session is null because no positions are saved in the arrays', () async {
       sessionInit();
-      mockFirestoreSession0['positions'] = [{'values':[]}];
+      mockFirestoreSession0['positions'] = [
+        {'values': []}
+      ];
       List<Session?> sessions = await database.getLatestSessionsByUser(mockUserJson0['uid'], limit: 2).first;
       expect(sessions.length, 1);
       expect(sessions[0]!.distance, 18.16); // distance is the one of the second mock session
@@ -584,5 +618,82 @@ main() {
       when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
       expect(database.getLatestSessionsByUser('test'), emitsError(isA<DatabaseException>()));
     });
+  });
+
+  void goalInit() {
+    // user collection and reference to user
+    when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
+    when(mockUserCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference);
+    // goal collection and query
+    when(mockFirebaseFirestore.collection('goals')).thenReturn(mockCollection);
+    when(mockCollection.where('owner', isEqualTo: mockReference)).thenReturn(mockQuery0);
+    when(mockQuery0.where('completed', isEqualTo: false)).thenReturn(mockQuery0);
+    when(mockQuery0.orderBy('createdAt', descending: true)).thenReturn(mockQuery0);
+    // list of snapshots
+    when(mockQuery0.snapshots()).thenAnswer((realInvocation) => Stream.fromIterable([mockQuerySnapshot0]));
+    // documents
+    when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotGoal0, mockQueryDocumentSnapshotGoal1]);
+    when(mockQueryDocumentSnapshotGoal0.data()).thenReturn(mockFirestoreGoal0);
+    when(mockQueryDocumentSnapshotGoal0.id).thenReturn(mockFirestoreGoal0['id']);
+    when(mockQueryDocumentSnapshotGoal1.data()).thenReturn(mockFirestoreGoal1);
+    when(mockQueryDocumentSnapshotGoal1.id).thenReturn(mockFirestoreGoal1['id']);
+  }
+
+  group('get goals', () {
+    test('returns all goals correctly', () async {
+      goalInit();
+      List<Goal> goals = await database.getGoals(mockUserJson0['uid'], inProgressOnly: false).first;
+      expect(goals.length, 2);
+    });
+
+    test('return goal in progress only', () async {
+      goalInit();
+      when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotGoal0]);
+      List<Goal> goals = await database.getGoals(mockUserJson0['uid'], inProgressOnly: true).first;
+      expect(goals.length, 1);
+    });
+
+    test('error in json from the database', () async {
+      mockFirestoreGoal0['targetValue'] = 'test';
+      goalInit();
+      List<Goal> goals = await database.getGoals(mockUserJson0['uid'], inProgressOnly: true).first;
+      expect(goals.length, 1);
+      expect(goals[0].targetValue, 60);
+    });
+
+    test('throws exception', () {
+      when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
+      expect(database.getGoals('test', inProgressOnly: true), emitsError(isA<DatabaseException>()));
+    });
+  });
+
+  group('goal creation', () {
+    test('returns normally', () {
+      // user collection and reference
+      when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
+      when(mockUserCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference);
+      // goal collection and addition
+      when(mockFirebaseFirestore.collection('goals')).thenReturn(mockCollection);
+      expect(() => database.createGoal(mockUserJson0['uid'], testGoal), returnsNormally);
+    });
+
+    test('throws exception', () {
+      when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
+      expect(() => database.createGoal('test', testGoal), throwsA(isA<DatabaseException>()));
+    });
+  });
+
+  group('goal deletion', () {
+    test('returns normally', () {
+      when(mockFirebaseFirestore.collection('goals')).thenReturn(mockCollection);
+      when(mockCollection.doc(testGoal.id)).thenReturn(mockReference);
+      expect(() => database.deleteGoal(testGoal), returnsNormally);
+    });
+    
+    test('throws exception', (){
+      when(mockFirebaseFirestore.collection('goals')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
+      expect(() => database.deleteGoal(testGoal), throwsA(isA<DatabaseException>()));
+      
+    } );
   });
 }

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dart_geohash/dart_geohash.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
@@ -324,30 +325,42 @@ class Database {
     }
   }
 
-  Stream<List<Goal>> getGoals(bool inProgressOnly) async* {
-    final userDocRef = _database.collection("users").doc(Auth().currentUser?.uid);
-    var docGoals = _database.collection("goals").where("owner", isEqualTo: userDocRef);
-    if (inProgressOnly) {
-      docGoals = docGoals.where("completed", isEqualTo: false);
-    }
-    docGoals = docGoals.orderBy("createdAt", descending: true);
-    /*return docUser.snapshots();*/
-    await for (QuerySnapshot<Map<String, dynamic>> snapshot in docGoals.snapshots()) {
-      List<Goal> goals = [];
-      for (QueryDocumentSnapshot<Map<String, dynamic>> doc in snapshot.docs) {
-        Map<String, dynamic> json = doc.data();
-        json['id'] = doc.id;
-        json['owner'] = null; // TODO: Maybe it is better to add the user
-        json['createdAt'] = (json['createdAt'] as Timestamp).toDate();
-        goals.add(Goal.fromJson(json));
+  Stream<List<Goal>> getGoals(String uid, {required bool inProgressOnly}) async* {
+    try {
+      final userDocRef = _database.collection("users").doc(uid);
+      var goalQuery = _database.collection("goals").where("owner", isEqualTo: userDocRef);
+      if (inProgressOnly) {
+        goalQuery = goalQuery.where("completed", isEqualTo: false);
       }
-      yield goals;
+      goalQuery = goalQuery.orderBy("createdAt", descending: true);
+      /*return docUser.snapshots();*/
+      await for (QuerySnapshot<Map<String, dynamic>> snapshot in goalQuery.snapshots()) {
+        List<Goal> goals = [];
+        for (QueryDocumentSnapshot<Map<String, dynamic>> doc in snapshot.docs) {
+          Map<String, dynamic> json = doc.data();
+          Goal? goal;
+          try {
+            // ensure values are double
+            json['currentValue'] = json['currentValue'].toDouble();
+            json['targetValue'] = json['targetValue'].toDouble();
+            json['id'] = doc.id;
+            json['owner'] = null; // TODO: Maybe it is better to add the user
+            json['createdAt'] = (json['createdAt'] as Timestamp).toDate();
+            goal = Goal.fromJson(json);
+          } on Error {
+            continue;
+          }
+          if (goal != null) goals.add(goal);
+        }
+        yield goals;
+      }
+    } on FirebaseException catch (fe) {
+      throw DatabaseException(fe.message);
     }
   }
 
-  Future<void> createGoal(Goal goal) async {
+  Future<void> createGoal(String uid, Goal goal) async {
     try {
-      final uid = Auth().currentUser?.uid;
       final docUser = _database.collection('users').doc(uid);
       final data = {
         "completed": goal.completed,
@@ -359,20 +372,16 @@ class Database {
         // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
       };
       await _database.collection("goals").add(data);
-    } on Error {
-      throw DatabaseException("An error occurred while creating goal.");
-    } on Exception {
-      throw DatabaseException("An error occurred while creating goal.");
+    } on FirebaseException catch (fe) {
+      throw DatabaseException(fe.message);
     }
   }
 
   Future<void> deleteGoal(Goal goal) async {
     try {
       await _database.collection('goals').doc(goal.id).delete();
-    } on Error {
-      throw DatabaseException("An error occurred while deleting goal.");
-    } on Exception {
-      throw DatabaseException("An error occurred while deleting goal.");
+    } on FirebaseException catch (fe) {
+      throw DatabaseException(fe.message);
     }
   }
 

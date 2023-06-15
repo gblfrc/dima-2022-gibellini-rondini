@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.shortestSide / 40),
               child: StreamBuilder(
-                  stream: Database().getGoals(true),
+                  stream: Database().getGoals(Auth().currentUser!.uid, inProgressOnly: true),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       return const Text(
