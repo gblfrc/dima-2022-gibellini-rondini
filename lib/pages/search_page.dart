@@ -6,6 +6,7 @@ import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/search_engine.dart';
 
+import '../app_logic/storage.dart';
 import '../components/custom_small_map.dart';
 import '../components/search_bar.dart';
 import '../components/tiles.dart';
@@ -67,7 +68,7 @@ class _SearchPageState extends State<SearchPage> {
                   Expanded(
                     child: ListView.separated(
                       itemBuilder: (context, index) {
-                        return UserTile.fromUser(userList[index], context);
+                        return UserTile.fromUser(userList[index], context, Storage());
                       },
                       separatorBuilder: (context, index) {
                         return const SizedBox(

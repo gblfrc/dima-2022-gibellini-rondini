@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../app_logic/auth.dart';
 import '../app_logic/database.dart';
+import '../app_logic/storage.dart';
 import '../components/tiles.dart';
 import '../model/user.dart';
 
@@ -89,7 +90,7 @@ class FriendsPage extends StatelessWidget {
                           return Column(
                               children: friends
                                   .map((friend) =>
-                                      UserTile.fromUser(friend, context))
+                                      UserTile.fromUser(friend, context, Storage()))
                                   .toList());
                         } else {
                           return const Center(

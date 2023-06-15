@@ -73,9 +73,9 @@ class UserTile extends Tile {
       required super.onTap,
       super.trailing});
 
-  static UserTile fromUser(User user, BuildContext context) {
+  static UserTile fromUser(User user, BuildContext context, Storage storage) {
     return UserTile(
-      leading: ProfilePicture(uid: user.uid, storage: Storage(),),
+      leading: ProfilePicture(uid: user.uid, storage: storage,),
       title: "${user.name} ${user.surname}",
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
