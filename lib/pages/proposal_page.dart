@@ -6,6 +6,7 @@ import 'package:progetto/components/custom_small_map.dart';
 import 'package:progetto/components/tiles.dart';
 
 import '../app_logic/auth.dart';
+import '../app_logic/storage.dart';
 import '../model/proposal.dart';
 
 class ProposalPage extends StatefulWidget {
@@ -113,7 +114,7 @@ class _ProposalPageState extends State<ProposalPage> {
                     style: titleStyle,
                   ),
                 ),
-                UserTile.fromUser(widget.proposal.owner, context),
+                UserTile.fromUser(widget.proposal.owner, context, Storage()),
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: padding / 4),
                   child: Text(
@@ -129,7 +130,7 @@ class _ProposalPageState extends State<ProposalPage> {
                               builder: (context, snapshot) {
                                 if (snapshot.hasData) {
                                   return UserTile.fromUser(
-                                      snapshot.data!, context);
+                                      snapshot.data!, context, Storage());
                                 } else {
                                   return Container();
                                 }
