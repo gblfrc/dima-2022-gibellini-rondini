@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dart_geohash/dart_geohash.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
@@ -122,13 +121,13 @@ class Database {
   * document obtained from the server and some error occurs while parsing data,
   * a null object is returned.
   */
-  Future<List<Proposal?>> getFriendProposalsAfterTimestamp(String uid, {required Timestamp after}) async {
+  Future<List<Proposal?>> getFriendProposalsAfterTimestamp(String uid, {required DateTime after}) async {
     try {
       // Create document reference for current user
       final currentUserRef = _database.collection("users").doc(uid);
       // Get the list of users that have added the current user to their friends
       final friendOfSnapshot =
-      await _database.collection("users").where("friends", arrayContains: currentUserRef).get();
+          await _database.collection("users").where("friends", arrayContains: currentUserRef).get();
       // Create list of document references for friends
       List<DocumentReference> friendOfDocRefs = [];
       for (var doc in friendOfSnapshot.docs) {
@@ -170,7 +169,7 @@ class Database {
     }
   }
 
-  Future<List<Proposal>> getProposalsWithinBounds(LatLngBounds bounds, String uid, {Timestamp? after}) async {
+  Future<List<Proposal>> getProposalsWithinBounds(LatLngBounds bounds, String uid, {DateTime? after}) async {
     // collect hashes for the four corners and for the center
     List<String> hashes = [];
     var northEast = bounds.northEast ?? LatLng(bounds.north, bounds.east);
@@ -209,7 +208,7 @@ class Database {
             var placeGeoPoint = doc.data()['place']['coords'] as GeoPoint;
             var dateTime = (doc.data()['dateTime'] as Timestamp).toDate();
             if (!bounds.contains(LatLng(placeGeoPoint.latitude, placeGeoPoint.longitude)) ||
-                (after != null && dateTime.isBefore(after.toDate()))) {
+                (after != null && dateTime.isBefore(after))) {
               continue;
             }
           } on Error {
@@ -265,8 +264,8 @@ class Database {
   }
 
   void removeFriend(String friend) async {
-    final docUser = FirebaseFirestore.instance.collection("users").doc(Auth().currentUser!.uid);
-    final docFriend = FirebaseFirestore.instance.collection("users").doc(friend);
+    final docUser = _database.collection("users").doc(Auth().currentUser!.uid);
+    final docFriend = _database.collection("users").doc(friend);
     try {
       await docUser.update(
         {
@@ -280,13 +279,13 @@ class Database {
 
   Stream<List<Session?>> getLatestSessionsByUser(String uid, {int? limit}) async* {
     List<Session?> sessions = [];
-    final userDocRef = FirebaseFirestore.instance.collection("users").doc(uid);
-    var sessionDocs = FirebaseFirestore.instance
+    final userDocRef = _database.collection("users").doc(uid);
+    var sessionDocs = _database
         .collection("sessions")
         .where("userID", isEqualTo: userDocRef)
         .orderBy("startDT", descending: true)
-    // limit query to parameter or to a very high number
-    // number could be even higher, but then it causes problems with Firestore
+        // limit query to parameter or to a very high number
+        // number could be even higher, but then it causes problems with Firestore
         .limit(limit ?? 10000);
     // process snapshots
     await for (var snapshot in sessionDocs.snapshots()) {
@@ -313,8 +312,8 @@ class Database {
   }
 
   Stream<List<Goal>> getGoals(bool inProgressOnly) async* {
-    final userDocRef = FirebaseFirestore.instance.collection("users").doc(Auth().currentUser?.uid);
-    var docGoals = FirebaseFirestore.instance.collection("goals").where("owner", isEqualTo: userDocRef);
+    final userDocRef = _database.collection("users").doc(Auth().currentUser?.uid);
+    var docGoals = _database.collection("goals").where("owner", isEqualTo: userDocRef);
     if (inProgressOnly) {
       docGoals = docGoals.where("completed", isEqualTo: false);
     }
@@ -336,7 +335,7 @@ class Database {
   Future<void> createGoal(Goal goal) async {
     try {
       final uid = Auth().currentUser?.uid;
-      final docUser = FirebaseFirestore.instance.collection('users').doc(uid);
+      final docUser = _database.collection('users').doc(uid);
       final data = {
         "completed": goal.completed,
         "currentValue": goal.currentValue,
@@ -346,7 +345,7 @@ class Database {
         "owner": docUser,
         // TODO: When writing Firestore rules, remember to check that this docUser.id is equal to the actual user
       };
-      await FirebaseFirestore.instance.collection("goals").add(data);
+      await _database.collection("goals").add(data);
     } on Error {
       throw DatabaseException("An error occurred while creating goal.");
     } on Exception {
@@ -356,7 +355,7 @@ class Database {
 
   Future<void> deleteGoal(Goal goal) async {
     try {
-      await FirebaseFirestore.instance.collection('goals').doc(goal.id).delete();
+      await _database.collection('goals').doc(goal.id).delete();
     } on Error {
       throw DatabaseException("An error occurred while deleting goal.");
     } on Exception {
@@ -373,7 +372,7 @@ class Database {
           "place": {
             "coords": GeoPoint(proposal.place.coords.latitude, proposal.place.coords.longitude),
             "geohash":
-            GeoHasher().encode(proposal.place.coords.longitude, proposal.place.coords.latitude, precision: 9),
+                GeoHasher().encode(proposal.place.coords.longitude, proposal.place.coords.latitude, precision: 9),
             "id": proposal.place.id,
             "latitude": proposal.place.coords.latitude,
             "longitude": proposal.place.coords.longitude,
@@ -395,8 +394,8 @@ class Database {
   void addParticipantToProposal(Proposal proposal) async {
     try {
       var uid = Auth().currentUser!.uid;
-      DocumentReference userRef = FirebaseFirestore.instance.collection('users').doc(uid);
-      await FirebaseFirestore.instance.collection('proposals').doc(proposal.id).update({
+      DocumentReference userRef = _database.collection('users').doc(uid);
+      await _database.collection('proposals').doc(proposal.id).update({
         'participants': FieldValue.arrayUnion([userRef])
       });
     } on FirebaseException {
@@ -407,8 +406,8 @@ class Database {
   void removeParticipantFromProposal(Proposal proposal) async {
     try {
       var uid = Auth().currentUser!.uid;
-      DocumentReference userRef = FirebaseFirestore.instance.collection('users').doc(uid);
-      await FirebaseFirestore.instance.collection('proposals').doc(proposal.id).update({
+      DocumentReference userRef = _database.collection('users').doc(uid);
+      await _database.collection('proposals').doc(proposal.id).update({
         'participants': FieldValue.arrayRemove([userRef])
       });
     } on FirebaseException {
@@ -416,14 +415,14 @@ class Database {
     }
   }
 
-  Future<List<Proposal?>> getProposalsByPlace(Place place, String uid, {Timestamp? after}) async {
+  Future<List<Proposal?>> getProposalsByPlace(Place place, String uid, {DateTime? after}) async {
     try {
       List<Proposal?> list = [];
       var future = _database.collection("proposals").where('place.id', isEqualTo: place.id).get();
       await future.then((snapshot) async {
         for (var doc in snapshot.docs) {
           try {
-            if (after != null && (doc.data()['dateTime'] as Timestamp).toDate().isBefore(after.toDate())) continue;
+            if (after != null && (doc.data()['dateTime'] as Timestamp).toDate().isBefore(after)) continue;
           } on Error {
             continue;
           }
@@ -437,43 +436,37 @@ class Database {
     }
   }
 
-  Stream<List<Proposal>> getUpcomingProposals(String uid) async* {
-    List<Proposal?> proposalsTemp = [];
+  Stream<List<Proposal>> getProposalsWithinInterval(String uid, {required DateTime after, required DateTime before}) async* {
+    // sanity check on incoming parameters: "after" parameter must be before "before" parameter
+    if (!after.isBefore(before)) throw ArgumentError("'after' parameter must precede 'before' parameter");
+    // initialize lists
     List<Proposal> proposals = [];
-    final currentUserRef = FirebaseFirestore.instance.collection("users").doc(uid);
-    // Filter session in the range of 2 hours (in the past or in the future)
-    DateTime now = DateTime.now();
-    DateTime upperBound = now.add(const Duration(hours: 2));
-    DateTime lowerBound = now.add(const Duration(hours: -2));
-    // Sessions proposed by others
-    QuerySnapshot<Map<String, dynamic>> proposalsDocs = await FirebaseFirestore.instance
-        .collection("proposals")
-        .where("participants", arrayContains: currentUserRef)
-        .where("dateTime", isLessThanOrEqualTo: Timestamp.fromDate(upperBound))
-        .where("dateTime",
-        isGreaterThanOrEqualTo: Timestamp.fromDate(lowerBound)) // TODO: Add filter for completed proposals
-        .get();
-    // Sessions proposed by the user
-    QuerySnapshot<Map<String, dynamic>> proposalsDocsOwned = await FirebaseFirestore.instance
-        .collection("proposals")
-        .where("owner", isEqualTo: currentUserRef)
-        .where("dateTime", isLessThanOrEqualTo: Timestamp.fromDate(upperBound))
-        .where("dateTime",
-        isGreaterThanOrEqualTo: Timestamp.fromDate(lowerBound)) // TODO: Add filter for completed proposals
-        .get();
-
-    for (QueryDocumentSnapshot<Map<String, dynamic>> doc in proposalsDocs.docs) {
-      proposalsTemp.add(await _proposalFromFirestore(doc, currentUserUid: uid));
+    QuerySnapshot<Map<String, dynamic>> proposalsDocs;        // Sessions proposed by others
+    QuerySnapshot<Map<String, dynamic>> proposalsDocsOwned;   // Sessions proposed by the user
+    try {
+      // get reference to current user document
+      final currentUserRef = _database.collection("users").doc(uid);
+      // obtain proposals from the server
+      proposalsDocs = await _database
+          .collection("proposals")
+          .where("participants", arrayContains: currentUserRef)
+          .where("dateTime", isLessThanOrEqualTo: before)
+          .where("dateTime", isGreaterThanOrEqualTo: after) // TODO: Add filter for completed proposals
+          .get();
+      proposalsDocsOwned = await _database
+          .collection("proposals")
+          .where("owner", isEqualTo: currentUserRef)
+          .where("dateTime", isLessThanOrEqualTo: before)
+          .where("dateTime", isGreaterThanOrEqualTo: after) // TODO: Add filter for completed proposals
+          .get();
+    } on FirebaseException catch (fe) {
+      throw DatabaseException(fe.message);
     }
-    for (QueryDocumentSnapshot<Map<String, dynamic>> doc in proposalsDocsOwned.docs) {
-      proposalsTemp.add(await _proposalFromFirestore(doc,
-          currentUserUid: uid)); // TODO: Not doing anything: fix this with a new version of _proposalFromFirestore
-    }
-    for (Proposal? temp in proposalsTemp) {
-      // TODO: Fix this with a new version of _proposalFromFirestore
-      if (temp != null) {
-        proposals.add(temp);
-      }
+    // convert data extracted from server into proposal objects
+    List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs = proposalsDocs.docs + proposalsDocsOwned.docs;
+    for (QueryDocumentSnapshot<Map<String, dynamic>> doc in allDocs) {
+      Proposal? proposal = await _proposalFromFirestore(doc, currentUserUid: uid, excludeCurrentUser: false);
+      if (proposal != null) proposals.add(proposal);
     }
     yield proposals;
   }
@@ -497,10 +490,11 @@ class Database {
       // obtain information about proposal owner and discard if current user is
       // not friend of the proposal owner
       json['owner'] = await ownerRef.get().then((snapshot) {
-        var userData = snapshot.data() as Map<String, dynamic>;
+        var ownerData = snapshot.data() as Map<String, dynamic>;
+        ownerData['uid'] = ownerRef.id;
         // check if current user is friend of proposal owner
-        if (json['type'] == 'Friends') {
-          var friends = userData['friends'];
+        if (json['type'] == 'Friends' && ownerData['uid'] != currentUserUid) {
+          var friends = ownerData['friends'];
           var friendIds = [];
           for (DocumentReference friend in friends) {
             friendIds.add(friend.id);
@@ -509,8 +503,7 @@ class Database {
             return null;
           }
         }
-        userData['uid'] = snapshot.id;
-        return userData;
+        return ownerData;
       });
       if (json['owner'] == null) {
         return null;
@@ -523,7 +516,7 @@ class Database {
       json['place']['lat'] = placeGeoPoint.latitude;
       json['place']['lon'] = placeGeoPoint.longitude;
       List<DocumentReference> participants =
-      (json['participants'] as List).map((item) => item as DocumentReference).toList();
+          (json['participants'] as List).map((item) => item as DocumentReference).toList();
       json['participants'] = participants.map((item) => item.id).toList();
       return Proposal.fromJson(json);
     } on Error {

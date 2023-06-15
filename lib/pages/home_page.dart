@@ -22,9 +22,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     // variables for usage in multiple occasions
-    TextStyle sectionTitleStyle = TextStyle(
-        fontSize: MediaQuery.of(context).textScaleFactor * 18,
-        fontWeight: FontWeight.bold);
+    TextStyle sectionTitleStyle =
+        TextStyle(fontSize: MediaQuery.of(context).textScaleFactor * 18, fontWeight: FontWeight.bold);
     Color buttonBackgroundColor = Theme.of(context).primaryColor;
     Color buttonForegroundColor = Colors.white;
     // main return statement
@@ -37,12 +36,15 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           children: [
             StreamBuilder(
-                stream: Database().getUpcomingProposals(Auth().currentUser!.uid),
+                stream: Database().getProposalsWithinInterval(
+                  Auth().currentUser!.uid,
+                  after: DateTime.now().add(const Duration(hours: -2)),
+                  before: DateTime.now().add(const Duration(hours: 2)),
+                ),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                        content: Text(
-                            'An error occurred while loading trainings.')));
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(const SnackBar(content: Text('An error occurred while loading trainings.')));
                   }
                   if (snapshot.hasData) {
                     // This returns true even if there are no elements in the list
@@ -54,17 +56,17 @@ class _HomePageState extends State<HomePage> {
                       for (var proposal in snapshot.data!) {
                         // For each session, we create a card and append it to the array of children
                         proposalList.add(ProposalTile.fromProposal(
-                          proposal, context,
+                          proposal,
+                          context,
                           startable: true,
                         ));
                       }
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
+                      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(
                           'Upcoming trainings',
                           style: sectionTitleStyle,
-                        ), ...proposalList,
+                        ),
+                        ...proposalList,
                       ]);
                     }
                   }
@@ -75,12 +77,9 @@ class _HomePageState extends State<HomePage> {
               style: sectionTitleStyle,
             ),
             Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: MediaQuery.of(context).size.shortestSide / 50),
+              padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.shortestSide / 50),
               child: StreamBuilder(
-                  stream: Database().getLatestSessionsByUser(
-                      Auth().currentUser!.uid,
-                      limit: 2),
+                  stream: Database().getLatestSessionsByUser(Auth().currentUser!.uid, limit: 2),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       return const Text(
@@ -117,8 +116,7 @@ class _HomePageState extends State<HomePage> {
               style: sectionTitleStyle,
             ),
             Padding(
-              padding: EdgeInsets.symmetric(
-                  vertical: MediaQuery.of(context).size.shortestSide / 40),
+              padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.shortestSide / 40),
               child: StreamBuilder(
                   stream: Database().getGoals(true),
                   builder: (context, snapshot) {
@@ -181,8 +179,7 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.add),
         children: [
           FloatingActionButton(
-            onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const SessionPage())),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const SessionPage())),
             tooltip: 'New session',
             heroTag: 'new-proposal-button',
             child: const Icon(Icons.directions_run),
@@ -190,8 +187,8 @@ class _HomePageState extends State<HomePage> {
             foregroundColor: buttonForegroundColor,
           ),
           FloatingActionButton(
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => const CreateProposalPage())),
+            onPressed: () =>
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateProposalPage())),
             tooltip: 'New proposal',
             heroTag: 'new-session-button',
             child: const Icon(Icons.calendar_month),

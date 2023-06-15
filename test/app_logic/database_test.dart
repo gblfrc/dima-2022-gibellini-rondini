@@ -24,7 +24,9 @@ import 'database_test.mocks.dart';
 main() {
   late Database database;
   late FirebaseFirestore mockFirebaseFirestore;
-  late Timestamp testTimestamp;
+  late DateTime testDateTime;
+  late DateTime testLowerBound;
+  late DateTime testUpperBound;
   late LatLngBounds testBounds;
   late User testUser;
   late Proposal testProposal;
@@ -33,9 +35,11 @@ main() {
   late Map<String, dynamic> mockUserJson1;
   late DocumentReference<Map<String, dynamic>> mockOwnerDocumentReference0;
   late DocumentReference<Map<String, dynamic>> mockOwnerDocumentReference1;
-  late Map<String, dynamic> mockUserFirestoreProposal0;
-  late Map<String, dynamic> mockUserFirestoreProposal1;
+  late Map<String, dynamic> mockFirestoreProposal0;
+  late Map<String, dynamic> mockFirestoreProposal1;
   final CollectionReference<Map<String, dynamic>> mockCollection = MockCollectionReference();
+  final CollectionReference<Map<String, dynamic>> mockUserCollection = MockCollectionReference();
+  final CollectionReference<Map<String, dynamic>> mockProposalCollection = MockCollectionReference();
   final DocumentReference<Map<String, dynamic>> mockReference = MockDocumentReference();
   final Query<Map<String, dynamic>> mockQuery0 = MockQuery();
   final QuerySnapshot<Map<String, dynamic>> mockQuerySnapshot0 = MockQuerySnapshot();
@@ -53,7 +57,7 @@ main() {
   setUpAll(() {
     mockFirebaseFirestore = MockFirebaseFirestore();
     database = Database(firebaseFirestore: mockFirebaseFirestore);
-    testTimestamp = Timestamp(1686732868, 243983000);
+    testDateTime = DateTime(2023, 6, 14, 10, 30, 15);
   });
 
   setUp(() {
@@ -82,7 +86,7 @@ main() {
     when(mockOwnerDocumentReference1.get()).thenAnswer((realInvocation) => Future.value(tempSnapshot1));
     when(tempSnapshot1.data()).thenReturn(mockUserJson1);
     mockUserJson1['friends'] = [mockOwnerDocumentReference0];
-    mockUserFirestoreProposal0 = {
+    mockFirestoreProposal0 = {
       'dateTime': Timestamp.fromDate(DateTime(2023, 5, 5)),
       'owner': mockOwnerDocumentReference1,
       'place': {
@@ -96,7 +100,7 @@ main() {
       'participants': [],
       'type': 'Friends'
     };
-    mockUserFirestoreProposal1 = {
+    mockFirestoreProposal1 = {
       'dateTime': Timestamp.fromDate(DateTime(2023, 6, 6)),
       'owner': mockOwnerDocumentReference1,
       'place': {
@@ -114,12 +118,28 @@ main() {
     testProposal = Proposal.fromJson({
       'pid': 'test_proposal',
       'dateTime': "2023-05-23 21:35:06",
-      'owner': {'name': 'Mario', 'surname': 'Rossi', 'uid': 'mario_rossi',},
-      'place': {'id': '11694848', 'name': 'Parco Suardi', 'lat': 45.7, 'lon': 9.6,},
+      'owner': {
+        'name': 'Mario',
+        'surname': 'Rossi',
+        'uid': 'mario_rossi',
+      },
+      'place': {
+        'id': '11694848',
+        'name': 'Parco Suardi',
+        'lat': 45.7,
+        'lon': 9.6,
+      },
       'participants': ['first_participant', 'second_participant'],
       'type': 'Public'
     });
-    testPlace = Place.fromJson({'id': '11694848', 'name': 'Parco Suardi', 'lat': 45.7, 'lon': 9.6,});
+    testPlace = Place.fromJson({
+      'id': '11694848',
+      'name': 'Parco Suardi',
+      'lat': 45.7,
+      'lon': 9.6,
+    });
+    testLowerBound = DateTime(2023, 6, 15, 10);
+    testUpperBound = DateTime(2023, 6, 15, 12);
   });
 
   test('singleton properties', () {
@@ -216,25 +236,24 @@ main() {
     when(mockQueryDocumentSnapshotFriends1.reference).thenReturn(mockReference1);
     when(mockFirebaseFirestore.collection('proposals')).thenAnswer((realInvocation) => mockCollection);
     when(mockCollection.where('owner', whereIn: anyNamed('whereIn'))).thenAnswer((realInvocation) => mockQuery1);
-    when(mockQuery1.where('dateTime', isGreaterThanOrEqualTo: testTimestamp))
-        .thenAnswer((realInvocation) => mockQuery1);
+    when(mockQuery1.where('dateTime', isGreaterThanOrEqualTo: testDateTime)).thenAnswer((realInvocation) => mockQuery1);
     when(mockQuery1.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot1));
     when(mockQuerySnapshot1.docs).thenReturn([mockQueryDocumentSnapshotProposal0, mockQueryDocumentSnapshotProposal1]);
-    when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockUserFirestoreProposal0);
-    when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockUserFirestoreProposal1);
+    when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockFirestoreProposal0);
+    when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockFirestoreProposal1);
   }
 
   group('obtaining proposals for friends', () {
     test('correct output, empty friend list', () async {
       proposalExtractionInit();
       when(mockQuerySnapshot0.docs).thenReturn([]);
-      expect(await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testTimestamp), List.empty());
+      expect(await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testDateTime), List.empty());
     });
 
     test('correct output, not empty list', () async {
       proposalExtractionInit();
       List<Proposal?> proposals =
-      await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testTimestamp);
+      await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testDateTime);
       expect(proposals.length, 2);
     });
 
@@ -243,17 +262,17 @@ main() {
         mockUserJson1['friends'] = [];
         proposalExtractionInit();
         List<Proposal?> proposals =
-        await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testTimestamp);
+        await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testDateTime);
         expect(proposals.length, 1);
         expect(proposals[0]!.type, 'Public');
       });
 
       test('returns null if error is thrown while parsing', () async {
         // force error in timestamp parsing
-        mockUserFirestoreProposal1['dateTime'] = null;
+        mockFirestoreProposal1['dateTime'] = null;
         proposalExtractionInit();
         List<Proposal?> proposals =
-        await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testTimestamp);
+        await database.getFriendProposalsAfterTimestamp(mockUserJson0['uid'], after: testDateTime);
         expect(proposals.length, 1);
         expect(proposals[0]!.type, 'Friends');
       });
@@ -261,7 +280,7 @@ main() {
 
     test('throws exception', () {
       when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test'));
-      expect(() => database.getFriendProposalsAfterTimestamp('test', after: testTimestamp),
+      expect(() => database.getFriendProposalsAfterTimestamp('test', after: testDateTime),
           throwsA(isA<DatabaseException>()));
     });
   });
@@ -278,8 +297,8 @@ main() {
     when(mockQuery1.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot1));
     when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotProposal0]);
     when(mockQuerySnapshot1.docs).thenReturn([mockQueryDocumentSnapshotProposal1]);
-    when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockUserFirestoreProposal0);
-    when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockUserFirestoreProposal1);
+    when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockFirestoreProposal0);
+    when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockFirestoreProposal1);
   }
 
   group('find proposal within bounds', () {
@@ -290,9 +309,9 @@ main() {
     });
 
     test('one of the proposals lies out of bounds', () async {
-      mockUserFirestoreProposal1['place']['coords'] = const GeoPoint(45.698, 9.68);
-      mockUserFirestoreProposal1['place']['latitude'] = 45.698;
-      mockUserFirestoreProposal1['place']['longitude'] = 9.68;
+      mockFirestoreProposal1['place']['coords'] = const GeoPoint(45.698, 9.68);
+      mockFirestoreProposal1['place']['latitude'] = 45.698;
+      mockFirestoreProposal1['place']['longitude'] = 9.68;
       proposalWithinBoundsInit();
       List<Proposal?> proposals = await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']);
       expect(proposals.length, 1);
@@ -300,7 +319,7 @@ main() {
 
     test('proposals are returned in order', () async {
       // set proposal 1 to take place before proposal 0
-      mockUserFirestoreProposal1['dateTime'] = Timestamp.fromDate(DateTime(2023, 1, 1));
+      mockFirestoreProposal1['dateTime'] = Timestamp.fromDate(DateTime(2023, 1, 1));
       proposalWithinBoundsInit();
       List<Proposal?> proposals = await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']);
       expect(proposals.length, 2);
@@ -309,21 +328,21 @@ main() {
     });
 
     test('illegal coords field in json', () async {
-      mockUserFirestoreProposal1['place']['coords'] = 10;
+      mockFirestoreProposal1['place']['coords'] = 10;
       proposalWithinBoundsInit();
       List<Proposal?> proposals = await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']);
       expect(proposals.length, 1);
     });
 
     test('illegal dateTime field in json', () async {
-      mockUserFirestoreProposal1['dateTime'] = 10;
+      mockFirestoreProposal1['dateTime'] = 10;
       proposalWithinBoundsInit();
       List<Proposal?> proposals = await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid']);
       expect(proposals.length, 1);
     });
 
     test('correct behavior with outdated proposals', () async {
-      Timestamp testAfter = Timestamp.fromDate(DateTime(2023, 5, 30));
+      DateTime testAfter = DateTime(2023, 5, 30);
       proposalWithinBoundsInit();
       List<Proposal?> proposals =
       await database.getProposalsWithinBounds(testBounds, mockUserJson0['uid'], after: testAfter);
@@ -390,34 +409,90 @@ main() {
   });
 
   group('proposals from place', () {
-
     test('correct output', () async {
       when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);
       when(mockCollection.where('place.id', isEqualTo: testPlace.id)).thenReturn(mockQuery0);
       when(mockQuery0.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot0));
       when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotProposal0]);
-      when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockUserFirestoreProposal0);
+      when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockFirestoreProposal0);
       List<Proposal?> proposals = await database.getProposalsByPlace(testPlace, mockUserJson0['uid']);
       expect(proposals.length, 1);
       expect(proposals[0]!.place.id, '11694848');
     });
 
     test('correct output with set after timestamp', () async {
-      mockUserFirestoreProposal1['place']['id'] = '11694848';
+      mockFirestoreProposal1['place']['id'] = '11694848';
       when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);
       when(mockCollection.where('place.id', isEqualTo: testPlace.id)).thenReturn(mockQuery0);
       when(mockQuery0.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot0));
-      when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotProposal0,mockQueryDocumentSnapshotProposal1]);
-      when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockUserFirestoreProposal0);
-      when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockUserFirestoreProposal1);
-      List<Proposal?> proposals = await database.getProposalsByPlace(testPlace, mockUserJson0['uid'], after: Timestamp.fromDate(DateTime(2023,5,30)));
+      when(mockQuerySnapshot0.docs)
+          .thenReturn([mockQueryDocumentSnapshotProposal0, mockQueryDocumentSnapshotProposal1]);
+      when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockFirestoreProposal0);
+      when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockFirestoreProposal1);
+      List<Proposal?> proposals =
+      await database.getProposalsByPlace(testPlace, mockUserJson0['uid'], after: DateTime(2023, 5, 30));
       expect(proposals.length, 1);
       expect(proposals[0]!.type, 'Public');
+    });
+
+    test('error when analyzing docs for illegal dateTime field', () async {
+      mockFirestoreProposal0['dateTime'] = 5;
+      when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);
+      when(mockCollection.where('place.id', isEqualTo: testPlace.id)).thenReturn(mockQuery0);
+      when(mockQuery0.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot0));
+      when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotProposal0]);
+      when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockFirestoreProposal0);
+      List<Proposal?> proposals =
+      await database.getProposalsByPlace(testPlace, mockUserJson0['uid'], after: DateTime(2023, 5, 30));
+      expect(proposals.length, 0);
     });
 
     test('throws exception', () {
       when(mockFirebaseFirestore.collection('proposals')).thenThrow(FirebaseException(plugin: 'test'));
       expect(() => database.getProposalsByPlace(testPlace, mockUserJson0['uid']), throwsA(isA<DatabaseException>()));
+    });
+  });
+
+  group('proposals within time interval', () {
+    test('returns list of proposals', () async {
+      // adjust proposals to make them meaningful for this test
+      mockFirestoreProposal0['owner'] = mockOwnerDocumentReference0;
+      mockFirestoreProposal0['dateTime'] = Timestamp.fromDate(testLowerBound.add(const Duration(hours: 1)));
+      mockFirestoreProposal1['dateTime'] = Timestamp.fromDate(testLowerBound.add(const Duration(hours: 1)));
+      mockFirestoreProposal1['participants'] = [mockOwnerDocumentReference0];
+      // extraction of user reference
+      when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
+      when(mockUserCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference);
+      // extraction of proposals with user in participants - Query 0
+      when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockProposalCollection);
+      when(mockProposalCollection.where('participants', arrayContains: mockReference)).thenReturn(mockQuery0);
+      when(mockQuery0.where('dateTime', isLessThanOrEqualTo: testUpperBound)).thenReturn(mockQuery0);
+      when(mockQuery0.where('dateTime', isGreaterThanOrEqualTo: testLowerBound)).thenReturn(mockQuery0);
+      when(mockQuery0.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot0));
+      when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotProposal1]);
+      when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockFirestoreProposal1);
+      // extraction of proposals owned by user - Query 1
+      when(mockProposalCollection.where('owner', isEqualTo: mockReference)).thenReturn(mockQuery1);
+      when(mockQuery1.where('dateTime', isLessThanOrEqualTo: testUpperBound)).thenReturn(mockQuery1);
+      when(mockQuery1.where('dateTime', isGreaterThanOrEqualTo: testLowerBound)).thenReturn(mockQuery1);
+      when(mockQuery1.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot1));
+      when(mockQuerySnapshot1.docs).thenReturn([mockQueryDocumentSnapshotProposal0]);
+      when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockFirestoreProposal0);
+      // call method
+      List<Proposal?> proposals = await database.getProposalsWithinInterval(mockUserJson0['uid'], after: testLowerBound, before: testUpperBound).first;
+      expect(proposals.length, 2);
+    });
+
+
+    test('throws argument exception', () {
+      expect(database.getProposalsWithinInterval('test', after: testUpperBound, before: testLowerBound),
+          emitsError(isA<ArgumentError>()));
+    });
+
+    test('throws database exception', () {
+      when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test'));
+      expect(database.getProposalsWithinInterval('test', after: testLowerBound, before: testUpperBound),
+          emitsError(isA<DatabaseException>()));
     });
   });
 }
