@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:progetto/components/cards.dart';
@@ -31,23 +32,30 @@ main() {
         data: const MediaQueryData(),
         child: MaterialApp(
             home: SessionCard(
-              session: session,
-            ))));
+          session: session,
+        ))));
 
     final distanceFinder = find.text('3.4 km');
     final timeFinder = find.text('TIME: 10:03');
     Finder dateFinder;
-    if (session.start.year < DateTime
-        .now()
-        .year) {
+    if (session.start.year < DateTime.now().year) {
       dateFinder = find.text('MAY 23, 2023');
     } else {
       dateFinder = find.text('MAY 23');
     }
+    final mapFinder = find.byWidgetPredicate((widget) =>
+        widget is FlutterMap &&
+        widget.options.interactiveFlags == InteractiveFlag.none &&
+        widget.options.bounds?.north == (46 + 1 / 4 * 1) &&
+        widget.options.bounds?.west == (9 + 1 / 4 * 0.3) &&
+        widget.options.bounds?.south == (45 - 1 / 4 * 1) &&
+        widget.options.bounds?.east == (9.3 - 1 / 4 * 0.3));
+    // TODO: Possible bug in Session_Map: deltas should be in absolute value
 
     expect(distanceFinder, findsOneWidget);
     expect(timeFinder, findsOneWidget);
     expect(dateFinder, findsOneWidget);
+    expect(mapFinder, findsOneWidget);
   });
 
   Goal distanceGoal = Goal(
@@ -63,12 +71,14 @@ main() {
     GlobalKey<NavigatorState> navigatorKey = GlobalKey();
     await tester.pumpWidget(MediaQuery(
         data: const MediaQueryData(),
-        child: Builder(builder: (BuildContext context) { return MaterialApp(
-            navigatorKey: navigatorKey, home: GoalCard(distanceGoal));})));
+        child: Builder(builder: (BuildContext context) {
+          return MaterialApp(
+              navigatorKey: navigatorKey, home: GoalCard(distanceGoal));
+        })));
     final titleFinder = find.text('Run for at least 8.0 km');
     final subtitleFinder = find.text('In progress');
     final progressBarFinder = find.byWidgetPredicate((widget) =>
-      widget is LinearProgressIndicator && widget.value == 5.3/8);
+        widget is LinearProgressIndicator && widget.value == 5.3 / 8);
 
     expect(titleFinder, findsOneWidget);
     expect(subtitleFinder, findsOneWidget);
@@ -88,12 +98,14 @@ main() {
     GlobalKey<NavigatorState> navigatorKey = GlobalKey();
     await tester.pumpWidget(MediaQuery(
         data: const MediaQueryData(),
-        child: Builder(builder: (BuildContext context) { return MaterialApp(
-            navigatorKey: navigatorKey, home: GoalCard(timeGoal));})));
+        child: Builder(builder: (BuildContext context) {
+          return MaterialApp(
+              navigatorKey: navigatorKey, home: GoalCard(timeGoal));
+        })));
     final titleFinder = find.text('Run for at least 75 min');
     final subtitleFinder = find.text('Completed');
     final progressBarFinder = find.byWidgetPredicate((widget) =>
-    widget is LinearProgressIndicator && widget.value == 78.54/75);
+        widget is LinearProgressIndicator && widget.value == 78.54 / 75);
 
     expect(titleFinder, findsOneWidget);
     expect(subtitleFinder, findsOneWidget);
@@ -113,12 +125,15 @@ main() {
     GlobalKey<NavigatorState> navigatorKey = GlobalKey();
     await tester.pumpWidget(MediaQuery(
         data: const MediaQueryData(),
-        child: Builder(builder: (BuildContext context) { return MaterialApp(
-            navigatorKey: navigatorKey, home: GoalCard(speedGoal));})));
-    final titleFinder = find.text('Run with an average speed of at least 12.5 km/h');
+        child: Builder(builder: (BuildContext context) {
+          return MaterialApp(
+              navigatorKey: navigatorKey, home: GoalCard(speedGoal));
+        })));
+    final titleFinder =
+        find.text('Run with an average speed of at least 12.5 km/h');
     final subtitleFinder = find.text('In progress');
-    final progressBarFinder = find.byWidgetPredicate((widget) =>
-    widget is LinearProgressIndicator);
+    final progressBarFinder =
+        find.byWidgetPredicate((widget) => widget is LinearProgressIndicator);
 
     expect(titleFinder, findsOneWidget);
     expect(subtitleFinder, findsOneWidget);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:progetto/components/profile_picture.dart';
@@ -72,29 +73,35 @@ main() {
     final titleFinder = find.text('Liceo Mascheroni');
     final subtitleFinder = find.text('Bergamo, Lombardia, Italy');
     final iconFinder = find.byWidgetPredicate(
-            (widget) => widget is Icon && widget.icon == Icons.school);
+        (widget) => widget is Icon && widget.icon == Icons.school);
 
     expect(titleFinder, findsOneWidget);
     expect(subtitleFinder, findsOneWidget);
     expect(iconFinder, findsOneWidget);
   });
 
-  Proposal proposal = Proposal(dateTime: DateTime(2023, 6, 15, 15, 40, 43), owner: user, place: place0, type: 'Friends', participants: []);
+  Proposal proposal = Proposal(
+      dateTime: DateTime(2023, 6, 15, 15, 40, 43),
+      owner: user,
+      place: place0,
+      type: 'Friends',
+      participants: []);
 
   testWidgets('Proposal tile', (tester) async {
     await tester.pumpWidget(MediaQuery(
         data: const MediaQueryData(),
         child: Builder(builder: (BuildContext context) {
           return MaterialApp(
-              home: Scaffold(body: ProposalTile.fromProposal(proposal, context)));
+              home:
+                  Scaffold(body: ProposalTile.fromProposal(proposal, context)));
         })));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.text('Organizer: Mario Rossi');
-    //final iconFinder = find.byWidgetPredicate(
-            //(widget) => widget is Icon && widget.icon == Icons.school);
+    await tester.pumpAndSettle(); // Waits for the spinning animation to complete (the SVG image is ready)
+    final iconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
 
     expect(titleFinder, findsOneWidget);
     expect(subtitleFinder, findsOneWidget);
-    //expect(iconFinder, findsOneWidget);
+    expect(iconFinder, findsOneWidget);
   });
 }
