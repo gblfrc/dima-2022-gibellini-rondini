@@ -47,10 +47,9 @@ main() {
         widget is FlutterMap &&
         widget.options.interactiveFlags == InteractiveFlag.none &&
         widget.options.bounds?.north == (46 + 1 / 4 * 1) &&
-        widget.options.bounds?.west == (9 + 1 / 4 * 0.3) &&
+        widget.options.bounds?.west == (9 - 1 / 4 * 0.3) &&
         widget.options.bounds?.south == (45 - 1 / 4 * 1) &&
-        widget.options.bounds?.east == (9.3 - 1 / 4 * 0.3));
-    // TODO: Possible bug in Session_Map: deltas should be in absolute value
+        widget.options.bounds?.east == (9.3 + 1 / 4 * 0.3));
 
     expect(distanceFinder, findsOneWidget);
     expect(timeFinder, findsOneWidget);

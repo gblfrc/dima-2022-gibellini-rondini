@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+//import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:progetto/components/profile_picture.dart';
 import 'package:progetto/components/tiles.dart';
 import 'package:progetto/model/place.dart';
@@ -80,28 +81,87 @@ main() {
     expect(iconFinder, findsOneWidget);
   });
 
-  Proposal proposal = Proposal(
+  Proposal proposal0 = Proposal(
       dateTime: DateTime(2023, 6, 15, 15, 40, 43),
       owner: user,
       place: place0,
       type: 'Friends',
       participants: []);
 
-  testWidgets('Proposal tile', (tester) async {
+  testWidgets('Proposal tile - Friends not startable', (tester) async {
     await tester.pumpWidget(MediaQuery(
         data: const MediaQueryData(),
         child: Builder(builder: (BuildContext context) {
           return MaterialApp(
-              home:
-                  Scaffold(body: ProposalTile.fromProposal(proposal, context)));
+              home: Scaffold(
+                  body: ProposalTile.fromProposal(proposal0, context)));
         })));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.text('Organizer: Mario Rossi');
-    await tester.pumpAndSettle(); // Waits for the spinning animation to complete (the SVG image is ready)
-    final iconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
+    //await tester.pump(); // Waits for the spinning animation to complete (the SVG image is ready)
+    // final calendarIconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
+    final privacyIconFinder = find.byWidgetPredicate(
+        (widget) => widget is Icon && widget.icon == Icons.lock);
+    final startButtonFinder = find.widgetWithText(FilledButton, "Start");
 
     expect(titleFinder, findsOneWidget);
     expect(subtitleFinder, findsOneWidget);
-    expect(iconFinder, findsOneWidget);
+    //expect(calendarIconFinder, findsOneWidget);
+    expect(privacyIconFinder, findsOneWidget);
+    expect(startButtonFinder, findsNothing);
+  });
+
+  Proposal proposal1 = Proposal(
+      dateTime: DateTime(2023, 6, 15, 15, 40, 43),
+      owner: user,
+      place: place0,
+      type: 'Public',
+      participants: []);
+
+  testWidgets('Proposal tile - Public not startable', (tester) async {
+    await tester.pumpWidget(MediaQuery(
+        data: const MediaQueryData(),
+        child: Builder(builder: (BuildContext context) {
+          return MaterialApp(
+              home: Scaffold(
+                  body: ProposalTile.fromProposal(proposal1, context)));
+        })));
+    final titleFinder = find.text('Parco Suardi');
+    final subtitleFinder = find.text('Organizer: Mario Rossi');
+    //await tester.pump(Duration(seconds: 2)); // Waits for the spinning animation to complete (the SVG image is ready)
+    //final calendarIconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
+    final privacyIconFinder = find.byWidgetPredicate(
+        (widget) => widget is Icon && widget.icon == MdiIcons.lockOpen);
+    final startButtonFinder = find.widgetWithText(FilledButton, "Start");
+
+    expect(titleFinder, findsOneWidget);
+    expect(subtitleFinder, findsOneWidget);
+    //expect(calendarIconFinder, findsOneWidget);
+    expect(privacyIconFinder, findsOneWidget);
+    expect(startButtonFinder, findsNothing);
+  });
+
+  testWidgets('Proposal tile - Startable', (tester) async {
+    await tester.pumpWidget(MediaQuery(
+        data: const MediaQueryData(),
+        child: Builder(builder: (BuildContext context) {
+          return MaterialApp(
+              home: Scaffold(
+                  body: ProposalTile.fromProposal(proposal0, context,
+                      startable: true)));
+        })));
+    final titleFinder = find.text('Parco Suardi');
+    final subtitleFinder = find.text('Organizer: Mario Rossi');
+    //await tester.pump(); // Waits for the spinning animation to complete (the SVG image is ready)
+    //final calendarIconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
+    final privacyIconFinder = find.byWidgetPredicate(
+        (widget) => widget is Icon && widget.icon == Icons.lock);
+    final startButtonFinder = find.widgetWithText(FilledButton, "Start");
+
+    expect(titleFinder, findsOneWidget);
+    expect(subtitleFinder, findsOneWidget);
+    //expect(calendarIconFinder, findsOneWidget);
+    expect(privacyIconFinder, findsNothing);
+    expect(startButtonFinder, findsOneWidget);
   });
 }

@@ -98,7 +98,7 @@ class SessionMap extends StatelessWidget {
     double east = longitudes.reduce(max);
     double west = longitudes.reduce(min);
     double deltaLatitude = north - south;
-    double deltaLongitude = west - east;
+    double deltaLongitude = east - west;
     double safeAreaFactor = 1 / 4;
 
     LatLng corner1 = LatLng(north + safeAreaFactor * deltaLatitude,
