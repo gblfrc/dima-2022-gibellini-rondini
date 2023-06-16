@@ -64,7 +64,7 @@ class CreateProposalFormState extends State<CreateProposalForm> {
             if (textEditingValue.text == '') {
               return const Iterable<Place>.empty();
             } else {
-              return SearchEngine.getPlacesByName(textEditingValue.text);
+              return SearchEngine().getPlacesByName(textEditingValue.text);
             }
           },
           displayStringForOption: (Place place) => place.name,

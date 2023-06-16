@@ -15,3 +15,8 @@ class StorageException implements Exception {
 
   StorageException(this.message);
 }
+class SearchEngineException implements Exception {
+  String? message;
+
+  SearchEngineException(this.message);
+}

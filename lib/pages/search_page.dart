@@ -191,7 +191,7 @@ class _SearchPageState extends State<SearchPage> {
     String? uid = Auth().currentUser?.uid;
     // get all users except the logged one
     List<User> newList =
-        await SearchEngine.getUsersByName(name, excludeUid: uid);
+        await SearchEngine().getUsersByName(name, excludeUid: uid!);
     // call setState to update widget
     setState(() {
       userList = newList;
@@ -203,7 +203,7 @@ class _SearchPageState extends State<SearchPage> {
   */
   void _updatePlaceList(String name) async {
     // get all places given place name
-    List<Place> newList = await SearchEngine.getPlacesByName(name);
+    List<Place> newList = await SearchEngine().getPlacesByName(name);
     // call setState to update widget
     setState(() {
       placeList = newList;
