@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
+import 'package:progetto/app_logic/location_handler.dart';
 import 'package:progetto/components/tiles.dart';
 import 'package:progetto/pages/create_proposal_page.dart';
 import 'package:progetto/pages/session_page.dart';
@@ -179,21 +180,21 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.add),
         children: [
           FloatingActionButton(
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const SessionPage())),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => SessionPage(locationHandler: LocationHandler(),))),
             tooltip: 'New session',
             heroTag: 'new-proposal-button',
-            child: const Icon(Icons.directions_run),
             backgroundColor: buttonBackgroundColor,
             foregroundColor: buttonForegroundColor,
+            child: const Icon(Icons.directions_run),
           ),
           FloatingActionButton(
             onPressed: () =>
                 Navigator.of(context).push(MaterialPageRoute(builder: (context) => const CreateProposalPage())),
             tooltip: 'New proposal',
             heroTag: 'new-session-button',
-            child: const Icon(Icons.calendar_month),
             backgroundColor: buttonBackgroundColor,
             foregroundColor: buttonForegroundColor,
+            child: const Icon(Icons.calendar_month),
           ),
         ],
       ),
