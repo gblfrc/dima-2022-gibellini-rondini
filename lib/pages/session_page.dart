@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:progetto/app_logic/location_handler.dart';
 import 'package:progetto/model/proposal.dart';
 
 import '../app_logic/auth.dart';
@@ -12,8 +13,9 @@ import '../constants.dart';
 
 class SessionPage extends StatefulWidget {
   final Proposal? proposal;
+  final LocationHandler locationHandler;
 
-  const SessionPage({this.proposal, super.key});
+  const SessionPage({this.proposal, super.key, required this.locationHandler});
 
   @override
   State<SessionPage> createState() => _SessionPageState();
@@ -65,14 +67,14 @@ class _SessionPageState extends State<SessionPage> {
           Flexible(
               flex: 5,
               child: FutureBuilder(
-                  future: _initPosition(context),
+                  future: widget.locationHandler.getCurrentPosition(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       Position position = snapshot.data!;
                       _currentPosition =
                           LatLng(position.latitude, position.longitude);
                       if (_positionUpdater == null) {
-                        positionStream = Geolocator.getPositionStream(
+                        positionStream = widget.locationHandler.getPositionStream(
                             locationSettings: AndroidSettings(
                                 accuracy: LocationAccuracy.best,
                                 distanceFilter: 5,
@@ -257,42 +259,6 @@ class _SessionPageState extends State<SessionPage> {
         ],
       ),
     );
-  }
-
-  Future<bool> _handleLocationPermission(BuildContext context) async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Location services are disabled. Please enable the services')));
-      return false;
-    }
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permissions are denied')));
-        return false;
-      }
-    }
-    if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Location permissions are permanently denied, we cannot request permissions.')));
-      return false;
-    }
-    return true;
-  }
-
-  Future<Position> _initPosition(BuildContext context) async {
-    final hasPermission = await _handleLocationPermission(context);
-    if (!hasPermission) return Future.error(Exception('Missing permissions'));
-    return Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
   }
 
   Future<void> saveSession() async {

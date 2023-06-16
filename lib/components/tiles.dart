@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:progetto/app_logic/location_handler.dart';
 import 'package:progetto/app_logic/storage.dart';
 import 'package:progetto/components/profile_picture.dart';
 import 'package:progetto/constants.dart';
@@ -221,7 +222,8 @@ class ProposalTile extends Tile {
               onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
                       builder: (context) =>
-                          SessionPage(proposal: proposal))),
+                          SessionPage(proposal: proposal, locationHandler:
+                            LocationHandler(),))),
               child: const Text("Start"),
             );
           }

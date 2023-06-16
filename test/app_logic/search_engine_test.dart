@@ -101,6 +101,14 @@ main() {
     testResponse = Response(jsonEncode([mockPlaceJson0, mockPlaceJson1]), 200);
   });
 
+  test('singleton properties', () {
+    SearchEngine searchEngineNew = SearchEngine();
+    expect(searchEngine, searchEngineNew);
+    expect(searchEngine.algoliaType, mockAlgolia.runtimeType);
+    expect(searchEngine.httpClientType, mockHttpClient.runtimeType);
+  });
+
+
   void algoliaInit() {
     when(mockAlgolia.instance).thenReturn(mockAlgolia);
     when(mockAlgolia.index('users')).thenReturn(mockIndex);

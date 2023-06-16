@@ -13,6 +13,10 @@ class SearchEngine {
   late Client _httpClient;
   static const String _locationIqKey = "pk.cc162333c0bbf1f37e63d8df39a2a776";
 
+  Type get algoliaType => _algolia.runtimeType;
+  Type get httpClientType => _httpClient.runtimeType;
+
+
   factory SearchEngine({Algolia? algolia, Client? httpClient}) {
     try {
       return _instance;
