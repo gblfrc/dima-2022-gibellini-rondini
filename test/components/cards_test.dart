@@ -6,6 +6,7 @@ import 'package:progetto/components/cards.dart';
 import 'package:progetto/model/goal.dart';
 import 'package:progetto/model/session.dart';
 import 'package:progetto/model/user.dart';
+import 'package:network_image_mock/network_image_mock.dart';
 
 main() {
   late Session session;
@@ -28,33 +29,35 @@ main() {
       start: DateTime(2023, 5, 23, 21, 35, 06));
 
   testWidgets('Session Card', (tester) async {
-    await tester.pumpWidget(MediaQuery(
-        data: const MediaQueryData(),
-        child: MaterialApp(
-            home: SessionCard(
-          session: session,
-        ))));
+    mockNetworkImagesFor(() async {
+      await tester.pumpWidget(MediaQuery(
+          data: const MediaQueryData(),
+          child: MaterialApp(
+              home: SessionCard(
+            session: session,
+          ))));
 
-    final distanceFinder = find.text('3.4 km');
-    final timeFinder = find.text('TIME: 10:03');
-    Finder dateFinder;
-    if (session.start.year < DateTime.now().year) {
-      dateFinder = find.text('MAY 23, 2023');
-    } else {
-      dateFinder = find.text('MAY 23');
-    }
-    final mapFinder = find.byWidgetPredicate((widget) =>
-        widget is FlutterMap &&
-        widget.options.interactiveFlags == InteractiveFlag.none &&
-        widget.options.bounds?.north == (46 + 1 / 4 * 1) &&
-        widget.options.bounds?.west == (9 - 1 / 4 * 0.3) &&
-        widget.options.bounds?.south == (45 - 1 / 4 * 1) &&
-        widget.options.bounds?.east == (9.3 + 1 / 4 * 0.3));
+      final distanceFinder = find.text('3.4 km');
+      final timeFinder = find.text('TIME: 10:03');
+      Finder dateFinder;
+      if (session.start.year < DateTime.now().year) {
+        dateFinder = find.text('MAY 23, 2023');
+      } else {
+        dateFinder = find.text('MAY 23');
+      }
+      final mapFinder = find.byWidgetPredicate((widget) =>
+          widget is FlutterMap &&
+          widget.options.interactiveFlags == InteractiveFlag.none &&
+          widget.options.bounds?.north == (46 + 1 / 4 * 1) &&
+          widget.options.bounds?.west == (9 - 1 / 4 * 0.3) &&
+          widget.options.bounds?.south == (45 - 1 / 4 * 1) &&
+          widget.options.bounds?.east == (9.3 + 1 / 4 * 0.3));
 
-    expect(distanceFinder, findsOneWidget);
-    expect(timeFinder, findsOneWidget);
-    expect(dateFinder, findsOneWidget);
-    expect(mapFinder, findsOneWidget);
+      expect(distanceFinder, findsOneWidget);
+      expect(timeFinder, findsOneWidget);
+      expect(dateFinder, findsOneWidget);
+      expect(mapFinder, findsOneWidget);
+    });
   });
 
   Goal distanceGoal = Goal(
