@@ -104,7 +104,7 @@ main() {
   });
 
   group('interactive flags', () {
-    testWidgets('image actions with default interactive flags', (WidgetTester tester) async {
+    testWidgets('map actions with default interactive flags', (WidgetTester tester) async {
       mockNetworkImagesFor(() async {
         await tester.pumpWidget(widgetUnderTest(testSession, useMarkers: false));
         await tester.pump();
@@ -142,7 +142,7 @@ main() {
         expect(mapController.zoom < initialZoom, true);
       });
     });
-    testWidgets('image actions with interactive flags set to none', (WidgetTester tester) async {
+    testWidgets('map actions with interactive flags set to none', (WidgetTester tester) async {
       mockNetworkImagesFor(() async {
         await tester.pumpWidget(widgetUnderTest(testSession, useMarkers: false,interactiveFlags: InteractiveFlag.none));
         await tester.pump();
