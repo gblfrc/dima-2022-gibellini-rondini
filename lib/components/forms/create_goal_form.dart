@@ -7,8 +7,10 @@ import 'custom_form_field.dart';
 
 class CreateGoalForm extends StatefulWidget {
   final double width;
+  final Database database;
+  final Auth auth;
 
-  CreateGoalForm({super.key, required this.width});
+  CreateGoalForm({super.key, required this.width, required this.database, required this.auth});
 
   @override
   State<CreateGoalForm> createState() => _CreateGoalFormState();
@@ -38,6 +40,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
               title: Text("Goal type"),
             ),
             RadioListTile(
+              key: const Key('GoalType_Distance'),
               title: const Text("Distance goal"),
               value: "distanceGoal",
               groupValue: _type,
@@ -49,6 +52,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
             ),
             RadioListTile(
               title: const Text("Time goal"),
+              key: const Key('GoalType_Time'),
               value: "timeGoal",
               groupValue: _type,
               onChanged: (String? value) {
@@ -58,6 +62,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
               },
             ),
             RadioListTile(
+              key: const Key('GoalType_Speed'),
               title: const Text("Speed goal"),
               value: "speedGoal",
               groupValue: _type,
@@ -76,6 +81,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
                 Flexible(
                   flex: 5,
                   child: CustomFormField(
+                    key: const Key('GoalTargetValue'),
                     text: 'Target value',
                     width: widget.width,
                     controller: _targetValueController,
@@ -102,6 +108,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
               onPressed: () {
                 createGoal();
               },
+              key: const Key('GoalSave'),
               child: const Text('SAVE'),
             ),
           ],
@@ -124,7 +131,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
         creationDate: DateTime.now(),
         currentValue: 0.0,
       );
-      await Database().createGoal(Auth().currentUser!.uid, goal);
+      await widget.database.createGoal(widget.auth.currentUser!.uid, goal);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
