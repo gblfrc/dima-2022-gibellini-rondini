@@ -64,7 +64,7 @@ main() {
       targetValue: 8.0,
       currentValue: 5.3,
       completed: false,
-      creationDate: DateTime.now());
+      creationDate: DateTime(2023, 6, 23, 10, 35, 06));
 
   testWidgets("Goal card - distance goal", (tester) async {
     GlobalKey<NavigatorState> navigatorKey = GlobalKey();
@@ -75,13 +75,20 @@ main() {
               navigatorKey: navigatorKey, home: GoalCard(distanceGoal));
         })));
     final titleFinder = find.text('Run for at least 8.0 km');
-    final subtitleFinder = find.text('In progress');
+    final subtitleFinder = find.text('5.3 km already run');
     final progressBarFinder = find.byWidgetPredicate((widget) =>
         widget is LinearProgressIndicator && widget.value == 5.3 / 8);
+    Finder creationDateFinder;
+    if (session.start.year < DateTime.now().year) {
+      creationDateFinder = find.text('CREATED ON JUN 23, 2023 AT 10:35');
+    } else {
+      creationDateFinder = find.text('CREATED ON JUN 23 AT 10:35');
+    }
 
     expect(titleFinder, findsOneWidget);
     expect(subtitleFinder, findsOneWidget);
     expect(progressBarFinder, findsOneWidget);
+    expect(creationDateFinder, findsOneWidget);
   });
 
   Goal timeGoal = Goal(
