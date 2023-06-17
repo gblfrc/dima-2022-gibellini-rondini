@@ -8,29 +8,32 @@ import 'package:progetto/model/session.dart';
 
 class SessionMap extends StatelessWidget {
   final Session session;
-  late bool? useMarkers;
+  final bool useMarkers;
   final int? interactiveFlags;
 
-  SessionMap(
+  const SessionMap(
       {super.key,
       required this.session,
-      this.useMarkers,
+      this.useMarkers = true,
       this.interactiveFlags});
 
   @override
   Widget build(BuildContext context) {
-    useMarkers = useMarkers ?? true;
       return FlutterMap(
+        key: const Key('SessionMapFlutterMap'),
+        mapController: MapController(),
         options: MapOptions(
             maxZoom: 18.4,
             bounds: getBoundCorner(session.positions),
             interactiveFlags: interactiveFlags ?? InteractiveFlag.all),
         children: [
           TileLayer(
+            key: const Key('SessionMapTileLayer'),
             urlTemplate: mapUrl,
             subdomains: const ['a', 'b', 'c'],
           ),
           PolylineLayer(
+            key: const Key('SessionMapPolylineLayer'),
             polylineCulling: true,
             polylines: [
               for (List<LatLng> posArray in session.positions)
@@ -43,14 +46,17 @@ class SessionMap extends StatelessWidget {
                 )
             ],
           ),
-          MarkerLayer(
-            markers: useMarkers!
-                ? [
+          if (useMarkers) MarkerLayer(
+            key: const Key('SessionMapMarkerLayer'),
+            markers:
+                [
               Marker(
+                key: const Key('SessionMapMarkerStart'),
                 point: session.positions.first.first,
                 // First point of the first segment
                 builder: (ctx) =>
                     Icon(
+                      key: const Key('SessionMapMarkerStartIcon'),
                       Icons.assistant_direction,
                       color: Theme
                           .of(context)
@@ -62,9 +68,11 @@ class SessionMap extends StatelessWidget {
                     ),
               ),
               Marker(
+                key: const Key('SessionMapMarkerEnd'),
                 point: session.positions.last.last, // Final destination
                 builder: (ctx) =>
                     Icon(
+                      key: const Key('SessionMapMarkerEndIcon'),
                       Icons.flag_circle_rounded,
                       color: Theme
                           .of(context)
@@ -76,7 +84,7 @@ class SessionMap extends StatelessWidget {
                     ),
               ),
             ]
-                : [],
+               ,
           ),
         ],
       );
