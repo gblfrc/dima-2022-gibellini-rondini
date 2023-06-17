@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
+import 'package:progetto/app_logic/storage.dart';
 import 'package:progetto/components/profile_header.dart';
 import 'package:progetto/pages/edit_profile_page.dart';
 
@@ -102,7 +103,7 @@ class _AccountPageState extends State<AccountPage> {
                         user = snapshot.data!;
                         return Column(
                           children: [
-                            ProfileHeader(user: user!),
+                            ProfileHeader(user: user!, storage: Storage(), database: Database(), auth: Auth(),),
                           ],
                         );
                       } else {

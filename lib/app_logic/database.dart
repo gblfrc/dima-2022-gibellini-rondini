@@ -223,6 +223,23 @@ class Database {
     return newList;
   }
 
+  Future<bool> isFriendOf({required String currentUserUid, required String friendUid}) async{
+    try {
+      var snapshot = await _database
+          .collection('users')
+          .where('__name__', isEqualTo: currentUserUid)
+          .where('friends', arrayContains: friendUid)
+          .get();
+      if (snapshot.docs.isEmpty) {
+        return false;
+      } else {
+        return true;
+      }
+    } on FirebaseException catch (fe){
+      throw DatabaseException(fe.message);
+    }
+  }
+
   Future<List<User>> getFriends(String uid) async {
     try {
       final userDocRef = _database.collection("users").doc(uid);
@@ -411,7 +428,7 @@ class Database {
       await _database.collection('proposals').doc(proposal.id).update({
         'participants': FieldValue.arrayUnion([currentUserUid])
       });
-    } on FirebaseException catch (fe){
+    } on FirebaseException catch (fe) {
       throw DatabaseException(fe.message);
     }
   }
@@ -421,7 +438,7 @@ class Database {
       await _database.collection('proposals').doc(proposal.id).update({
         'participants': FieldValue.arrayRemove([currentUserUid])
       });
-    } on FirebaseException catch (fe){
+    } on FirebaseException catch (fe) {
       throw DatabaseException(fe.message);
     }
   }

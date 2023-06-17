@@ -429,6 +429,32 @@ main() {
     });
   });
 
+  group('is friend of', () {
+    test('returns non-empty list of documents', () async {
+      when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
+      when(mockUserCollection.where('__name__', isEqualTo: mockUserJson0['uid'])).thenReturn(mockQuery0);
+      when(mockQuery0.where('friends', arrayContains: mockUserJson1['uid'])).thenReturn(mockQuery0);
+      when(mockQuery0.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot0));
+      when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotFriends0]);
+      expect(await database.isFriendOf(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']), true);
+    });
+
+    test('returns non-empty list of documents', () async {
+      when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
+      when(mockUserCollection.where('__name__', isEqualTo: mockUserJson0['uid'])).thenReturn(mockQuery0);
+      when(mockQuery0.where('friends', arrayContains: mockUserJson1['uid'])).thenReturn(mockQuery0);
+      when(mockQuery0.get()).thenAnswer((realInvocation) => Future.value(mockQuerySnapshot0));
+      when(mockQuerySnapshot0.docs).thenReturn([]);
+      expect(await database.isFriendOf(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']), false);
+    });
+
+    test('throws exception', () {
+      when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
+      expect(() => database.isFriendOf(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']),
+          throwsA(isA<DatabaseException>()));
+    });
+  });
+
   group('get friends from database', () {
     test('correct output', () async {
       // user collection and current user document
@@ -461,12 +487,14 @@ main() {
     test('correct output', () async {
       when(mockFirebaseFirestore.collection('users')).thenReturn(mockCollection);
       when(mockCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference0);
-      expect(() => database.addFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']), returnsNormally);
+      expect(() => database.addFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']),
+          returnsNormally);
     });
 
     test('throw exception', () {
       when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
-      expect(() => database.addFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']), throwsA(isA<DatabaseException>()));
+      expect(() => database.addFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']),
+          throwsA(isA<DatabaseException>()));
     });
   });
 
@@ -474,15 +502,16 @@ main() {
     test('correct output', () async {
       when(mockFirebaseFirestore.collection('users')).thenReturn(mockCollection);
       when(mockCollection.doc(mockUserJson0['uid'])).thenReturn(mockReference0);
-      expect(() => database.removeFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']), returnsNormally);
+      expect(() => database.removeFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']),
+          returnsNormally);
     });
 
     test('throw exception', () {
       when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
-      expect(() => database.removeFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']), throwsA(isA<DatabaseException>()));
+      expect(() => database.removeFriend(currentUserUid: mockUserJson0['uid'], friendUid: mockUserJson1['uid']),
+          throwsA(isA<DatabaseException>()));
     });
   });
-
 
   group('add participants to proposals', () {
     test('correct output', () async {
@@ -493,7 +522,8 @@ main() {
 
     test('throw exception', () {
       when(mockFirebaseFirestore.collection('proposals')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
-      expect(() => database.addParticipantToProposal(testProposal, mockUserJson0['uid']), throwsA(isA<DatabaseException>()));
+      expect(() => database.addParticipantToProposal(testProposal, mockUserJson0['uid']),
+          throwsA(isA<DatabaseException>()));
     });
   });
   group('remove participants to proposals', () {
@@ -505,7 +535,8 @@ main() {
 
     test('throw exception', () {
       when(mockFirebaseFirestore.collection('proposals')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
-      expect(() => database.removeParticipantFromProposal(testProposal, mockUserJson0['uid']), throwsA(isA<DatabaseException>()));
+      expect(() => database.removeParticipantFromProposal(testProposal, mockUserJson0['uid']),
+          throwsA(isA<DatabaseException>()));
     });
   });
 
@@ -732,11 +763,10 @@ main() {
       when(mockCollection.doc(testGoal.id)).thenReturn(mockReference);
       expect(() => database.deleteGoal(testGoal), returnsNormally);
     });
-    
-    test('throws exception', (){
+
+    test('throws exception', () {
       when(mockFirebaseFirestore.collection('goals')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
       expect(() => database.deleteGoal(testGoal), throwsA(isA<DatabaseException>()));
-      
-    } );
+    });
   });
 }
