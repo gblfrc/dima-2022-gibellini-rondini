@@ -15,7 +15,8 @@ main() {
                     key: const Key('InputBar'),
                     onChanged: (text) => input = text)));
       }));
-  testWidgets('Search bar - text inserted and then overwritten', (tester) async {
+  testWidgets('Search bar - text inserted and then overwritten',
+      (tester) async {
     await tester.pumpWidget(testWidget);
     Finder inputBar = find.byKey(const Key('InputBar'));
     await tester.enterText(inputBar, "Test text");

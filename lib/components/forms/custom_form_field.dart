@@ -6,6 +6,7 @@ class CustomFormField extends StatelessWidget {
   final TextEditingController controller;
   bool? obscure;
   bool? numericOnly;
+  String? Function(String?)? validator;
 
   CustomFormField({
     super.key,
@@ -13,6 +14,7 @@ class CustomFormField extends StatelessWidget {
     required this.controller,
     this.obscure,
     this.numericOnly,
+    this.validator,
   });
 
   @override
@@ -32,6 +34,7 @@ class CustomFormField extends StatelessWidget {
           ),
           hintText: text,
         ),
+        validator: validator,
       );
 
 

@@ -10,7 +10,11 @@ class CreateGoalForm extends StatefulWidget {
   final Database database;
   final Auth auth;
 
-  CreateGoalForm({super.key, required this.width, required this.database, required this.auth});
+  CreateGoalForm(
+      {super.key,
+      required this.width,
+      required this.database,
+      required this.auth});
 
   @override
   State<CreateGoalForm> createState() => _CreateGoalFormState();
@@ -19,6 +23,7 @@ class CreateGoalForm extends StatefulWidget {
 class _CreateGoalFormState extends State<CreateGoalForm> {
   late TextEditingController _targetValueController;
   late String? _type = "distanceGoal";
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -33,6 +38,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
     return Padding(
       padding: EdgeInsets.all(padding),
       child: Form(
+        key: _formKey,
         // TODO: add form key and form validation (negative values, decimal minutes...)
         child: Column(
           children: [
@@ -85,13 +91,25 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
                     text: 'Target value',
                     controller: _targetValueController,
                     numericOnly: true,
+                    validator: (value) {
+                      if (value == null ||
+                          value.isEmpty ||
+                          num.tryParse(value) == null ||
+                          num.tryParse(value)! <= 0) {
+                        return "Please insert a valid number";
+                      } else {
+                        return null;
+                      }
+                    },
                   ),
                 ),
                 Flexible(
                   flex: 1,
                   fit: FlexFit.tight,
                   child: Text(
-                    _type == "distanceGoal" ? "km" : (_type == "timeGoal" ? "min" : "km/h"),
+                    _type == "distanceGoal"
+                        ? "km"
+                        : (_type == "timeGoal" ? "min" : "km/h"),
                     textAlign: TextAlign.center,
                   ),
                 )
@@ -105,7 +123,9 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
             ),
             FilledButton(
               onPressed: () {
-                createGoal();
+                if (_formKey.currentState!.validate()) {
+                  createGoal();
+                }
               },
               key: const Key('GoalSave'),
               child: const Text('SAVE'),
