@@ -37,51 +37,88 @@ main() {
       'surname': 'Rossi',
       'uid': 'mario_rossi',
     });
-    when(database.createGoal(any, any)).thenAnswer((realInvocation) async {
-      testGoal = realInvocation.positionalArguments[1];
-      testGoal.owner = user;
-    });
+
     when(auth.currentUser).thenReturn(curUser);
-    // when(database.getGoals)
-    //     .thenReturn((uid, {required inProgressOnly}) => Stream.fromIterable([
-    //           [testGoal]
-    //         ]));
   });
 
-  testWidgets('Goal form - goal creation', (tester) async {
-    await tester.pumpWidget(MediaQuery(
-        data: const MediaQueryData(),
-        child: Builder(
-            builder: (BuildContext context) => CustomApp(
-                onLogged: Scaffold(
-                  body: CreateGoalForm(
-                    width: MediaQuery.of(context).size.width,
-                    database: database,
-                    auth: auth,
-                  ),
+  Widget testWidget = MediaQuery(
+      data: const MediaQueryData(),
+      child: Builder(
+          builder: (BuildContext context) => CustomApp(
+              onLogged: Scaffold(
+                body: CreateGoalForm(
+                  width: MediaQuery.of(context).size.width,
+                  database: database,
+                  auth: auth,
                 ),
-                onNotLogged: Scaffold(
-                  body: CreateGoalForm(
-                    width: MediaQuery.of(context).size.width,
-                    database: database,
-                    auth: auth,
-                  ),
+              ),
+              onNotLogged: Scaffold(
+                body: CreateGoalForm(
+                  width: MediaQuery.of(context).size.width,
+                  database: database,
+                  auth: auth,
                 ),
-                auth: auth,
-                storage: storage,
-                database: database))));
-    await tester.pumpAndSettle();
-    final radiusGoalType = find.byKey(const Key('GoalType_Distance'));
-    final targetValue = find.byKey(const Key('GoalTargetValue'));
-    final sendButton = find.byKey(const Key('GoalSave'));
-    await tester.tap(radiusGoalType);
-    await tester.enterText(targetValue, "20");
-    await tester.tap(sendButton);
+              ),
+              auth: auth,
+              storage: storage,
+              database: database)));
 
-    expect(testGoal.type, "distanceGoal");
-    expect(testGoal.targetValue, 20.0);
-    expect(testGoal.currentValue, 0.0);
-    expect(testGoal.completed, false);
-    expect(testGoal.owner, user);
+  group("Goal form - Valid input", () {
+    setUp(() => {
+          when(database.createGoal(any, any))
+              .thenAnswer((realInvocation) async {
+            testGoal = realInvocation.positionalArguments[1];
+            testGoal.owner = user;
+          })
+        });
+    testWidgets('Goal form - goal creation', (tester) async {
+      await tester.pumpWidget(testWidget);
+      await tester.pumpAndSettle();
+      final radiusGoalType = find.byKey(const Key('GoalType_Distance'));
+      final targetValue = find.byKey(const Key('GoalTargetValue'));
+      final sendButton = find.byKey(const Key('GoalSave'));
+      await tester.tap(radiusGoalType);
+      await tester.enterText(targetValue, "20.5");
+      await tester.tap(sendButton);
+
+      expect(testGoal.type, "distanceGoal");
+      expect(testGoal.targetValue, 20.5);
+      expect(testGoal.currentValue, 0.0);
+      expect(testGoal.completed, false);
+      expect(testGoal.owner, user);
+    });
+  });
+
+  group("Goal creation - Invalid input", () {
+    setUp(() {
+      when(database.createGoal(any, any)).thenAnswer((realInvocation) async {
+        print("Goal creation was invoked");
+        neverCalled();
+        testGoal = realInvocation.positionalArguments[1];
+        testGoal.owner = user;
+      });
+    });
+    testWidgets('Goal form - Invalid input', (tester) async {
+      await tester.pumpWidget(testWidget);
+      final radiusGoalType = find.byKey(const Key('GoalType_Time'));
+      final targetValue = find.byKey(const Key('GoalTargetValue'));
+      final sendButton = find.byKey(const Key('GoalSave'));
+
+      await tester.tap(radiusGoalType);
+      await tester.enterText(targetValue, "-2");
+      await tester.tap(sendButton);
+
+      await tester.tap(radiusGoalType);
+      await tester.enterText(targetValue, "0");
+      await tester.tap(sendButton);
+
+      await tester.tap(radiusGoalType);
+      await tester.enterText(targetValue, "abc");
+      await tester.tap(sendButton);
+
+      await tester.tap(radiusGoalType);
+      await tester.enterText(targetValue, "0.2");
+      await tester.tap(sendButton);
+    });
   });
 }

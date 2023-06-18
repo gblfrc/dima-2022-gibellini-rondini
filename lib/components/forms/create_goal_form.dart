@@ -95,7 +95,9 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
                       if (value == null ||
                           value.isEmpty ||
                           num.tryParse(value) == null ||
-                          num.tryParse(value)! <= 0) {
+                          num.tryParse(value)! <= 0 ||
+                          (_type == "timeGoal") &&
+                              num.tryParse(value)! % 1 != 0) {
                         return "Please insert a valid number";
                       } else {
                         return null;
