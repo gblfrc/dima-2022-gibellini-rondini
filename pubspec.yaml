@@ -45,7 +45,6 @@ dependencies:
   latlong2: ^0.8.1
   algolia: ^1.1.2
   geolocator: ^9.0.2
-  location: ^4.4.0
   http: ^0.13.6
   file_picker: 5.2.11
   firebase_storage: ^11.1.2

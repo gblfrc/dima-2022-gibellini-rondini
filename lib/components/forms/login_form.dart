@@ -50,7 +50,6 @@ class _LoginFormState extends State<LoginForm> {
             children: [
               CustomFormField(
                 text: 'Username',
-                width: widget.width,
                 controller: _controllerEmail,
               ),
               const SizedBox(
@@ -58,7 +57,6 @@ class _LoginFormState extends State<LoginForm> {
               ),
               CustomFormField(
                 text: 'Password',
-                width: widget.width,
                 controller: _controllerPassword,
                 obscure: true,
               ),

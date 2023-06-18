@@ -83,7 +83,6 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
                   child: CustomFormField(
                     key: const Key('GoalTargetValue'),
                     text: 'Target value',
-                    width: widget.width,
                     controller: _targetValueController,
                     numericOnly: true,
                   ),

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:progetto/app_logic/auth.dart';
+import 'package:progetto/app_logic/database.dart';
+import 'package:progetto/app_logic/storage.dart';
 import '../components/forms/edit_profile_form.dart';
 import '../model/user.dart';
 
@@ -9,7 +12,7 @@ class EditProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
+    double width = MediaQuery.of(context).size.shortestSide;
     double padding = width / 20;
     final user = ModalRoute.of(context)!.settings.arguments as User;
 
@@ -22,6 +25,9 @@ class EditProfilePage extends StatelessWidget {
         child: EditProfileForm(
           width: width - 2 * padding,
           user: user,
+          auth: Auth(),
+          database: Database(),
+          storage: Storage(),
         ),
       ),
     );

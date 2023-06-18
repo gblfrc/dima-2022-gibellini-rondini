@@ -67,7 +67,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
             children: [
               CustomFormField(
                 text: 'Email',
-                width: widget.width,
                 controller: _controllerEmail,
               ),
               const SizedBox(
@@ -75,7 +74,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
               ),
               CustomFormField(
                 text: 'Password',
-                width: widget.width,
                 controller: _controllerPassword,
                 obscure: true,
               ),
@@ -84,7 +82,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
               ),
               CustomFormField(
                 text: 'Name',
-                width: widget.width,
                 controller: _controllerName,
               ),
               const SizedBox(
@@ -92,7 +89,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
               ),
               CustomFormField(
                 text: 'Surname',
-                width: widget.width,
                 controller: _controllerSurname,
               ),
               const SizedBox(

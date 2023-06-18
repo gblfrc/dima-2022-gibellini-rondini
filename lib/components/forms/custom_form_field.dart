@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 class CustomFormField extends StatelessWidget {
   final String text;
-  final double width;
 
   final TextEditingController controller;
   bool? obscure;
@@ -11,7 +10,6 @@ class CustomFormField extends StatelessWidget {
   CustomFormField({
     super.key,
     required this.text,
-    required this.width,
     required this.controller,
     this.obscure,
     this.numericOnly,
@@ -19,20 +17,28 @@ class CustomFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscure ?? false,
-      keyboardType: numericOnly ?? false ? TextInputType.number : null,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white,
-        isDense: true,
-        contentPadding: EdgeInsets.all(width / 20),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(5),
+    return LayoutBuilder(builder: (context, constraint) {
+      return TextFormField(
+        controller: controller,
+        obscureText: obscure ?? false,
+        keyboardType: numericOnly ?? false ? TextInputType.number : null,
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.white,
+          isDense: true,
+          contentPadding: EdgeInsets.all(constraint.maxWidth / 20),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(5),
+          ),
+          hintText: text,
         ),
-        hintText: text,
-      ),
-    );
+      );
+
+
+
+    });
+
+
+
   }
 }
