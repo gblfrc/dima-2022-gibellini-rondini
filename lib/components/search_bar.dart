@@ -26,6 +26,7 @@ class _SearchBarState extends State<SearchBar> {
         prefixIcon: const Icon(Icons.search),
         hintText: 'Search',
         suffixIcon: IconButton(
+          key: const Key('ClearIcon'),
           icon: const Icon(Icons.clear),
           onPressed: () {
             _controller.clear();
