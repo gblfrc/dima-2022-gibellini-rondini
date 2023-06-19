@@ -31,13 +31,10 @@ class _LoginFormState extends State<LoginForm> {
       //widget.errorCallback(e.message);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          key: const Key('ErrorSnackBar'),
           content: Text(e.message ?? "Something went wrong. Please try again."),
         ),
       );
-      // print('ERROR: $e.message');
-      // setState(() {
-      //   errorMessage = e.message;
-      // });
     }
   }
 
