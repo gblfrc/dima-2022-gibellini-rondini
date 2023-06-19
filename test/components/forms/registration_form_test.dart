@@ -16,7 +16,7 @@ import 'package:progetto/components/forms/registration_form.dart';
   MockSpec<UserCredential>(),
   MockSpec<User>(),
 ])
-import 'registration_field_test.mocks.dart';
+import 'registration_form_test.mocks.dart';
 
 main() {
   late Auth mockAuth;
@@ -162,7 +162,6 @@ main() {
           .thenAnswer((realInvocation) => Future.value(mockCredentials));
       when(mockCredentials.user).thenReturn(mockUser);
       when(mockUser.uid).thenReturn(testUid);
-      when(mockDatabase.createUser(uid: testUid, name: 'text', surname: 'text'));
       await tester.pumpWidget(widgetUnderTest());
       await tester.pumpAndSettle();
       await formFill(tester);
@@ -181,5 +180,51 @@ main() {
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('AuthenticationErrorSnackBar')), findsOneWidget);
     });
+
+    testWidgets('error in connecting to database', (WidgetTester tester) async {
+      when(mockAuth.createUserWithEmailAndPassword(email: 'text', password: 'text'))
+          .thenAnswer((realInvocation) => Future.value(mockCredentials));
+      when(mockCredentials.user).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUid);
+      when(mockDatabase.createUser(uid: testUid, name: 'text', surname: 'text')).thenThrow(DatabaseException('test'));
+      await tester.pumpWidget(widgetUnderTest());
+      await tester.pumpAndSettle();
+      await formFill(tester);
+      await tester.tap(find.byKey(const Key('RegistrationFormButton')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('DatabaseErrorSnackBar')), findsOneWidget);
+    });
+    testWidgets('error in connecting to database, error in deleting user', (WidgetTester tester) async {
+      when(mockAuth.createUserWithEmailAndPassword(email: 'text', password: 'text'))
+          .thenAnswer((realInvocation) => Future.value(mockCredentials));
+      when(mockCredentials.user).thenReturn(mockUser);
+      when(mockUser.uid).thenReturn(testUid);
+      when(mockDatabase.createUser(uid: testUid, name: 'text', surname: 'text')).thenThrow(DatabaseException('test'));
+      when(mockAuth.deleteUser()).thenThrow(AuthenticationException('test'));
+      await tester.pumpWidget(widgetUnderTest());
+      await tester.pumpAndSettle();
+      await formFill(tester);
+      await tester.tap(find.byKey(const Key('RegistrationFormButton')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('DatabaseErrorSnackBar')), findsOneWidget);
+    });
+  });
+
+  testWidgets('date can be erased, then picker shows current time', (WidgetTester tester) async {
+    await tester.pumpWidget(widgetUnderTest());
+    await tester.pumpAndSettle();
+    Finder birthdayFieldFinder = find.byKey(const Key('RegistrationFormBirthdayFormField'));
+    Finder resetIcon = find.descendant(of: birthdayFieldFinder, matching: find.byType(Icon));
+    DateTimeField birthdayField = birthdayFieldFinder.evaluate().single.widget as DateTimeField;
+    await tester.tap(resetIcon);
+    await tester.pumpAndSettle();
+    expect(birthdayField.controller!.text, "");
+    await tester.tap(birthdayFieldFinder);
+    await tester.pumpAndSettle();
+    Finder datePickerFinder = find.byType(DatePickerDialog);
+    DatePickerDialog datePickerDialog = datePickerFinder.evaluate().single.widget as DatePickerDialog;
+    expect(datePickerDialog.currentDate.year, DateTime.now().year);
+    expect(datePickerDialog.currentDate.month, DateTime.now().month);
+    expect(datePickerDialog.currentDate.day, DateTime.now().day);
   });
 }

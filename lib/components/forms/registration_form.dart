@@ -42,6 +42,11 @@ class _RegistrationFormState extends State<RegistrationForm> {
         content: Text(ae.message ?? "An error occurred during authentication."),
       ));
     } on DatabaseException catch (de) {
+      try {
+        widget.auth.deleteUser();
+      } on AuthenticationException {
+        // do nothing
+      }
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         key: const Key('DatabaseErrorSnackBar'),

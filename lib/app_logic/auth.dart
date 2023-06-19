@@ -36,7 +36,9 @@ class Auth {
 
   // Getter methods
   User? get currentUser => _auth.currentUser;
+
   Stream<User?> get authStateChanges => _auth.authStateChanges();
+
   Type get authType => _auth.runtimeType; // mostly for debugging purposes
 
   /*
@@ -48,8 +50,7 @@ class Auth {
     required String password,
   }) async {
     try {
-      var credential = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
+      var credential = await _auth.signInWithEmailAndPassword(email: email, password: password);
       return credential;
     } on FirebaseAuthException catch (fae) {
       throw AuthenticationException(fae.message);
@@ -66,10 +67,20 @@ class Auth {
     required String password,
   }) async {
     try {
-      UserCredential credential = await _auth.createUserWithEmailAndPassword(
-          email: email, password: password);
+      UserCredential credential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       return credential;
     } on FirebaseAuthException catch (fae) {
+      throw AuthenticationException(fae.message);
+    }
+  }
+
+  /*
+  * Method to delete the current user.
+  */
+  Future<void> deleteUser() async {
+    try {
+      return await _auth.currentUser?.delete();
+    } on FirebaseAuthException catch(fae){
       throw AuthenticationException(fae.message);
     }
   }
