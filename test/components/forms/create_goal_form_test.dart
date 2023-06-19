@@ -5,6 +5,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
+import 'package:progetto/app_logic/exceptions.dart';
 import 'package:progetto/app_logic/storage.dart';
 import 'package:progetto/components/forms/create_goal_form.dart';
 import 'package:progetto/main.dart';
@@ -102,6 +103,8 @@ main() {
       final radiusGoalType = find.byKey(const Key('GoalType_Time'));
       final targetValue = find.byKey(const Key('GoalTargetValue'));
       final sendButton = find.byKey(const Key('GoalSave'));
+      final radiusGoalType2 = find.byKey(const Key('GoalType_Distance'));
+      final radiusGoalType3 = find.byKey(const Key('GoalType_Speed'));
 
       await tester.tap(radiusGoalType);
       await tester.enterText(targetValue, "-2");
@@ -118,6 +121,34 @@ main() {
       await tester.tap(radiusGoalType);
       await tester.enterText(targetValue, "0.2");
       await tester.tap(sendButton);
+
+      await tester.tap(radiusGoalType2);
+      await tester.enterText(targetValue, "-0.2");
+      await tester.tap(sendButton);
+
+      await tester.tap(radiusGoalType3);
+      await tester.enterText(targetValue, "0");
+      await tester.tap(sendButton);
+    });
+  });
+
+  group('Goal creation - Database error', () {
+    setUp(() {
+      when(database.createGoal(any, any)).thenThrow(DatabaseException("Random error"));
+    });
+    testWidgets('Goal form - Error handling', (tester) async {
+      await tester.pumpWidget(testWidget);
+      final radiusGoalType = find.byKey(const Key('GoalType_Speed'));
+      final targetValue = find.byKey(const Key('GoalTargetValue'));
+      final sendButton = find.byKey(const Key('GoalSave'));
+      final errorSnackBar = find.byKey(const Key('ErrorSnackBar'));
+
+      await tester.tap(radiusGoalType);
+      await tester.enterText(targetValue, "7");
+      await tester.tap(sendButton);
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(errorSnackBar, findsOneWidget);
     });
   });
 }

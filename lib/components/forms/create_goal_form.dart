@@ -164,6 +164,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
     } on Exception {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
+          key: Key('ErrorSnackBar'),
           content: Text("Something went wrong. Please try again."),
         ),
       );
