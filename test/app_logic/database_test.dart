@@ -225,19 +225,26 @@ main() {
     test('correct output without birthday', () async {
       when(mockFirebaseFirestore.collection('users')).thenAnswer((realInvocation) => mockCollection);
       when(mockCollection.doc(any)).thenAnswer((realInvocation) => mockReference);
-      database.createUser(testUser);
+      database.createUser(
+          name: testUser.name, surname: testUser.surname, birthday: testUser.birthday, uid: testUser.uid);
     });
 
     test('correct output with birthday', () async {
       testUser.birthday = DateTime.now();
       when(mockFirebaseFirestore.collection('users')).thenAnswer((realInvocation) => mockCollection);
       when(mockCollection.doc(any)).thenAnswer((realInvocation) => mockReference);
-      expect(() => database.createUser(testUser), returnsNormally);
+      expect(
+          () => database.createUser(
+              name: testUser.name, surname: testUser.surname, birthday: testUser.birthday, uid: testUser.uid),
+          returnsNormally);
     });
 
     test('exception is thrown', () async {
       when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test'));
-      expect(() => database.createUser(testUser), throwsA(isA<DatabaseException>()));
+      expect(
+          () => database.createUser(
+              name: testUser.name, surname: testUser.surname, birthday: testUser.birthday, uid: testUser.uid),
+          throwsA(isA<DatabaseException>()));
     });
   });
 

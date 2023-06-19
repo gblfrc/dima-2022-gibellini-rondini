@@ -2,16 +2,15 @@ import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../app_logic/auth.dart';
 import '../../app_logic/database.dart';
 import '../../app_logic/exceptions.dart';
 import 'custom_form_field.dart';
 import 'login_form.dart';
-import '../../model/user.dart' as model_user; // use as in import because User is also a class in the firebase auth library
 
 class RegistrationForm extends LoginForm {
-  const RegistrationForm(
-      {super.key, required super.width, required super.toggle});
+  final Database database;
+
+  const RegistrationForm({super.key, required super.toggle, required super.auth, required this.database});
 
   @override
   State<RegistrationForm> createState() => _RegistrationFormState();
@@ -26,33 +25,28 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
   Future<void> createUserWithEmailAndPassword() async {
     try {
-      UserCredential credentials = await Auth().createUserWithEmailAndPassword(
+      UserCredential credentials = await widget.auth.createUserWithEmailAndPassword(
         email: _controllerEmail.text,
         password: _controllerPassword.text,
       );
-      Database().createUser(
-        model_user.User(
-          name: _controllerName.text,
-          surname: _controllerSurname.text,
-          birthday: DateFormat.yMd().parse(_controllerBirthday.text),
-          uid: credentials.user!.uid,
-        ),
+      widget.database.createUser(
+        name: _controllerName.text,
+        surname: _controllerSurname.text,
+        birthday: _controllerBirthday.text == "" ? null : DateFormat.yMd().parse(_controllerBirthday.text),
+        uid: credentials.user!.uid,
       );
-    }on AuthenticationException catch(e){
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message ?? "Authentication exception"),
-        ),
-      );
-    } on DatabaseException catch (e) {
-      // TODO: handle case in which a user is created for Firebase Auth but
-      // TODO:          it is not created for Firestore
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message ?? "Database Exception"),
-        ),
-      );
-
+    } on AuthenticationException catch (ae) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        key: const Key('AuthenticationErrorSnackBar'),
+        content: Text(ae.message ?? "An error occurred during authentication."),
+      ));
+    } on DatabaseException catch (de) {
+      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        key: const Key('DatabaseErrorSnackBar'),
+        content: Text(de.message ?? "An error occurred when registering personal data."),
+      ));
     }
   }
 
@@ -62,10 +56,11 @@ class _RegistrationFormState extends State<RegistrationForm> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Form(
-          // TODO: add form key
+          key: const Key('RegistrationFormActualForm'),
           child: Column(
             children: [
               CustomFormField(
+                key: const Key('RegistrationFormEmailFormField'),
                 text: 'Email',
                 controller: _controllerEmail,
               ),
@@ -73,6 +68,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 height: 8,
               ),
               CustomFormField(
+                key: const Key('RegistrationFormPasswordFormField'),
                 text: 'Password',
                 controller: _controllerPassword,
                 obscure: true,
@@ -81,6 +77,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 height: 8,
               ),
               CustomFormField(
+                key: const Key('RegistrationFormNameFormField'),
                 text: 'Name',
                 controller: _controllerName,
               ),
@@ -88,36 +85,64 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 height: 8,
               ),
               CustomFormField(
+                key: const Key('RegistrationFormSurnameFormField'),
                 text: 'Surname',
                 controller: _controllerSurname,
               ),
               const SizedBox(
                 height: 8,
               ),
-              DateTimeField(
-                format: DateFormat("dd-MM-yyyy"),
-                onShowPicker: (context, currentValue) => showDatePicker(
-                    context: context,
-                    initialDate: currentValue ?? DateTime.now(),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime(2100)),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  isDense: true,
-                  contentPadding: EdgeInsets.all(widget.width / 20),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(5),
+              LayoutBuilder(builder: (context, constraint) {
+                return DateTimeField(
+                  key: const Key('RegistrationFormBirthdayFormField'),
+                  format: DateFormat.yMd(),
+                  resetIcon: null,
+                  onShowPicker: (context, currentValue) => showDatePicker(
+                      context: context,
+                      initialDate: currentValue ?? DateTime.now(),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime(2100)),
+                  decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                      onPressed: () {
+                        _controllerBirthday.text = "";
+                      },
+                      icon: const Icon(Icons.close),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    isDense: true,
+                    contentPadding: EdgeInsets.all(constraint.maxWidth / 20),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    hintText: "Birthday",
                   ),
-                  hintText: "Birthday",
-                ),
-                controller: _controllerBirthday,
-              ),
+                  controller: _controllerBirthday,
+                );
+              }),
               const SizedBox(
                 height: 6,
               ),
               FilledButton(
-                onPressed: createUserWithEmailAndPassword,
+                key: const Key('RegistrationFormButton'),
+                onPressed: () {
+                  try {
+                    if (_controllerName.text == "" ||
+                        _controllerSurname.text == "" ||
+                        _controllerEmail.text == "" ||
+                        _controllerPassword.text == "") throw ArgumentError();
+                    createUserWithEmailAndPassword();
+                  } on ArgumentError {
+                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        key: Key('MissingValuesSnackBar'),
+                        content: Text('Please fill in all the fields for email, password, name and surname'),
+                      ),
+                    );
+                  }
+                },
                 child: const Text(
                   'REGISTER',
                   style: TextStyle(
@@ -127,15 +152,13 @@ class _RegistrationFormState extends State<RegistrationForm> {
               ),
               Wrap(
                 alignment: WrapAlignment.center,
-                // mainAxisSize: MainAxisSize.max,
-                // mainAxisAlignment: MainAxisAlignment.center,
-                // crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     'Already registered?',
                     style: TextStyle(color: Colors.grey[700]),
                   ),
                   TextButton(
+                    key: const Key('RegistrationFormToLoginButton'),
                     onPressed: () {
                       widget.toggle();
                     },

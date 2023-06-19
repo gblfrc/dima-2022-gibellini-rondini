@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:progetto/app_logic/database.dart';
 
+import '../app_logic/auth.dart';
 import '../components/forms/login_form.dart';
 import '../components/forms/registration_form.dart';
 
@@ -26,7 +28,6 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     double containerWidth = MediaQuery.of(context).size.width * 2 / 3;
     double padding = containerWidth / 15;
-    double formWidth = containerWidth - 2 * padding;
 
     return Scaffold(
       body: Container(
@@ -47,13 +48,14 @@ class _LoginPageState extends State<LoginPage> {
                     padding: EdgeInsets.all(padding),
                     child: _isLogin
                         ? LoginForm(
-                            width: formWidth,
                             toggle: _toggleRegister,
+                            auth: Auth(),
                             //errorCallback: displaySnackBar,
                           )
                         : RegistrationForm(
-                            width: formWidth,
                             toggle: _toggleRegister,
+                            auth: Auth(),
+                            database: Database(),
                             //errorCallback: displaySnackBar,
                           )),
               ),

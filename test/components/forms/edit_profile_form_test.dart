@@ -285,5 +285,56 @@ main() {
       expect(find.byKey(const Key('SuccessfulUpdateSnackBar')), findsOneWidget);
       expect(testUser.birthday, null);
     });
+
+    testWidgets('cannot update with empty name', (WidgetTester tester) async {
+      await tester.pumpWidget(widgetUnderTest(user: testUser));
+      await tester.pumpAndSettle();
+      // empty name field
+      Finder nameFieldFinder = find.byKey(const Key('EditProfileFormNameField'));
+      Finder resetIcon = find.descendant(of: nameFieldFinder, matching: find.byType(Icon));
+      CustomFormField nameField = nameFieldFinder.evaluate().single.widget as CustomFormField;
+      await tester.tap(resetIcon);
+      await tester.pumpAndSettle();
+      expect(nameField.controller.text, "");
+      // scroll to find update button and tap on it
+      Finder scrollable = find
+          .descendant(
+          of: find.byKey(const Key('EditProfileFormDataSectionScrollable')), matching: find.byType(Scrollable))
+          .first;
+      await tester.scrollUntilVisible(find.byKey(const Key('EditProfileFormUpdateButton')), 500.0,
+          scrollable: scrollable);
+      await tester.tap(find.byKey(const Key('EditProfileFormUpdateButton')));
+      await tester.pumpAndSettle();
+      // should update successfully and user birthday should be null
+      expect(find.byKey(const Key('ErrorInUserUpdateSnackBar')), findsNothing);
+      expect(find.byKey(const Key('SuccessfulUpdateSnackBar')), findsNothing);
+      expect(find.byKey(const Key('MissingFieldValueUpdateSnackBar')), findsOneWidget);
+    });
+    testWidgets('cannot update with empty surname', (WidgetTester tester) async {
+      await tester.pumpWidget(widgetUnderTest(user: testUser));
+      await tester.pumpAndSettle();
+      // empty surname field
+      Finder surnameFieldFinder = find.byKey(const Key('EditProfileFormSurnameField'));
+      Finder resetIcon = find.descendant(of: surnameFieldFinder, matching: find.byType(Icon));
+      CustomFormField surnameField = surnameFieldFinder.evaluate().single.widget as CustomFormField;
+      await tester.tap(resetIcon);
+      await tester.pumpAndSettle();
+      expect(surnameField.controller.text, "");
+      // scroll to find update button and tap on it
+      Finder scrollable = find
+          .descendant(
+          of: find.byKey(const Key('EditProfileFormDataSectionScrollable')), matching: find.byType(Scrollable))
+          .first;
+      await tester.scrollUntilVisible(find.byKey(const Key('EditProfileFormUpdateButton')), 500.0,
+          scrollable: scrollable);
+      await tester.tap(find.byKey(const Key('EditProfileFormUpdateButton')));
+      await tester.pumpAndSettle();
+      // should update successfully and user birthday should be null
+      expect(find.byKey(const Key('ErrorInUserUpdateSnackBar')), findsNothing);
+      expect(find.byKey(const Key('SuccessfulUpdateSnackBar')), findsNothing);
+      expect(find.byKey(const Key('MissingFieldValueUpdateSnackBar')), findsOneWidget);
+    });
+
+
   });
 }

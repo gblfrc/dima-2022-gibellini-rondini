@@ -4,12 +4,13 @@ import '../../app_logic/auth.dart';
 import 'custom_form_field.dart';
 
 class LoginForm extends StatefulWidget {
-  final double width;
+
+  final Auth auth;
   final Function toggle;
 
   //final Function errorCallback;
 
-  const LoginForm({super.key, required this.width, required this.toggle});
+  const LoginForm({super.key, required this.toggle, required this.auth});
 
   @override
   State<LoginForm> createState() => _LoginFormState();

@@ -4,16 +4,16 @@ class CustomFormField extends StatelessWidget {
   final String text;
 
   final TextEditingController controller;
-  bool? obscure;
-  bool? numericOnly;
-  String? Function(String?)? validator;
+  final bool obscure;
+  final bool numericOnly;
+  final String? Function(String?)? validator;
 
-  CustomFormField({
+  const CustomFormField({
     super.key,
     required this.text,
     required this.controller,
-    this.obscure,
-    this.numericOnly,
+    this.obscure = false,
+    this.numericOnly = false,
     this.validator,
   });
 
@@ -22,9 +22,15 @@ class CustomFormField extends StatelessWidget {
     return LayoutBuilder(builder: (context, constraint) {
       return TextFormField(
         controller: controller,
-        obscureText: obscure ?? false,
-        keyboardType: numericOnly ?? false ? TextInputType.number : null,
+        obscureText: obscure,
+        keyboardType: numericOnly ? TextInputType.number : null,
         decoration: InputDecoration(
+          suffixIcon: IconButton(
+            onPressed: () {
+              controller.text = "";
+            },
+            icon: const Icon(Icons.close),
+          ),
           filled: true,
           fillColor: Colors.white,
           isDense: true,

@@ -53,13 +53,13 @@ class Database {
   * Throws a database exception if something wrong happens in the communication
   * with the database.
   */
-  void createUser(User user) async {
+  void createUser({required String uid, required String name, required String surname, DateTime? birthday}) async {
     try {
-      await _database.collection("users").doc(user.uid).set(
+      await _database.collection("users").doc(uid).set(
         {
-          "name": user.name,
-          "surname": user.surname,
-          "birthday": user.birthday != null ? DateFormat('yyyy-MM-dd').format(user.birthday!) : null,
+          "name": name,
+          "surname": surname,
+          "birthday": birthday != null ? DateFormat('yyyy-MM-dd').format(birthday) : null,
         },
       );
     } on FirebaseException {

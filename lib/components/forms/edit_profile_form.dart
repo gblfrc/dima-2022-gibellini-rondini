@@ -282,6 +282,7 @@ class _DataSectionState extends State<_DataSection> {
             return DateTimeField(
               key: const Key('EditProfileFormBirthdayField'),
               format: DateFormat.yMd(),
+              resetIcon: null,
               onShowPicker: (context, currentValue) {
                 return showDatePicker(
                     context: context,
@@ -290,6 +291,12 @@ class _DataSectionState extends State<_DataSection> {
                     lastDate: DateTime.now());
               },
               decoration: InputDecoration(
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    _birthdayController.text = "";
+                  },
+                  icon: const Icon(Icons.close),
+                ),
                 filled: true,
                 fillColor: Colors.white,
                 isDense: true,
@@ -309,6 +316,9 @@ class _DataSectionState extends State<_DataSection> {
             key: const Key('EditProfileFormUpdateButton'),
             onPressed: () async {
               try {
+                if (_nameController.text == "" || _surnameController.text == ""){
+                  throw ArgumentError();
+                }
                 widget.user.name = _nameController.text;
                 widget.user.surname = _nameController.text;
                 widget.user.birthday =
@@ -328,6 +338,14 @@ class _DataSectionState extends State<_DataSection> {
                   const SnackBar(
                     key: Key('ErrorInUserUpdateSnackBar'),
                     content: Text('An error occurred during the update.'),
+                  ),
+                );
+              } on ArgumentError{
+                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    key: Key('MissingFieldValueUpdateSnackBar'),
+                    content: Text('Please fill in both the fields for name and surname.'),
                   ),
                 );
               }
