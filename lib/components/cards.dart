@@ -91,6 +91,7 @@ class SessionCard extends StatelessWidget {
                               ),
                               Text(
                                 date,
+                                key: const Key('DateText'),
                                 style: TextStyle(
                                     height: 0,
                                     //used to remove default padding
