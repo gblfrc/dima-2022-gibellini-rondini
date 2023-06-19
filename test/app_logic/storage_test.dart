@@ -7,12 +7,7 @@ import 'package:mockito/mockito.dart';
 import 'package:progetto/app_logic/exceptions.dart';
 import 'package:progetto/app_logic/storage.dart';
 
-@GenerateNiceMocks([
-  MockSpec<FirebaseStorage>(),
-  MockSpec<Reference>(),
-  MockSpec<UploadTask>(),
-  MockSpec<File>()
-])
+@GenerateNiceMocks([MockSpec<FirebaseStorage>(), MockSpec<Reference>(), MockSpec<UploadTask>(), MockSpec<File>()])
 import 'storage_test.mocks.dart';
 
 main() {
@@ -43,19 +38,15 @@ main() {
       String remotePath = 'remoteAssets/flutter_logo.png';
       Reference mockReference = MockReference();
       UploadTask mockUploadTask = MockUploadTask();
-      when(mockFirebaseStorage.ref(any))
-          .thenAnswer((invocation) => mockReference);
-      when(mockReference.putFile(mockFile))
-          .thenAnswer((invocation) => mockUploadTask);
+      when(mockFirebaseStorage.ref(any)).thenAnswer((invocation) => mockReference);
+      when(mockReference.putFile(mockFile)).thenAnswer((invocation) => mockUploadTask);
       storage.uploadFile(mockFile, remotePath);
       expect(true, true);
     });
 
     test('throws exception', () async {
-      when(mockFirebaseStorage.ref(any))
-          .thenThrow(FirebaseException(plugin: 'test'));
-      expect(storage.uploadFile(MockFile(), 'remotePath'),
-          throwsA(isA<StorageException>()));
+      when(mockFirebaseStorage.ref(any)).thenThrow(FirebaseException(plugin: 'test'));
+      expect(storage.uploadFile(MockFile(), 'remotePath'), throwsA(isA<StorageException>()));
     });
   });
 
@@ -64,18 +55,15 @@ main() {
       String remotePath = 'remoteAssets/flutter_logo.png';
       String url = 'https://pagefordownload.com/test.png';
       Reference mockReference = MockReference();
-      when(mockFirebaseStorage.ref(remotePath))
-          .thenAnswer((invocation) => mockReference);
-      when(mockReference.getDownloadURL())
-          .thenAnswer((invocation) => Future.value(url));
+      when(mockFirebaseStorage.ref(remotePath)).thenAnswer((invocation) => mockReference);
+      when(mockReference.getDownloadURL()).thenAnswer((invocation) => Future.value(url));
       expect(await storage.downloadURL(remotePath), url);
     });
 
     test('throws exception', () async {
-      when(mockFirebaseStorage.ref(any))
-          .thenThrow(FirebaseException(plugin: 'test'));
-      expect(
-          storage.downloadURL('remotePath'), throwsA(isA<StorageException>()));
+      when(mockFirebaseStorage.ref(any)).thenThrow(FirebaseException(plugin: 'test'));
+      Future<String> output = storage.downloadURL('remotePath');
+      expectLater(output, throwsA(isA<StorageException>()));
     });
   });
 }

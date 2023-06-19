@@ -2,31 +2,31 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../app_logic/auth.dart';
 import '../../app_logic/database.dart';
 import '../../app_logic/exceptions.dart';
+import '../../app_logic/image_picker.dart';
 import '../../app_logic/storage.dart';
 import '../../model/user.dart';
 import 'custom_form_field.dart';
 
 class EditProfileForm extends StatefulWidget {
-  final double width;
   final User user;
   final Auth auth;
   final Storage storage;
   final Database database;
+  final ImagePicker imagePicker;
   final Axis direction;
 
   const EditProfileForm({
     super.key,
-    required this.width,
     required this.user,
     required this.auth,
     required this.storage,
     required this.database,
+    required this.imagePicker,
     this.direction = Axis.vertical,
   });
 
@@ -42,28 +42,38 @@ class _EditProfileFormState extends State<EditProfileForm> {
           ? const Key('VerticalEditProfileForm')
           : const Key('HorizontalEditProfileForm'),
       direction: widget.direction,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Flexible(
-          flex: 1,
-          child: _ImageSection(
-              key: const Key('EditProfileImageSection'),
-              storage: widget.storage,
-              database: widget.database,
-              auth: widget.auth),
-        ),
+            flex: 1,
+            child: LayoutBuilder(
+              builder: (context, constraint) {
+                return SizedBox(
+                  height: constraint.maxHeight,
+                  width: constraint.maxWidth,
+                  child: _ImageSection(
+                    key: const Key('EditProfileImageSection'),
+                    storage: widget.storage,
+                    database: widget.database,
+                    auth: widget.auth,
+                    imagePicker: widget.imagePicker,
+                  ),
+                );
+              },
+            )),
         Flexible(
           flex: 1,
-          child: ListView(
-            children: [
-              _DataSection(
-                key: const Key('EditProfileDataSection'),
-                user: widget.user,
-                database: widget.database,
-                auth: widget.auth,
-                width: widget.width,
-              ),
-            ],
+          child: LayoutBuilder(
+            builder: (context, constraint) {
+              return SizedBox(
+                  height: constraint.maxHeight,
+                  width: constraint.maxWidth,
+                  child: _DataSection(
+                    key: const Key('EditProfileDataSection'),
+                    user: widget.user,
+                    database: widget.database,
+                    auth: widget.auth,
+                  ));
+            },
           ),
         ),
       ],
@@ -75,12 +85,14 @@ class _ImageSection extends StatefulWidget {
   final Storage storage;
   final Database database;
   final Auth auth;
+  final ImagePicker imagePicker;
 
   const _ImageSection({
     super.key,
     required this.storage,
     required this.database,
     required this.auth,
+    required this.imagePicker,
   });
 
   @override
@@ -101,23 +113,28 @@ class _ImageSectionState extends State<_ImageSection> {
           flex: 4,
           child: LayoutBuilder(builder: (context, constraint) {
             return SizedBox(
+              key: const Key('EditProfileFormImageOrAccountIcon'),
               height: min(constraint.maxHeight, constraint.maxWidth),
               child: _image ??
                   FutureBuilder(
                     future: widget.storage.downloadURL(pictureUrl),
                     builder: (context, snapshot) {
+                      Icon fallbackIcon = Icon(
+                        key: const Key('EditProfileFormAccountIcon'),
+                        Icons.account_circle,
+                        size: constraint.biggest.height,
+                        color: Colors.grey,
+                      );
                       if (snapshot.hasData) {
-                        return Image.network(snapshot.data!);
-                      } else {
-                        return LayoutBuilder(
-                          builder: (context, constraint) {
-                            return Icon(
-                              Icons.account_circle,
-                              size: constraint.biggest.height,
-                              color: Colors.grey,
-                            );
+                        return Image.network(
+                          snapshot.data!,
+                          key: const Key('EditProfileFormProfilePicture'),
+                          errorBuilder: (context, exception, stackTrace) {
+                            return fallbackIcon;
                           },
                         );
+                      } else {
+                        return fallbackIcon;
                       }
                     },
                   ),
@@ -128,40 +145,76 @@ class _ImageSectionState extends State<_ImageSection> {
           flex: 1,
           child: Wrap(
             direction: Axis.horizontal,
-            spacing: MediaQuery.of(context).size.shortestSide/10,
+            spacing: MediaQuery.of(context).size.shortestSide / 10,
             // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               FilledButton(
+                key: const Key('EditProfileFormPickPictureButton'),
                 onPressed: () async {
-                  final result = await FilePicker.platform.pickFiles(
-                    allowMultiple: false,
-                    type: FileType.image,
-                  );
-                  if (result != null) {
-                    _imageLocalPath = result.files.single.path!;
+                  _imageLocalPath = await widget.imagePicker.pickImage();
+                  if (_imageLocalPath != null) {
                     setState(() {
-                      _image = Image.file(File(_imageLocalPath!));
+                      _image = Image.file(
+                        File(_imageLocalPath!),
+                        key: const Key('EditProfileFormLocalImage'),
+                      );
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          key: Key('SuccessfulImageSelectionSnackBar'),
+                          content: Text('Image selected successfully.'),
+                        ),
+                      );
                     });
-                  } else if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('No file was selected.'),
-                      ),
-                    );
-                    // User canceled the picker
+                  } else {
+                    if (mounted) {
+                      // User canceled the picker
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          key: Key('NoImageSelectedSnackBar'),
+                          content: Text('No file was selected.'),
+                        ),
+                      );
+                    }
                   }
                 },
                 child: const Text('Pick picture'),
               ),
               FilledButton(
+                key: const Key('EditProfileFormSavePictureButton'),
                 onPressed: () async {
                   if (_imageLocalPath != null) {
-                    File file = File(_imageLocalPath!);
-                    await widget.storage.uploadFile(file, pictureUrl);
+                    try {
+                      File file = File(_imageLocalPath!);
+                      await widget.storage.uploadFile(file, pictureUrl);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            key: Key('SuccessfullySavedImageSnackBar'),
+                            content: Text('Profile picture updated successfully.'),
+                          ),
+                        );
+                      }
+                    } on Exception {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            key: Key('ErrorInSavingImageSnackBar'),
+                            content: Text('Profile picture updated successfully.'),
+                          ),
+                        );
+                      }
+                    }
+                  } else {
                     if (mounted) {
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Profile picture updated successfully.'),
+                          key: Key('NotPickedImageSnackBar'),
+                          content: Text('Please, pick an image before saving it.'),
                         ),
                       );
                     }
@@ -181,9 +234,8 @@ class _DataSection extends StatefulWidget {
   final Database database;
   final Auth auth;
   final User user;
-  final double width;
 
-  const _DataSection({super.key, required this.user, required this.database, required this.auth, required this.width});
+  const _DataSection({super.key, required this.user, required this.database, required this.auth});
 
   @override
   State<_DataSection> createState() => _DataSectionState();
@@ -207,9 +259,11 @@ class _DataSectionState extends State<_DataSection> {
   Widget build(BuildContext context) {
     return Form(
       key: const Key('EditProfileFormActualForm'),
-      child: Column(
+      child: ListView(
+        key: const Key('EditProfileFormDataSectionScrollable'),
         children: [
           CustomFormField(
+            key: const Key('EditProfileFormNameField'),
             text: 'Name',
             controller: _nameController,
           ),
@@ -217,51 +271,62 @@ class _DataSectionState extends State<_DataSection> {
             height: 8,
           ),
           CustomFormField(
+            key: const Key('EditProfileFormSurnameField'),
             text: 'Surname',
             controller: _surnameController,
           ),
           const SizedBox(
             height: 8,
           ),
-          DateTimeField(
-            format: DateFormat.yMd(),
-            onShowPicker: (context, currentValue) {
-              return showDatePicker(
-                  context: context,
-                  initialDate: currentValue ?? DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime(2100));
-            },
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              isDense: true,
-              contentPadding: EdgeInsets.all(widget.width / 20),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(5),
+          LayoutBuilder(builder: (context, constraint) {
+            return DateTimeField(
+              key: const Key('EditProfileFormBirthdayField'),
+              format: DateFormat.yMd(),
+              onShowPicker: (context, currentValue) {
+                return showDatePicker(
+                    context: context,
+                    initialDate: currentValue ?? DateTime.now(),
+                    firstDate: DateTime(1900),
+                    lastDate: DateTime.now());
+              },
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                isDense: true,
+                contentPadding: EdgeInsets.all(constraint.maxWidth / 20),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                hintText: "Birthday",
               ),
-              hintText: "Birthday",
-            ),
-            controller: _birthdayController,
-          ),
+              controller: _birthdayController,
+            );
+          }),
           const SizedBox(
             height: 6,
           ),
           FilledButton(
+            key: const Key('EditProfileFormUpdateButton'),
             onPressed: () async {
               try {
+                widget.user.name = _nameController.text;
+                widget.user.surname = _nameController.text;
+                widget.user.birthday =
+                    _birthdayController.text == "" ? null : DateFormat.yMd().parse(_birthdayController.text);
+                widget.user.uid = widget.auth.currentUser!.uid;
                 widget.database.updateUser(
-                  User(
-                    name: _nameController.text,
-                    surname: _surnameController.text,
-                    birthday: DateFormat.yMd().parse(_birthdayController.text),
-                    uid: widget.auth.currentUser!.uid,
-                  ),
+                  widget.user,
                 );
-                Navigator.pop(context);
+                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                  key: Key('SuccessfulUpdateSnackBar'),
+                  content: Text('An error occurred during the update.'),
+                ));
               } on DatabaseException {
+                ScaffoldMessenger.of(context).removeCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
+                    key: Key('ErrorInUserUpdateSnackBar'),
                     content: Text('An error occurred during the update.'),
                   ),
                 );

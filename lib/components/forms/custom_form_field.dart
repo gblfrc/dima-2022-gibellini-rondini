@@ -36,12 +36,6 @@ class CustomFormField extends StatelessWidget {
         ),
         validator: validator,
       );
-
-
-
     });
-
-
-
   }
 }

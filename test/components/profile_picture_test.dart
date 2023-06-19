@@ -38,7 +38,7 @@ main() {
   group('url can be fetched', () {
     testWidgets('error while loading image', (WidgetTester tester) async {
       await tester.runAsync(() async {
-        when(storage.downloadURL(testUid))
+        when(storage.downloadURL('profile-pictures/$testUid'))
             .thenAnswer((invocation) => Future.value(testUrl));
         await tester.pumpWidget(widgetUnderTest(testUid));
         await tester.pump(const Duration(seconds: 2));
@@ -54,7 +54,7 @@ main() {
     testWidgets('image can be displayed', (WidgetTester tester) async {
       await tester.runAsync(() async {
         await mockNetworkImagesFor(() async {
-          when(storage.downloadURL(testUid))
+          when(storage.downloadURL('profile-pictures/$testUid'))
               .thenAnswer((invocation) => Future.value(testUrl));
           await tester.pumpWidget(widgetUnderTest(testUid));
           // await tester.pump(const Duration(seconds: 3));
@@ -72,7 +72,7 @@ main() {
 
   testWidgets('error while downloading url', (WidgetTester tester) async {
     await tester.runAsync(() async {
-      when(storage.downloadURL(testUid)).thenThrow(StorageException('test'));
+      when(storage.downloadURL('profile-pictures/$testUid')).thenAnswer((realInvocation) => Future.error(StorageException("test")));
       await tester.pumpWidget(widgetUnderTest(testUid));
       expect(find.byKey(const ValueKey('CircleAvatarBorder')), findsNothing);
       expect(find.byKey(const ValueKey('CircleAvatarImage')), findsNothing);

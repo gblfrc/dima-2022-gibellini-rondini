@@ -56,13 +56,13 @@ class Storage {
   /*
   * Method to obtain the URL of a file given its name, which should be passed in
   * parameter filename. It returns the URL String if no error occurs, otherwise
-  * throws a Storage exception.
+  * it returns a Future with error.
   */
   Future<String> downloadURL(String remotePath) async {
     try {
       return await _storage.ref(remotePath).getDownloadURL();
     } on FirebaseException catch (fe) {
-      throw StorageException(fe.message);
+      return Future.error(StorageException(fe.message));
     }
   }
 }
