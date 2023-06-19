@@ -102,4 +102,19 @@ main() {
     await auth.signOut();
     expect(true, true);
   });
+
+  group('delete user', () {
+
+    test('correct deletion', () async {
+      when(_mockUser.delete).thenAnswer((invocation) => Future.value(null));
+      expect(() => auth.deleteUser(), returnsNormally);
+    });
+
+    test('throws exception', () async {
+      when(_mockUser.delete).thenThrow(FirebaseAuthException(code: 'test'));
+      expect(() => auth.deleteUser(), throwsA(isA<AuthenticationException>()));
+
+    });
+
+  });
 }
