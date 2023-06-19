@@ -19,6 +19,7 @@ class LoginForm extends StatefulWidget {
 class _LoginFormState extends State<LoginForm> {
   final TextEditingController _controllerEmail = TextEditingController();
   final TextEditingController _controllerPassword = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   Future<void> signInWithEmailAndPassword(BuildContext context) async {
     try {
@@ -46,10 +47,11 @@ class _LoginFormState extends State<LoginForm> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Form(
-          // TODO: add form key
+          key: _formKey,
           child: Column(
             children: [
               CustomFormField(
+                key: const Key('Username'),
                 text: 'Username',
                 controller: _controllerEmail,
               ),
@@ -57,6 +59,7 @@ class _LoginFormState extends State<LoginForm> {
                 height: 8,
               ),
               CustomFormField(
+                key: const Key('Password'),
                 text: 'Password',
                 controller: _controllerPassword,
                 obscure: true,
@@ -65,6 +68,7 @@ class _LoginFormState extends State<LoginForm> {
                 height: 6,
               ),
               FilledButton(
+                key: const Key('LoginButton'),
                 onPressed: () {
                   signInWithEmailAndPassword(context);
                 },
@@ -85,6 +89,7 @@ class _LoginFormState extends State<LoginForm> {
                     style: TextStyle(color: Colors.grey[700]),
                   ),
                   TextButton(
+                    key: const Key('GoToRegistrationButton'),
                     onPressed: () {
                       widget.toggle();
                     },

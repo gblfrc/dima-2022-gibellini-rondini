@@ -92,7 +92,6 @@ main() {
   group("Goal creation - Invalid input", () {
     setUp(() {
       when(database.createGoal(any, any)).thenAnswer((realInvocation) async {
-        print("Goal creation was invoked");
         neverCalled();
         testGoal = realInvocation.positionalArguments[1];
         testGoal.owner = user;

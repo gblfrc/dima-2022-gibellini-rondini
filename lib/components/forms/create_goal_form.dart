@@ -39,7 +39,6 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
       padding: EdgeInsets.all(padding),
       child: Form(
         key: _formKey,
-        // TODO: add form key and form validation (negative values, decimal minutes...)
         child: Column(
           children: [
             const ListTile(
@@ -57,8 +56,8 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
               },
             ),
             RadioListTile(
-              title: const Text("Time goal"),
               key: const Key('GoalType_Time'),
+              title: const Text("Time goal"),
               value: "timeGoal",
               groupValue: _type,
               onChanged: (String? value) {
