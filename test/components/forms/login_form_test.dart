@@ -17,30 +17,36 @@ main() {
 
   setUp(() {
     auth = MockAuth();
-    when(auth.signInWithEmailAndPassword(email: any, password: any)).thenAnswer((realInvocation) async {
+    when(auth.signInWithEmailAndPassword(
+            email: "user@example.com", password: "password1234"))
+        .thenAnswer((realInvocation) async {
       credentials = MockUserCredential();
       loginEmail = realInvocation.namedArguments[const Symbol('email')];
       loginPassword = realInvocation.namedArguments[const Symbol('password')];
       return credentials;
     });
+  });
 
-    Widget testWidget = Scaffold(
-      body: LoginForm(
-        auth: auth,
-        toggle: () => null,
+  Widget testWidget() {
+    return MaterialApp(
+      home: Scaffold(
+        body: LoginForm(
+          auth: auth,
+          toggle: () => null,
+        ),
       ),
     );
+  }
 
-    testWidgets('Login form - valid credentials', (tester) async {
-      tester.pumpWidget(testWidget);
-      final emailField = find.byKey(const Key('Username'));
-      final passwordField = find.byKey(const Key('Password'));
-      final loginButton = find.byKey(const Key('LoginButton'));
-      tester.enterText(emailField, 'user@example.com');
-      tester.enterText(passwordField, 'password1234');
-      tester.tap(loginButton);
-      expect(loginEmail, 'user@example.com');
-      expect(loginPassword, 'password1234');
-    });
+  testWidgets('Login form - valid credentials', (tester) async {
+    await tester.pumpWidget(testWidget());
+    final emailField = find.byKey(const Key('Username'));
+    final passwordField = find.byKey(const Key('Password'));
+    final loginButton = find.byKey(const Key('LoginButton'));
+    await tester.enterText(emailField, 'user@example.com');
+    await tester.enterText(passwordField, 'password1234');
+    await tester.tap(loginButton);
+    expect(loginEmail, 'user@example.com');
+    expect(loginPassword, 'password1234');
   });
 }

@@ -23,7 +23,7 @@ class _LoginFormState extends State<LoginForm> {
 
   Future<void> signInWithEmailAndPassword(BuildContext context) async {
     try {
-      await Auth().signInWithEmailAndPassword(
+      await widget.auth.signInWithEmailAndPassword(
         email: _controllerEmail.text,
         password: _controllerPassword.text,
       );

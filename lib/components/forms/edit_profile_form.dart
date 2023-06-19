@@ -27,7 +27,7 @@ class EditProfileForm extends StatefulWidget {
     required this.storage,
     required this.database,
     required this.imagePicker,
-    this.direction = Axis.vertical,
+    this.direction = Axis.horizontal,
   });
 
   @override

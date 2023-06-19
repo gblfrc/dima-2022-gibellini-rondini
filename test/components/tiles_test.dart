@@ -128,7 +128,7 @@ main() {
         })));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.text('Organizer: Mario Rossi');
-    //await tester.pump(Duration(seconds: 2)); // Waits for the spinning animation to complete (the SVG image is ready)
+    await tester.pump(Duration(seconds: 2)); // Waits for the spinning animation to complete (the SVG image is ready)
     //final calendarIconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
     final privacyIconFinder = find.byWidgetPredicate(
         (widget) => widget is Icon && widget.icon == MdiIcons.lockOpen);
@@ -152,7 +152,7 @@ main() {
         })));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.text('Organizer: Mario Rossi');
-    //await tester.pump(); // Waits for the spinning animation to complete (the SVG image is ready)
+    await tester.pump(Duration(seconds: 2)); // Waits for the spinning animation to complete (the SVG image is ready)
     //final calendarIconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
     final privacyIconFinder = find.byWidgetPredicate(
         (widget) => widget is Icon && widget.icon == Icons.lock);
