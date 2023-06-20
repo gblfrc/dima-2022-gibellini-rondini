@@ -10,7 +10,7 @@ class CreateGoalForm extends StatefulWidget {
   final Database database;
   final Auth auth;
 
-  CreateGoalForm(
+  const CreateGoalForm(
       {super.key,
       required this.width,
       required this.database,

@@ -27,7 +27,7 @@ class EditProfileForm extends StatefulWidget {
     required this.storage,
     required this.database,
     required this.imagePicker,
-    this.direction = Axis.horizontal,
+    this.direction = Axis.vertical,
   });
 
   @override
@@ -266,6 +266,13 @@ class _DataSectionState extends State<_DataSection> {
             key: const Key('EditProfileFormNameField'),
             text: 'Name',
             controller: _nameController,
+            validator: (value) {
+              if (value == null || value.isEmpty){
+                return 'Name field cannot be empty.';
+              } else {
+                return null;
+              }
+            },
           ),
           const SizedBox(
             height: 8,
@@ -274,6 +281,13 @@ class _DataSectionState extends State<_DataSection> {
             key: const Key('EditProfileFormSurnameField'),
             text: 'Surname',
             controller: _surnameController,
+            validator: (value) {
+              if (value == null || value.isEmpty){
+                return 'Surname field cannot be empty.';
+              } else {
+                return null;
+              }
+            },
           ),
           const SizedBox(
             height: 8,
@@ -316,7 +330,7 @@ class _DataSectionState extends State<_DataSection> {
             key: const Key('EditProfileFormUpdateButton'),
             onPressed: () async {
               try {
-                if (_nameController.text == "" || _surnameController.text == ""){
+                if (_nameController.text == "" || _surnameController.text == "") {
                   throw ArgumentError();
                 }
                 widget.user.name = _nameController.text;
@@ -340,7 +354,7 @@ class _DataSectionState extends State<_DataSection> {
                     content: Text('An error occurred during the update.'),
                   ),
                 );
-              } on ArgumentError{
+              } on ArgumentError {
                 ScaffoldMessenger.of(context).removeCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -351,7 +365,7 @@ class _DataSectionState extends State<_DataSection> {
               }
             },
             child: const Text(
-              'UPDATE',
+              'Update',
               style: TextStyle(
                 color: Colors.white,
               ),

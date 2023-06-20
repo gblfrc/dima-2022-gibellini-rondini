@@ -395,27 +395,39 @@ class Database {
     }
   }
 
-  void createProposal(Proposal proposal) async {
+  void createProposal({
+    required DateTime dateTime,
+    required String ownerId,
+    required double placeLatitude,
+    required double placeLongitude,
+    required String placeId,
+    required String placeName,
+    String? placeCity,
+    String? placeState,
+    String? placeCountry,
+    String? placeType,
+    required String type,
+  }) async {
     try {
       await _database.collection("proposals").add(
         {
-          "dateTime": Timestamp.fromDate(proposal.dateTime),
-          "owner": _database.collection('users').doc(proposal.owner.uid),
+          "dateTime": Timestamp.fromDate(dateTime),
+          "owner": _database.collection('users').doc(ownerId),
           "place": {
-            "coords": GeoPoint(proposal.place.coords.latitude, proposal.place.coords.longitude),
+            "coords": GeoPoint(placeLatitude, placeLongitude),
             "geohash":
-                GeoHasher().encode(proposal.place.coords.longitude, proposal.place.coords.latitude, precision: 9),
-            "id": proposal.place.id,
-            "latitude": proposal.place.coords.latitude,
-            "longitude": proposal.place.coords.longitude,
-            "name": proposal.place.name,
-            "city": proposal.place.city,
-            "state": proposal.place.state,
-            "country": proposal.place.country,
-            "type": proposal.place.type
+                GeoHasher().encode(placeLatitude, placeLongitude, precision: 9),
+            "id": placeId,
+            "latitude": placeLatitude,
+            "longitude": placeLongitude,
+            "name": placeName,
+            "city": placeCity,
+            "state": placeState,
+            "country": placeCountry,
+            "type": placeType
           },
           "participants": [],
-          "type": proposal.type,
+          "type": type,
         },
       );
     } on FirebaseException catch (fe) {

@@ -553,12 +553,38 @@ main() {
       when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);
       when(mockFirebaseFirestore.collection('users')).thenReturn(mockCollectionUsers);
       when(mockCollectionUsers.doc(mockUserJson0['uid'])).thenReturn(mockReference);
-      expect(() => database.createProposal(testProposal), returnsNormally);
+      expect(
+          () => database.createProposal(
+              dateTime: testProposal.dateTime,
+              ownerId: testProposal.owner.uid,
+              placeLatitude: testProposal.place.coords.latitude,
+              placeLongitude: testProposal.place.coords.longitude,
+              placeId: testProposal.place.id,
+              placeName: testProposal.place.name,
+              placeCity: testProposal.place.city,
+              placeState: testProposal.place.state,
+              placeCountry: testProposal.place.country,
+              placeType: testProposal.place.type,
+              type: testProposal.type),
+          returnsNormally);
     });
 
     test('throws exception', () {
       when(mockFirebaseFirestore.collection('proposals')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
-      expect(() => database.createProposal(testProposal), throwsA(isA<DatabaseException>()));
+      expect(
+          () => database.createProposal(
+              dateTime: testProposal.dateTime,
+              ownerId: testProposal.owner.uid,
+              placeLatitude: testProposal.place.coords.latitude,
+              placeLongitude: testProposal.place.coords.longitude,
+              placeId: testProposal.place.id,
+              placeName: testProposal.place.name,
+              placeCity: testProposal.place.city,
+              placeState: testProposal.place.state,
+              placeCountry: testProposal.place.country,
+              placeType: testProposal.place.type,
+              type: testProposal.type),
+          throwsA(isA<DatabaseException>()));
     });
   });
 

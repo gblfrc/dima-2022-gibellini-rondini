@@ -68,6 +68,15 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 key: const Key('RegistrationFormEmailFormField'),
                 text: 'Email',
                 controller: _controllerEmail,
+                validator: (value){
+                  if (value == null || value.isEmpty){
+                    return 'Email field cannot be empty';
+                  } else if (!value.contains('@')){
+                    return 'Illegal value for email field';
+                  } else {
+                    return null;
+                  }
+                },
               ),
               const SizedBox(
                 height: 8,

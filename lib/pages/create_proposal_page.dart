@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:progetto/app_logic/database.dart';
+import 'package:progetto/app_logic/search_engine.dart';
 import 'package:progetto/components/custom_small_map.dart';
 
+import '../app_logic/auth.dart';
 import '../components/forms/create_proposal_form.dart';
 import '../model/place.dart';
 
@@ -27,12 +30,15 @@ class _CreateProposalPageState extends State<CreateProposalPage> {
         child: ListView(
           children: [
             CreateProposalForm(
-              propagateLocation: (Place place) {
+              propagateLocation: (Place? place) {
                 setState(() {
                   location = place;
-                  _mapController.move(location!.coords, 15);
+                  if (location != null) _mapController.move(location!.coords, 15);
                 });
               },
+              database: Database(),
+              auth: Auth(),
+              searchEngine: SearchEngine(),
             ),
             SizedBox(
               height: MediaQuery.of(context).size.shortestSide,
