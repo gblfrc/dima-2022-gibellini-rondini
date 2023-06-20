@@ -245,6 +245,7 @@ class _DataSectionState extends State<_DataSection> {
   late TextEditingController _nameController;
   late TextEditingController _surnameController;
   late TextEditingController _birthdayController;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -258,7 +259,7 @@ class _DataSectionState extends State<_DataSection> {
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: const Key('EditProfileFormActualForm'),
+      key: _formKey,
       child: ListView(
         key: const Key('EditProfileFormDataSectionScrollable'),
         children: [
@@ -267,11 +268,7 @@ class _DataSectionState extends State<_DataSection> {
             text: 'Name',
             controller: _nameController,
             validator: (value) {
-              if (value == null || value.isEmpty){
-                return 'Name field cannot be empty.';
-              } else {
-                return null;
-              }
+              return (value == null || value.isEmpty) ? 'Name field cannot be empty.' : null;
             },
           ),
           const SizedBox(
@@ -282,11 +279,7 @@ class _DataSectionState extends State<_DataSection> {
             text: 'Surname',
             controller: _surnameController,
             validator: (value) {
-              if (value == null || value.isEmpty){
-                return 'Surname field cannot be empty.';
-              } else {
-                return null;
-              }
+              return (value == null || value.isEmpty) ? 'Surname field cannot be empty.' : null;
             },
           ),
           const SizedBox(
@@ -330,36 +323,29 @@ class _DataSectionState extends State<_DataSection> {
             key: const Key('EditProfileFormUpdateButton'),
             onPressed: () async {
               try {
-                if (_nameController.text == "" || _surnameController.text == "") {
-                  throw ArgumentError();
+                if (_formKey.currentState!.validate()) {
+                  widget.user.name = _nameController.text;
+                  widget.user.surname = _nameController.text;
+                  widget.user.birthday =
+                      _birthdayController.text == "" ? null : DateFormat.yMd().parse(_birthdayController.text);
+                  widget.user.uid = widget.auth.currentUser!.uid;
+                  widget.database.updateUser(
+                    widget.user,
+                  );
+                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      key: Key('SuccessfulUpdateSnackBar'),
+                      content: Text('Account information updated successfully.'),
+                    ),
+                  );
                 }
-                widget.user.name = _nameController.text;
-                widget.user.surname = _nameController.text;
-                widget.user.birthday =
-                    _birthdayController.text == "" ? null : DateFormat.yMd().parse(_birthdayController.text);
-                widget.user.uid = widget.auth.currentUser!.uid;
-                widget.database.updateUser(
-                  widget.user,
-                );
-                ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                  key: Key('SuccessfulUpdateSnackBar'),
-                  content: Text('An error occurred during the update.'),
-                ));
               } on DatabaseException {
                 ScaffoldMessenger.of(context).removeCurrentSnackBar();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     key: Key('ErrorInUserUpdateSnackBar'),
                     content: Text('An error occurred during the update.'),
-                  ),
-                );
-              } on ArgumentError {
-                ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    key: Key('MissingFieldValueUpdateSnackBar'),
-                    content: Text('Please fill in both the fields for name and surname.'),
                   ),
                 );
               }

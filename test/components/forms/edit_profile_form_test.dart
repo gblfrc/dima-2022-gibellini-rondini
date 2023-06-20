@@ -299,7 +299,7 @@ main() {
       // scroll to find update button and tap on it
       Finder scrollable = find
           .descendant(
-          of: find.byKey(const Key('EditProfileFormDataSectionScrollable')), matching: find.byType(Scrollable))
+              of: find.byKey(const Key('EditProfileFormDataSectionScrollable')), matching: find.byType(Scrollable))
           .first;
       await tester.scrollUntilVisible(find.byKey(const Key('EditProfileFormUpdateButton')), 500.0,
           scrollable: scrollable);
@@ -308,7 +308,8 @@ main() {
       // should update successfully and user birthday should be null
       expect(find.byKey(const Key('ErrorInUserUpdateSnackBar')), findsNothing);
       expect(find.byKey(const Key('SuccessfulUpdateSnackBar')), findsNothing);
-      expect(find.byKey(const Key('MissingFieldValueUpdateSnackBar')), findsOneWidget);
+      expect(find.text('Name field cannot be empty.'), findsOneWidget);
+      expect(find.text('Surname field cannot be empty.'), findsNothing);
     });
     testWidgets('cannot update with empty surname', (WidgetTester tester) async {
       await tester.pumpWidget(widgetUnderTest(user: testUser));
@@ -323,7 +324,7 @@ main() {
       // scroll to find update button and tap on it
       Finder scrollable = find
           .descendant(
-          of: find.byKey(const Key('EditProfileFormDataSectionScrollable')), matching: find.byType(Scrollable))
+              of: find.byKey(const Key('EditProfileFormDataSectionScrollable')), matching: find.byType(Scrollable))
           .first;
       await tester.scrollUntilVisible(find.byKey(const Key('EditProfileFormUpdateButton')), 500.0,
           scrollable: scrollable);
@@ -332,9 +333,8 @@ main() {
       // should update successfully and user birthday should be null
       expect(find.byKey(const Key('ErrorInUserUpdateSnackBar')), findsNothing);
       expect(find.byKey(const Key('SuccessfulUpdateSnackBar')), findsNothing);
-      expect(find.byKey(const Key('MissingFieldValueUpdateSnackBar')), findsOneWidget);
+      expect(find.text('Name field cannot be empty.'), findsNothing);
+      expect(find.text('Surname field cannot be empty.'), findsOneWidget);
     });
-
-
   });
 }

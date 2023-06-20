@@ -83,27 +83,35 @@ main() {
       await tester.pumpWidget(widgetUnderTest());
       await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const Key('RegistrationFormSurnameFormField')), 'text');
-      await tester.enterText(find.byKey(const Key('RegistrationFormEmailFormField')), 'text');
+      await tester.enterText(find.byKey(const Key('RegistrationFormEmailFormField')), 'text@test.com');
       await tester.enterText(find.byKey(const Key('RegistrationFormPasswordFormField')), 'text');
       Finder nameFieldFinder = find.byKey(const Key('RegistrationFormNameFormField'));
       CustomFormField nameField = nameFieldFinder.evaluate().single.widget as CustomFormField;
       expect(nameField.controller.text, "");
       await tester.tap(find.byKey(const Key('RegistrationFormButton')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('MissingValuesSnackBar')), findsOneWidget);
+      expect(find.text('Name field cannot be empty'), findsOneWidget);
+      expect(find.text('Surname field cannot be empty'), findsNothing);
+      expect(find.text('Email field cannot be empty'), findsNothing);
+      expect(find.text('Illegal value for email field'), findsNothing);
+      expect(find.text('Password field cannot be empty'), findsNothing);
     });
     testWidgets('missing surname', (WidgetTester tester) async {
       await tester.pumpWidget(widgetUnderTest());
       await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const Key('RegistrationFormNameFormField')), 'text');
-      await tester.enterText(find.byKey(const Key('RegistrationFormEmailFormField')), 'text');
+      await tester.enterText(find.byKey(const Key('RegistrationFormEmailFormField')), 'text@test.com');
       await tester.enterText(find.byKey(const Key('RegistrationFormPasswordFormField')), 'text');
       Finder surnameFieldFinder = find.byKey(const Key('RegistrationFormSurnameFormField'));
       CustomFormField surnameField = surnameFieldFinder.evaluate().single.widget as CustomFormField;
       expect(surnameField.controller.text, "");
       await tester.tap(find.byKey(const Key('RegistrationFormButton')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('MissingValuesSnackBar')), findsOneWidget);
+      expect(find.text('Name field cannot be empty'), findsNothing);
+      expect(find.text('Surname field cannot be empty'), findsOneWidget);
+      expect(find.text('Email field cannot be empty'), findsNothing);
+      expect(find.text('Illegal value for email field'), findsNothing);
+      expect(find.text('Password field cannot be empty'), findsNothing);
     });
     testWidgets('missing email', (WidgetTester tester) async {
       await tester.pumpWidget(widgetUnderTest());
@@ -116,20 +124,46 @@ main() {
       expect(emailField.controller.text, "");
       await tester.tap(find.byKey(const Key('RegistrationFormButton')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('MissingValuesSnackBar')), findsOneWidget);
+      expect(find.text('Name field cannot be empty'), findsNothing);
+      expect(find.text('Surname field cannot be empty'), findsNothing);
+      expect(find.text('Email field cannot be empty'), findsOneWidget);
+      expect(find.text('Illegal value for email field'), findsNothing);
+      expect(find.text('Password field cannot be empty'), findsNothing);
+    });
+    testWidgets('illegal email', (WidgetTester tester) async {
+      await tester.pumpWidget(widgetUnderTest());
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('RegistrationFormNameFormField')), 'text');
+      await tester.enterText(find.byKey(const Key('RegistrationFormSurnameFormField')), 'text');
+      await tester.enterText(find.byKey(const Key('RegistrationFormEmailFormField')), 'text');
+      await tester.enterText(find.byKey(const Key('RegistrationFormPasswordFormField')), 'text');
+      Finder emailFieldFinder = find.byKey(const Key('RegistrationFormEmailFormField'));
+      CustomFormField emailField = emailFieldFinder.evaluate().single.widget as CustomFormField;
+      expect(emailField.controller.text, "text");
+      await tester.tap(find.byKey(const Key('RegistrationFormButton')));
+      await tester.pumpAndSettle();
+      expect(find.text('Name field cannot be empty'), findsNothing);
+      expect(find.text('Surname field cannot be empty'), findsNothing);
+      expect(find.text('Email field cannot be empty'), findsNothing);
+      expect(find.text('Illegal value for email field'), findsOneWidget);
+      expect(find.text('Password field cannot be empty'), findsNothing);
     });
     testWidgets('missing password', (WidgetTester tester) async {
       await tester.pumpWidget(widgetUnderTest());
       await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const Key('RegistrationFormNameFormField')), 'text');
       await tester.enterText(find.byKey(const Key('RegistrationFormSurnameFormField')), 'text');
-      await tester.enterText(find.byKey(const Key('RegistrationFormEmailFormField')), 'text');
+      await tester.enterText(find.byKey(const Key('RegistrationFormEmailFormField')), 'text@test.com');
       Finder passwordFieldFinder = find.byKey(const Key('RegistrationFormPasswordFormField'));
       CustomFormField passwordField = passwordFieldFinder.evaluate().single.widget as CustomFormField;
       expect(passwordField.controller.text, "");
       await tester.tap(find.byKey(const Key('RegistrationFormButton')));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('MissingValuesSnackBar')), findsOneWidget);
+      expect(find.text('Name field cannot be empty'), findsNothing);
+      expect(find.text('Surname field cannot be empty'), findsNothing);
+      expect(find.text('Email field cannot be empty'), findsNothing);
+      expect(find.text('Illegal value for email field'), findsNothing);
+      expect(find.text('Password field cannot be empty'), findsOneWidget);
     });
     testWidgets('missing birthday', (WidgetTester tester) async {
       when(mockAuth.createUserWithEmailAndPassword(email: 'text', password: 'text'))
@@ -152,13 +186,13 @@ main() {
   formFill(WidgetTester tester) async {
     await tester.enterText(find.byKey(const Key('RegistrationFormNameFormField')), 'text');
     await tester.enterText(find.byKey(const Key('RegistrationFormSurnameFormField')), 'text');
-    await tester.enterText(find.byKey(const Key('RegistrationFormEmailFormField')), 'text');
+    await tester.enterText(find.byKey(const Key('RegistrationFormEmailFormField')), 'text@test.com');
     await tester.enterText(find.byKey(const Key('RegistrationFormPasswordFormField')), 'text');
   }
 
   group('authentication', () {
     testWidgets('no error in registration', (WidgetTester tester) async {
-      when(mockAuth.createUserWithEmailAndPassword(email: 'text', password: 'text'))
+      when(mockAuth.createUserWithEmailAndPassword(email: 'text@test.com', password: 'text'))
           .thenAnswer((realInvocation) => Future.value(mockCredentials));
       when(mockCredentials.user).thenReturn(mockUser);
       when(mockUser.uid).thenReturn(testUid);
@@ -171,7 +205,7 @@ main() {
     });
 
     testWidgets('error in user creation on auth server', (WidgetTester tester) async {
-      when(mockAuth.createUserWithEmailAndPassword(email: 'text', password: 'text'))
+      when(mockAuth.createUserWithEmailAndPassword(email: 'text@test.com', password: 'text'))
           .thenThrow(AuthenticationException('test'));
       await tester.pumpWidget(widgetUnderTest());
       await tester.pumpAndSettle();
@@ -182,7 +216,7 @@ main() {
     });
 
     testWidgets('error in connecting to database', (WidgetTester tester) async {
-      when(mockAuth.createUserWithEmailAndPassword(email: 'text', password: 'text'))
+      when(mockAuth.createUserWithEmailAndPassword(email: 'text@test.com', password: 'text'))
           .thenAnswer((realInvocation) => Future.value(mockCredentials));
       when(mockCredentials.user).thenReturn(mockUser);
       when(mockUser.uid).thenReturn(testUid);
@@ -195,7 +229,7 @@ main() {
       expect(find.byKey(const Key('DatabaseErrorSnackBar')), findsOneWidget);
     });
     testWidgets('error in connecting to database, error in deleting user', (WidgetTester tester) async {
-      when(mockAuth.createUserWithEmailAndPassword(email: 'text', password: 'text'))
+      when(mockAuth.createUserWithEmailAndPassword(email: 'text@test.com', password: 'text'))
           .thenAnswer((realInvocation) => Future.value(mockCredentials));
       when(mockCredentials.user).thenReturn(mockUser);
       when(mockUser.uid).thenReturn(testUid);
