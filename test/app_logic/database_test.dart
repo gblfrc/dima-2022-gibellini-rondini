@@ -588,6 +588,56 @@ main() {
     });
   });
 
+  void proposalInit() {
+    // reference to owner
+    when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
+    when(mockUserCollection.doc(mockUserJson1['uid'])).thenReturn(mockReference);
+    // main proposal query
+    when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);
+    when(mockCollection.where('owner', isEqualTo: mockReference)).thenReturn(mockQuery0);
+    when(mockQuery0.orderBy("dateTime", descending: false)).thenReturn(mockQuery0);
+    when(mockQuery0.limit(2)).thenReturn(mockQuery0);
+    when(mockQuery0.snapshots()).thenAnswer((realInvocation) => Stream.fromIterable([mockQuerySnapshot0]));
+    when(mockQuerySnapshot0.docs).thenReturn([mockQueryDocumentSnapshotProposal0, mockQueryDocumentSnapshotProposal1]);
+    when(mockQueryDocumentSnapshotProposal0.data()).thenReturn(mockFirestoreProposal0);
+    when(mockQueryDocumentSnapshotProposal1.data()).thenReturn(mockFirestoreProposal1);
+  }
+
+  group('get proposals', () {
+    test('regular proposal output', () async {
+      proposalInit();
+      // launch method and verify result on first snapshot
+      List<Proposal> proposals = await database.getProposalsByUser(mockUserJson1['uid'], limit: 2).first;
+      expect(proposals.length, 2);
+    });
+
+    test('throws exception', () {
+      when(mockFirebaseFirestore.collection('proposals')).thenThrow(FirebaseException(plugin: 'test'));
+      expect(database.getProposalsByUser(mockUserJson1['uid']), emitsError(isA<DatabaseException>()));
+    });
+
+    test('one proposal is null becaue of json error', () async {
+      proposalInit();
+      mockFirestoreProposal0['dateTime'] = 5;
+      List<Proposal> proposals = await database.getProposalsByUser(mockUserJson1['uid'], limit: 2).first;
+      expect(proposals.length, 1);
+      expect(proposals[0].place.name, mockFirestoreProposal1['place']['name']);
+    });
+  });
+
+  group('proposal deletion', () {
+    test('correct deletion', () async {
+      when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);
+      when(mockCollection.doc(testProposal.id)).thenReturn(mockReference);
+      expect(() => database.deleteProposal(testProposal), returnsNormally);
+    });
+
+    test('throws exception', () {
+      when(mockFirebaseFirestore.collection('proposals')).thenThrow(FirebaseException(plugin: 'test'));
+      expect(() => database.deleteProposal(testProposal), throwsA(isA<DatabaseException>()));
+    });
+  });
+
   group('proposals from place', () {
     test('correct output', () async {
       when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockCollection);

@@ -223,7 +223,7 @@ class Database {
     return newList;
   }
 
-  Future<bool> isFriendOf({required String currentUserUid, required String friendUid}) async{
+  Future<bool> isFriendOf({required String currentUserUid, required String friendUid}) async {
     try {
       var snapshot = await _database
           .collection('users')
@@ -235,7 +235,7 @@ class Database {
       } else {
         return true;
       }
-    } on FirebaseException catch (fe){
+    } on FirebaseException catch (fe) {
       throw DatabaseException(fe.message);
     }
   }
@@ -415,8 +415,7 @@ class Database {
           "owner": _database.collection('users').doc(ownerId),
           "place": {
             "coords": GeoPoint(placeLatitude, placeLongitude),
-            "geohash":
-                GeoHasher().encode(placeLatitude, placeLongitude, precision: 9),
+            "geohash": GeoHasher().encode(placeLatitude, placeLongitude, precision: 9),
             "id": placeId,
             "latitude": placeLatitude,
             "longitude": placeLongitude,
@@ -435,6 +434,33 @@ class Database {
     }
   }
 
+  Stream<List<Proposal>> getProposalsByUser(String uid, {int? limit}) async* {
+    List<Proposal> proposals = [];
+    Query<Map<String, dynamic>> proposalQuery;
+    try {
+      final ownerRef = _database.collection("users").doc(uid);
+      proposalQuery = _database
+          .collection("proposals")
+          .where("owner", isEqualTo: ownerRef)
+          .orderBy("dateTime", descending: false)
+      // limit query to parameter or to a very high number
+      // number could be even higher, but then it causes problems with Firestore
+          .limit(limit ?? 10000);
+      // process snapshots
+      await for (var snapshot in proposalQuery.snapshots()) {
+        // clean session array for each snapshot
+        proposals = [];
+        for (var doc in snapshot.docs) {
+          // create a Proposal object for each document
+          Proposal? proposal = await _proposalFromFirestore(doc, currentUserUid: uid,excludeCurrentUser: false);
+          if (proposal != null) proposals.add(proposal);
+        }
+        yield proposals;
+      }
+    } on FirebaseException catch (fe) {
+      throw DatabaseException(fe.message);
+    }
+  }
   void addParticipantToProposal(Proposal proposal, String currentUserUid) async {
     try {
       await _database.collection('proposals').doc(proposal.id).update({
@@ -450,6 +476,14 @@ class Database {
       await _database.collection('proposals').doc(proposal.id).update({
         'participants': FieldValue.arrayRemove([currentUserUid])
       });
+    } on FirebaseException catch (fe) {
+      throw DatabaseException(fe.message);
+    }
+  }
+
+  void deleteProposal(Proposal proposal) {
+    try {
+      _database.collection('proposals').doc(proposal.id).delete();
     } on FirebaseException catch (fe) {
       throw DatabaseException(fe.message);
     }

@@ -3,6 +3,7 @@ import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/storage.dart';
 import 'package:progetto/components/profile_header.dart';
+import 'package:progetto/components/tiles.dart';
 import 'package:progetto/pages/edit_profile_page.dart';
 
 import '../components/cards.dart';
@@ -27,7 +28,9 @@ class _AccountPageState extends State<AccountPage> {
     // boolean to determine whether current user is the owner of the account page
     bool isMyAccount = (widget.uid == Auth().currentUser!.uid);
     // define tabs
-    List<Tab> tabs = isMyAccount ? const [Tab(text: 'Sessions'), Tab(text: 'Goals')] : const [Tab(text: 'Sessions')];
+    List<Tab> tabs = isMyAccount
+        ? const [Tab(text: 'Sessions'), Tab(text: 'Proposals'), Tab(text: 'Goals')]
+        : const [Tab(text: 'Sessions'), Tab(text: 'Proposals')];
 
     return DefaultTabController(
       length: tabs.length,
@@ -103,7 +106,12 @@ class _AccountPageState extends State<AccountPage> {
                         user = snapshot.data!;
                         return Column(
                           children: [
-                            ProfileHeader(user: user!, storage: Storage(), database: Database(), auth: Auth(),),
+                            ProfileHeader(
+                              user: user!,
+                              storage: Storage(),
+                              database: Database(),
+                              auth: Auth(),
+                            ),
                           ],
                         );
                       } else {
@@ -127,7 +135,7 @@ class _AccountPageState extends State<AccountPage> {
           body: Padding(
             padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.shortestSide / 60),
             child: TabBarView(
-              children: [_SessionTab(uid: widget.uid), if (isMyAccount) const _GoalTab()],
+              children: [_SessionTab(uid: widget.uid), if (isMyAccount) const _ProposalTab(), if (isMyAccount) const _GoalTab()],
             ),
           ),
         ),
@@ -205,6 +213,45 @@ class _SessionTab extends StatelessWidget {
   }
 }
 
+class _ProposalTab extends StatelessWidget {
+  const _ProposalTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: Database().getProposalsByUser(Auth().currentUser!.uid),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Text(
+            "An error occurred while loading proposals.",
+            textAlign: TextAlign.center,
+          );
+        }
+        if (snapshot.hasData) {
+          // This returns true even if there are no documents in the list
+          if (snapshot.data!.isEmpty) {
+            // If there are no goals, we print a message
+            return const Text(
+              "No proposal made up to now.",
+              textAlign: TextAlign.center,
+            );
+          }
+          List<Widget> proposalList = [];
+          for (var proposal in snapshot.data!) {
+            proposalList.add(ProposalTile.fromProposal(proposal, context));
+          }
+          return ListView(
+            children: proposalList,
+          );
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
+    );
+  }
+}
 class _GoalTab extends StatelessWidget {
   const _GoalTab();
 
@@ -230,7 +277,10 @@ class _GoalTab extends StatelessWidget {
           }
           List<Widget> goalList = [];
           for (var goal in snapshot.data!) {
-            goalList.add(GoalCard(goal, database: Database(),));
+            goalList.add(GoalCard(
+              goal,
+              database: Database(),
+            ));
           }
           return ListView(
             children: goalList,

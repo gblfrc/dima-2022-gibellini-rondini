@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:intl/intl.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/components/custom_small_map.dart';
 import 'package:progetto/components/tiles.dart';
@@ -43,6 +44,36 @@ class _ProposalPageState extends State<ProposalPage> {
         title: const Text(
           'Training',
         ),
+        actions: widget.proposal.owner.uid == Auth().currentUser!.uid
+            ? [
+                IconButton(
+                  onPressed: () {
+                    try {
+                      Database().deleteProposal(widget.proposal);
+                      Navigator.pop(context);
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Proposal deleted successfully.'),
+                          ),
+                        );
+                      }
+                    } on Exception {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('An error occurred when deleting the proposal.'),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(MdiIcons.trashCanOutline),
+                )
+              ]
+            : [],
       ),
       body: Padding(
         padding: EdgeInsets.all(padding),
@@ -51,10 +82,7 @@ class _ProposalPageState extends State<ProposalPage> {
             SizedBox(
               height: MediaQuery.of(context).size.longestSide / 3.5,
               child: CustomSmallMap(
-                options: MapOptions(
-                    center: widget.proposal.place.coords,
-                    zoom: 16,
-                    maxZoom: 18.4),
+                options: MapOptions(center: widget.proposal.place.coords, zoom: 16, maxZoom: 18.4),
                 proposalsForMarkers: [widget.proposal],
               ),
             ),
@@ -72,10 +100,8 @@ class _ProposalPageState extends State<ProposalPage> {
                       ),
                       Text(
                         widget.proposal.dateTime.year == DateTime.now().year
-                            ? DateFormat('MMM d, HH:mm')
-                                .format(widget.proposal.dateTime)
-                            : DateFormat('MMM d y, HH:mm')
-                                .format(widget.proposal.dateTime),
+                            ? DateFormat('MMM d, HH:mm').format(widget.proposal.dateTime)
+                            : DateFormat('MMM d y, HH:mm').format(widget.proposal.dateTime),
                         style: genericTextStyle,
                       ),
                     ],
@@ -129,8 +155,7 @@ class _ProposalPageState extends State<ProposalPage> {
                               stream: Database().getUser(uid!),
                               builder: (context, snapshot) {
                                 if (snapshot.hasData) {
-                                  return UserTile.fromUser(
-                                      snapshot.data!, context, Storage());
+                                  return UserTile.fromUser(snapshot.data!, context, Storage());
                                 } else {
                                   return Container();
                                 }
@@ -150,27 +175,22 @@ class _ProposalPageState extends State<ProposalPage> {
                       if (joinable) {
                         try {
                           Database().addParticipantToProposal(widget.proposal, Auth().currentUser!.uid);
-                          widget.proposal.participants
-                              .add(Auth().currentUser!.uid);
+                          widget.proposal.participants.add(Auth().currentUser!.uid);
                         } on Exception {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                  "An error occurred. Couldn't join session"),
+                              content: Text("An error occurred. Couldn't join session"),
                             ),
                           );
                         }
                       } else {
                         try {
-                          Database().removeParticipantFromProposal(
-                              widget.proposal, Auth().currentUser!.uid);
-                          widget.proposal.participants
-                              .remove(Auth().currentUser!.uid);
+                          Database().removeParticipantFromProposal(widget.proposal, Auth().currentUser!.uid);
+                          widget.proposal.participants.remove(Auth().currentUser!.uid);
                         } on Exception {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                  "An error occurred. Couldn't leave session"),
+                              content: Text("An error occurred. Couldn't leave session"),
                             ),
                           );
                         }
