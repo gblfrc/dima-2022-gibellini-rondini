@@ -138,7 +138,7 @@ class _HomePageState extends State<HomePage> {
                       }
                       List<Widget> goalList = [];
                       for (var goal in snapshot.data!) {
-                        goalList.add(GoalCard(goal));
+                        goalList.add(GoalCard(goal, database: Database(),));
                       }
                       return Column(
                         children: goalList,

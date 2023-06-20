@@ -230,7 +230,7 @@ class _GoalTab extends StatelessWidget {
           }
           List<Widget> goalList = [];
           for (var goal in snapshot.data!) {
-            goalList.add(GoalCard(goal));
+            goalList.add(GoalCard(goal, database: Database(),));
           }
           return ListView(
             children: goalList,

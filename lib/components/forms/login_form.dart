@@ -8,8 +8,6 @@ class LoginForm extends StatefulWidget {
   final Auth auth;
   final Function toggle;
 
-  //final Function errorCallback;
-
   const LoginForm({super.key, required this.toggle, required this.auth});
 
   @override
@@ -28,16 +26,12 @@ class _LoginFormState extends State<LoginForm> {
         password: _controllerPassword.text,
       );
     } on AuthenticationException catch (e) {
-      //widget.errorCallback(e.message);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          key: const Key('ErrorSnackBar'),
           content: Text(e.message ?? "Something went wrong. Please try again."),
         ),
       );
-      // print('ERROR: $e.message');
-      // setState(() {
-      //   errorMessage = e.message;
-      // });
     }
   }
 

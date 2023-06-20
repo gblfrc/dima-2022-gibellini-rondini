@@ -91,6 +91,7 @@ class SessionCard extends StatelessWidget {
                               ),
                               Text(
                                 date,
+                                key: const Key('DateText'),
                                 style: TextStyle(
                                     height: 0,
                                     //used to remove default padding
@@ -143,12 +144,14 @@ class SessionCard extends StatelessWidget {
 
 class GoalCard extends StatefulWidget {
   final Goal goal;
+  final Database database;
 
-  const GoalCard(this.goal, {super.key});
+  const GoalCard(this.goal, {required this.database, super.key});
 
   @override
   State<GoalCard> createState() => _GoalCardState();
 }
+
 class _GoalCardState extends State<GoalCard> {
   @override
   Widget build(BuildContext context) {
@@ -206,8 +209,12 @@ class _GoalCardState extends State<GoalCard> {
                     subtitle: Text(status),
                   ),
                 ),
-                Padding(padding: const EdgeInsets.all(16),
-                child: FilledButton(onPressed: () => deleteGoal(goal), child: const Text("Delete"))),
+                Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: FilledButton(
+                        key: const Key('DeleteGoalButton'),
+                        onPressed: () => deleteGoal(goal),
+                        child: const Text("Delete"))),
               ],
             ),
             goal.type != "speedGoal"
@@ -248,7 +255,7 @@ class _GoalCardState extends State<GoalCard> {
 
   void deleteGoal(Goal goal) async {
     try {
-      await Database().deleteGoal(goal);
+      await widget.database.deleteGoal(goal);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -258,6 +265,7 @@ class _GoalCardState extends State<GoalCard> {
     } on Exception {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
+          key: Key('ErrorSnackBar'),
           content: Text("Something went wrong. Please try again."),
         ),
       );
