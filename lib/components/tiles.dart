@@ -67,7 +67,7 @@ class UserTile extends Tile {
   UserTile(
       {super.key, required super.leading, required super.title, super.subtitle, required super.onTap, super.trailing});
 
-  static UserTile fromUser(User user, BuildContext context, Storage storage) {
+  static UserTile fromUser(User user, BuildContext context, Storage storage, Database database) {
     return UserTile(
       leading: ProfilePicture(
         uid: user.uid,
@@ -80,7 +80,7 @@ class UserTile extends Tile {
             uid: user.uid,
             auth: Auth(),
             storage: Storage(),
-            database: Database(),
+            database: database,
             imagePicker: ImagePicker(),
           ),
         ),

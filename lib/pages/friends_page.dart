@@ -90,7 +90,7 @@ class FriendsPage extends StatelessWidget {
                           return Column(
                               children: friends
                                   .map((friend) =>
-                                      UserTile.fromUser(friend, context, Storage()))
+                                      UserTile.fromUser(friend, context, Storage(), Database()))
                                   .toList());
                         } else {
                           return const Center(

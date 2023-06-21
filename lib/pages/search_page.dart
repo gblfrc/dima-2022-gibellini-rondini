@@ -68,7 +68,7 @@ class _SearchPageState extends State<SearchPage> {
                   Expanded(
                     child: ListView.separated(
                       itemBuilder: (context, index) {
-                        return UserTile.fromUser(userList[index], context, Storage());
+                        return UserTile.fromUser(userList[index], context, Storage(), Database());
                       },
                       separatorBuilder: (context, index) {
                         return const SizedBox(
