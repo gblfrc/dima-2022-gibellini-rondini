@@ -66,7 +66,7 @@ main() {
         data: const MediaQueryData(),
         child: Builder(builder: (BuildContext context) {
           return MaterialApp(
-              home: Scaffold(body: PlaceTile.fromPlace(place0, context)));
+              home: Scaffold(body: PlaceTile.fromPlace(place: place0, context: context, auth: MockAuth(), database: MockDatabase())));
         })));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.byWidgetPredicate(
@@ -93,7 +93,7 @@ main() {
         data: const MediaQueryData(),
         child: Builder(builder: (BuildContext context) {
           return MaterialApp(
-              home: Scaffold(body: PlaceTile.fromPlace(place1, context)));
+              home: Scaffold(body: PlaceTile.fromPlace(place: place1, context: context, auth: MockAuth(), database: MockDatabase())));
         })));
     final titleFinder = find.text('Liceo Mascheroni');
     final subtitleFinder = find.text('Bergamo, Lombardia, Italy');

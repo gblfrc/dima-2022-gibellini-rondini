@@ -98,7 +98,7 @@ class PlaceTile extends Tile {
       required super.onTap,
       super.trailing});
 
-  static PlaceTile fromPlace(Place place, BuildContext context) {
+  static PlaceTile fromPlace({required Place place, required BuildContext context, required Auth auth, required Database database}) {
     return PlaceTile(
       leading: LayoutBuilder(
         builder: (context, constraint) {
@@ -113,7 +113,7 @@ class PlaceTile extends Tile {
           : null,
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => PlacePage(place: place),
+          builder: (context) => PlacePage(place: place, auth: auth, database: database,),
         ),
       ),
     );
@@ -174,7 +174,7 @@ class ProposalTile extends Tile {
   const ProposalTile(
       {super.key, required super.leading, required super.title, super.subtitle, required super.onTap, super.trailing});
 
-  static ProposalTile fromProposal(Proposal proposal, BuildContext context, {startable = false}) {
+  static ProposalTile fromProposal(Proposal proposal, BuildContext context, {startable = false, Key? key}) {
     return ProposalTile(
       leading: FutureBuilder(
         future: rootBundle.loadString(calendarSvgPath),
@@ -222,6 +222,7 @@ class ProposalTile extends Tile {
           }
         },
       ),
+      key: key,
     );
   }
 }

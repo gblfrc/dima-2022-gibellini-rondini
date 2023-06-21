@@ -109,8 +109,7 @@ class _AccountPageState extends State<AccountPage> {
                                                       database: widget.database,
                                                       auth: widget.auth,
                                                       storage: widget.storage,
-                                                      imagePicker:
-                                                          ImagePicker(),
+                                                      imagePicker: widget.imagePicker,
                                                     ),
                                                   ),
                                                 );
@@ -168,6 +167,7 @@ class _AccountPageState extends State<AccountPage> {
                 tabs: tabs,
                 database: widget.database,
                 auth: widget.auth,
+                storage: widget.storage,
               )
             : Flex(
                 direction: Axis.horizontal,
@@ -202,6 +202,7 @@ class _AccountPageState extends State<AccountPage> {
                       tabs: tabs,
                       database: widget.database,
                       auth: widget.auth,
+                      storage: widget.storage,
                     ),
                   ),
                 ],
@@ -429,6 +430,7 @@ class _TabSection extends StatelessWidget {
   final List<Tab> tabs;
   final Database database;
   final Auth auth;
+  final Storage storage;
 
   const _TabSection({
     required this.uid,
@@ -438,6 +440,7 @@ class _TabSection extends StatelessWidget {
     required this.tabs,
     required this.database,
     required this.auth,
+    required this.storage,
   });
 
   @override
@@ -459,7 +462,6 @@ class _TabSection extends StatelessWidget {
       },
       body: Padding(
         padding: EdgeInsets.fromLTRB(padding / 2, padding / 3, padding / 2, 0),
-        // padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.shortestSide / 60),
         child: TabBarView(
           children: [
             _SessionTab(
