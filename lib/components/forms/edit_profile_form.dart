@@ -319,43 +319,47 @@ class _DataSectionState extends State<_DataSection> {
           const SizedBox(
             height: 6,
           ),
-          FilledButton(
-            key: const Key('EditProfileFormUpdateButton'),
-            onPressed: () async {
-              try {
-                if (_formKey.currentState!.validate()) {
-                  widget.user.name = _nameController.text;
-                  widget.user.surname = _nameController.text;
-                  widget.user.birthday =
-                      _birthdayController.text == "" ? null : DateFormat.yMd().parse(_birthdayController.text);
-                  widget.user.uid = widget.auth.currentUser!.uid;
-                  widget.database.updateUser(
-                    widget.user,
-                  );
-                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      key: Key('SuccessfulUpdateSnackBar'),
-                      content: Text('Account information updated successfully.'),
-                    ),
-                  );
-                }
-              } on DatabaseException {
-                ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    key: Key('ErrorInUserUpdateSnackBar'),
-                    content: Text('An error occurred during the update.'),
+          Column(
+            children: [
+              FilledButton(
+                key: const Key('EditProfileFormUpdateButton'),
+                onPressed: () async {
+                  try {
+                    if (_formKey.currentState!.validate()) {
+                      widget.user.name = _nameController.text;
+                      widget.user.surname = _nameController.text;
+                      widget.user.birthday =
+                          _birthdayController.text == "" ? null : DateFormat.yMd().parse(_birthdayController.text);
+                      widget.user.uid = widget.auth.currentUser!.uid;
+                      widget.database.updateUser(
+                        widget.user,
+                      );
+                      ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          key: Key('SuccessfulUpdateSnackBar'),
+                          content: Text('Account information updated successfully.'),
+                        ),
+                      );
+                    }
+                  } on DatabaseException {
+                    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        key: Key('ErrorInUserUpdateSnackBar'),
+                        content: Text('An error occurred during the update.'),
+                      ),
+                    );
+                  }
+                },
+                child: const Text(
+                  'Update',
+                  style: TextStyle(
+                    color: Colors.white,
                   ),
-                );
-              }
-            },
-            child: const Text(
-              'Update',
-              style: TextStyle(
-                color: Colors.white,
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

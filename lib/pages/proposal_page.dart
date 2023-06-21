@@ -47,26 +47,42 @@ class _ProposalPageState extends State<ProposalPage> {
         actions: widget.proposal.owner.uid == Auth().currentUser!.uid
             ? [
                 IconButton(
-                  onPressed: () {
-                    try {
-                      Database().deleteProposal(widget.proposal);
-                      Navigator.pop(context);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Proposal deleted successfully.'),
-                          ),
-                        );
-                      }
-                    } on Exception {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('An error occurred when deleting the proposal.'),
-                          ),
-                        );
+                  onPressed: () async {
+                    String? action = await showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Proposal deletion'),
+                            content: const Text('The selected proposal will be deleted. Continue?'),
+                            actions: [
+                              TextButton(onPressed: () => Navigator.pop(context, 'No'), child: const Text('No')),
+                              TextButton(onPressed: () => Navigator.pop(context, 'Yes'), child: const Text('Yes')),
+                            ],
+                          );
+                        });
+                    if (action != null && action == 'Yes'){
+                      try {
+                        Database().deleteProposal(widget.proposal);
+                        if (mounted){
+                          Navigator.pop(context);
+                        }
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Proposal deleted successfully.'),
+                            ),
+                          );
+                        }
+                      } on Exception {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('An error occurred when deleting the proposal.'),
+                            ),
+                          );
+                        }
                       }
                     }
                   },

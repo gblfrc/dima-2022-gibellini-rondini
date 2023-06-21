@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
+import 'package:progetto/app_logic/image_picker.dart';
 import 'package:progetto/app_logic/storage.dart';
 import 'package:progetto/components/profile_header.dart';
 import 'package:progetto/components/tiles.dart';
@@ -23,6 +24,9 @@ class _AccountPageState extends State<AccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    // define number of columns based on device orientation
+    int columns;
+    MediaQuery.of(context).size.width > MediaQuery.of(context).size.height ? columns = 2 : columns = 1;
     // save padding entity for convenience
     double padding = MediaQuery.of(context).size.shortestSide / 30;
     // boolean to determine whether current user is the owner of the account page
@@ -54,9 +58,12 @@ class _AccountPageState extends State<AccountPage> {
                                   ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                   await Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder: (context) => const EditProfilePage(),
-                                      settings: RouteSettings(
-                                        arguments: user,
+                                      builder: (context) => EditProfilePage(
+                                        user: user!,
+                                        database: Database(),
+                                        auth: Auth(),
+                                        storage: Storage(),
+                                        imagePicker: ImagePicker(),
                                       ),
                                     ),
                                   );
@@ -71,6 +78,17 @@ class _AccountPageState extends State<AccountPage> {
                                 onTap: () async {
                                   ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                   await Auth().signOut();
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.format_size),
+                                title: const Text('Size'),
+                                iconColor: Colors.white,
+                                textColor: Colors.white,
+                                onTap: () async {
+                                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(SnackBar(content: Text(MediaQuery.of(context).size.toString())));
                                 },
                               ),
                             ],
@@ -133,9 +151,20 @@ class _AccountPageState extends State<AccountPage> {
             ];
           },
           body: Padding(
-            padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.shortestSide / 60),
+            padding: EdgeInsets.fromLTRB(padding / 2, padding / 3, padding / 2, 0),
+            // padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.shortestSide / 60),
             child: TabBarView(
-              children: [_SessionTab(uid: widget.uid), if (isMyAccount) const _ProposalTab(), if (isMyAccount) const _GoalTab()],
+              children: [
+                _SessionTab(
+                  uid: widget.uid,
+                  columns: columns,
+                ),
+                if (isMyAccount) const _ProposalTab(),
+                if (isMyAccount)
+                  _GoalTab(
+                    columns: columns,
+                  )
+              ],
             ),
           ),
         ),
@@ -171,8 +200,9 @@ class _ScrollDelegate extends SliverPersistentHeaderDelegate {
 
 class _SessionTab extends StatelessWidget {
   final String uid;
+  final int columns;
 
-  const _SessionTab({required this.uid});
+  const _SessionTab({required this.uid, required this.columns});
 
   @override
   Widget build(BuildContext context) {
@@ -199,8 +229,10 @@ class _SessionTab extends StatelessWidget {
             // For each session, we create a card and append it to the array of children
             sessionCards.add(SessionCard(session: session!));
           }
-          return ListView(
+          return GridView.count(
             shrinkWrap: true,
+            crossAxisCount: columns,
+            childAspectRatio: 2.75,
             children: sessionCards,
           );
         } else {
@@ -241,6 +273,7 @@ class _ProposalTab extends StatelessWidget {
             proposalList.add(ProposalTile.fromProposal(proposal, context));
           }
           return ListView(
+            shrinkWrap: true,
             children: proposalList,
           );
         } else {
@@ -252,8 +285,11 @@ class _ProposalTab extends StatelessWidget {
     );
   }
 }
+
 class _GoalTab extends StatelessWidget {
-  const _GoalTab();
+  final int columns;
+
+  const _GoalTab({required this.columns});
 
   @override
   Widget build(BuildContext context) {
@@ -282,7 +318,9 @@ class _GoalTab extends StatelessWidget {
               database: Database(),
             ));
           }
-          return ListView(
+          return GridView.count(
+            shrinkWrap: true,
+            crossAxisCount: columns,
             children: goalList,
           );
         } else {

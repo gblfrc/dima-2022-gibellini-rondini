@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:progetto/pages/edit_profile_page.dart';
 import 'package:progetto/pages/login_page.dart';
 import 'package:progetto/pages/main_screens.dart';
 
@@ -57,9 +56,6 @@ class CustomApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
-      routes: {
-        EditProfilePage.routeName: (context) => const EditProfilePage(),
-      },
       theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.greenAccent),
