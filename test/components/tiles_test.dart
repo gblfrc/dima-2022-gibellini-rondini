@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:mockito/annotations.dart';
+import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/storage.dart';
 import 'package:progetto/components/profile_picture.dart';
@@ -13,7 +14,7 @@ import 'package:progetto/model/place.dart';
 import 'package:progetto/model/proposal.dart';
 import 'package:progetto/model/user.dart';
 
-@GenerateNiceMocks([MockSpec<Database>(), MockSpec<Storage>()])
+@GenerateNiceMocks([MockSpec<Database>(), MockSpec<Storage>(), MockSpec<Auth>()])
 import 'tiles_test.mocks.dart';
 
 main() {
@@ -25,7 +26,7 @@ main() {
         child: Builder(builder: (BuildContext context) {
           return MaterialApp(
               home: Scaffold(
-                  body: UserTile.fromUser(user, context, MockStorage(), MockDatabase())));
+                  body: UserTile.fromUser(user, context, MockStorage(), MockDatabase(), MockAuth())));
         })));
     final titleFinder = find.text('Mario Rossi');
     final imageFinder =

@@ -67,7 +67,7 @@ class UserTile extends Tile {
   UserTile(
       {super.key, required super.leading, required super.title, super.subtitle, required super.onTap, super.trailing});
 
-  static UserTile fromUser(User user, BuildContext context, Storage storage, Database database) {
+  static UserTile fromUser(User user, BuildContext context, Storage storage, Database database, Auth auth) {
     return UserTile(
       leading: ProfilePicture(
         uid: user.uid,
@@ -78,7 +78,7 @@ class UserTile extends Tile {
         MaterialPageRoute(
           builder: (context) => AccountPage(
             uid: user.uid,
-            auth: Auth(),
+            auth: auth,
             storage: Storage(),
             database: database,
             imagePicker: ImagePicker(),

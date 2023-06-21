@@ -156,7 +156,7 @@ class _ProposalPageState extends State<ProposalPage> {
                     style: titleStyle,
                   ),
                 ),
-                UserTile.fromUser(widget.proposal.owner, context, Storage(), Database()),
+                UserTile.fromUser(widget.proposal.owner, context, Storage(), Database(), Auth()),
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: padding / 4),
                   child: Text(
@@ -171,7 +171,7 @@ class _ProposalPageState extends State<ProposalPage> {
                               stream: Database().getUser(uid!),
                               builder: (context, snapshot) {
                                 if (snapshot.hasData) {
-                                  return UserTile.fromUser(snapshot.data!, context, Storage(), Database());
+                                  return UserTile.fromUser(snapshot.data!, context, Storage(), Database(), Auth());
                                 } else {
                                   return Container();
                                 }
