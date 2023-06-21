@@ -66,7 +66,7 @@ class SessionCard extends StatelessWidget {
               ),
               child: Padding(
                 padding: EdgeInsets.all(
-                    max(MediaQuery.of(context).size.shortestSide / 30, 10)),
+                    min(max(constraint.maxHeight/ 9, 10), 30)),
                 child: Flex(
                   direction: Axis.horizontal,
                   children: [

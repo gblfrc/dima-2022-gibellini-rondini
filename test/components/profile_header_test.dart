@@ -42,7 +42,7 @@ main() {
     when(mockAuthUser.uid).thenReturn(currentUser.uid);
   });
 
-  Widget widgetUnderTest(User user) {
+  Widget widgetUnderTest(User user, {Axis direction = Axis.horizontal}) {
     return CustomApp(
       onLogged: Scaffold(
         body: ProfileHeader(
@@ -50,6 +50,7 @@ main() {
           storage: storage,
           database: database,
           auth: auth,
+          direction: direction,
         ),
       ),
       onNotLogged: Container(),
@@ -84,7 +85,7 @@ main() {
       expect(find.byKey(const Key('ButtonToAddFriend')), findsNothing);
     });
 
-    testWidgets('other user is yet a friend of the current one', (WidgetTester tester) async {
+    testWidgets('other user is not yet a friend of the current one', (WidgetTester tester) async {
       when(database.isFriendOf(currentUserUid: currentUser.uid, friendUid: friend.uid))
           .thenAnswer((realInvocation) => Future.value(false));
       await tester.pumpWidget(widgetUnderTest(friend));
@@ -184,6 +185,51 @@ main() {
       expect(find.byKey(const Key('ProfilePictureInProfileHeader')), findsOneWidget);
       expect(find.byKey(const Key('NameInProfileHeader')), findsOneWidget);
       expect(find.byKey(const Key('ButtonToRemoveFriend')), findsOneWidget);
+      expect(find.byKey(const Key('ButtonToAddFriend')), findsNothing);
+    });
+  });
+
+  group('vertical header', () {
+    testWidgets('basic components in vertical header, current user', (WidgetTester tester) async {
+      await tester.pumpWidget(widgetUnderTest(currentUser, direction: Axis.vertical));
+      await tester.pumpAndSettle();
+      verifyNever(database.isFriendOf(currentUserUid: currentUser.uid, friendUid: friend.uid));
+      expect(find.byKey(const Key('ProfilePictureInProfileHeader')), findsOneWidget);
+      expect(find.byKey(const Key('NameInProfileHeader')), findsOneWidget);
+      expect(find.byKey(const Key('ButtonToRemoveFriend')), findsNothing);
+      expect(find.byKey(const Key('ButtonToAddFriend')), findsNothing);
+    });
+    testWidgets('other user is already a friend of the current one', (WidgetTester tester) async {
+      when(database.isFriendOf(currentUserUid: currentUser.uid, friendUid: friend.uid))
+          .thenAnswer((realInvocation) => Future.value(true));
+      await tester.pumpWidget(widgetUnderTest(friend, direction: Axis.vertical));
+      await tester.pumpAndSettle();
+      verify(database.isFriendOf(currentUserUid: currentUser.uid, friendUid: friend.uid)).called(1);
+      expect(find.byKey(const Key('ProfilePictureInProfileHeader')), findsOneWidget);
+      expect(find.byKey(const Key('NameInProfileHeader')), findsOneWidget);
+      expect(find.byKey(const Key('ButtonToRemoveFriend')), findsOneWidget);
+      expect(find.byKey(const Key('ButtonToAddFriend')), findsNothing);
+    });
+    testWidgets('other user is not yet a friend of the current one', (WidgetTester tester) async {
+      when(database.isFriendOf(currentUserUid: currentUser.uid, friendUid: friend.uid))
+          .thenAnswer((realInvocation) => Future.value(false));
+      await tester.pumpWidget(widgetUnderTest(friend, direction: Axis.vertical));
+      await tester.pumpAndSettle();
+      verify(database.isFriendOf(currentUserUid: currentUser.uid, friendUid: friend.uid)).called(1);
+      expect(find.byKey(const Key('ProfilePictureInProfileHeader')), findsOneWidget);
+      expect(find.byKey(const Key('NameInProfileHeader')), findsOneWidget);
+      expect(find.byKey(const Key('ButtonToRemoveFriend')), findsNothing);
+      expect(find.byKey(const Key('ButtonToAddFriend')), findsOneWidget);
+    });
+    testWidgets('exception is thrown when checking friendship', (WidgetTester tester) async {
+      when(database.isFriendOf(currentUserUid: currentUser.uid, friendUid: friend.uid))
+          .thenThrow(DatabaseException('friendship cannot be defined'));
+      await tester.pumpWidget(widgetUnderTest(friend, direction: Axis.vertical));
+      await tester.pumpAndSettle();
+      verify(database.isFriendOf(currentUserUid: currentUser.uid, friendUid: friend.uid)).called(1);
+      expect(find.byKey(const Key('ProfilePictureInProfileHeader')), findsOneWidget);
+      expect(find.byKey(const Key('NameInProfileHeader')), findsOneWidget);
+      expect(find.byKey(const Key('ButtonToRemoveFriend')), findsNothing);
       expect(find.byKey(const Key('ButtonToAddFriend')), findsNothing);
     });
   });

@@ -468,14 +468,15 @@ main() {
       when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
       when(mockUserCollection.doc(mockUserJson1['uid'])).thenReturn(mockReference1);
       // snaspshot and list of friend uids
-      when(mockReference1.get()).thenAnswer((realInvocation) => Future.value(mockSnapshot1));
+      when(mockReference1.snapshots()).thenAnswer((realInvocation) => Stream.fromIterable([mockSnapshot1]));
       when(mockSnapshot1.get('friends')).thenReturn(mockUserJson1['friends']);
       // friend documents
       when(mockUserCollection.doc(mockUserJson0['uid'])).thenReturn(mockOwnerDocumentReference0);
       when(mockOwnerDocumentReference0.get()).thenAnswer((realInvocation) => Future.value(mockSnapshot0));
       when(mockSnapshot0.get('name')).thenReturn(mockUserJson0['name']);
       when(mockSnapshot0.get('surname')).thenReturn(mockUserJson0['surname']);
-      List<User?> users = await database.getFriends(mockUserJson1['uid']);
+      when(mockSnapshot0.id).thenReturn(mockUserJson0['uid']);
+      List<User?> users = await database.getFriends(mockUserJson1['uid']).first;
       expect(users.length, 1);
       expect(users[0]!.name, mockUserJson0['name']);
       expect(users[0]!.surname, mockUserJson0['surname']);
@@ -484,7 +485,7 @@ main() {
 
     test('throw exception', () {
       when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
-      expect(() => database.getFriends(mockUserJson0['uid']), throwsA(isA<DatabaseException>()));
+      expect(database.getFriends(mockUserJson0['uid']), emitsError(isA<DatabaseException>()));
     });
   });
 

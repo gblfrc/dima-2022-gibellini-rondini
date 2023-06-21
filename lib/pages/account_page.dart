@@ -8,7 +8,6 @@ import 'package:progetto/components/tiles.dart';
 import 'package:progetto/pages/edit_profile_page.dart';
 
 import '../components/cards.dart';
-import '../model/user.dart';
 
 class AccountPage extends StatefulWidget {
   final String uid;
@@ -20,13 +19,12 @@ class AccountPage extends StatefulWidget {
 }
 
 class _AccountPageState extends State<AccountPage> {
-  User? user;
-
   @override
   Widget build(BuildContext context) {
+    bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
     // define number of columns based on device orientation
     int columns;
-    MediaQuery.of(context).size.width > MediaQuery.of(context).size.height ? columns = 2 : columns = 1;
+    (isTablet || MediaQuery.of(context).size.width > MediaQuery.of(context).size.height) ? columns = 2 : columns = 1;
     // save padding entity for convenience
     double padding = MediaQuery.of(context).size.shortestSide / 30;
     // boolean to determine whether current user is the owner of the account page
@@ -49,27 +47,35 @@ class _AccountPageState extends State<AccountPage> {
                         SnackBar(
                           content: Column(
                             children: [
-                              ListTile(
-                                leading: const Icon(Icons.edit),
-                                title: const Text('Edit profile'),
-                                iconColor: Colors.white,
-                                textColor: Colors.white,
-                                onTap: () async {
-                                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                  await Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => EditProfilePage(
-                                        user: user!,
-                                        database: Database(),
-                                        auth: Auth(),
-                                        storage: Storage(),
-                                        imagePicker: ImagePicker(),
-                                      ),
-                                    ),
-                                  );
-                                  setState(() {});
-                                },
-                              ),
+                              StreamBuilder(
+                                  stream: Database().getUser(widget.uid),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData && snapshot.data != null) {
+                                      return ListTile(
+                                        leading: const Icon(Icons.edit),
+                                        title: const Text('Edit profile'),
+                                        iconColor: Colors.white,
+                                        textColor: Colors.white,
+                                        onTap: () async {
+                                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                          await Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                              builder: (context) => EditProfilePage(
+                                                user: snapshot.data!,
+                                                database: Database(),
+                                                auth: Auth(),
+                                                storage: Storage(),
+                                                imagePicker: ImagePicker(),
+                                              ),
+                                            ),
+                                          );
+                                          setState(() {});
+                                        },
+                                      );
+                                    } else {
+                                      return Container();
+                                    }
+                                  }),
                               ListTile(
                                 leading: const Icon(Icons.logout),
                                 title: const Text('Logout'),
@@ -78,17 +84,6 @@ class _AccountPageState extends State<AccountPage> {
                                 onTap: () async {
                                   ScaffoldMessenger.of(context).removeCurrentSnackBar();
                                   await Auth().signOut();
-                                },
-                              ),
-                              ListTile(
-                                leading: const Icon(Icons.format_size),
-                                title: const Text('Size'),
-                                iconColor: Colors.white,
-                                textColor: Colors.white,
-                                onTap: () async {
-                                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(content: Text(MediaQuery.of(context).size.toString())));
                                 },
                               ),
                             ],
@@ -103,71 +98,57 @@ class _AccountPageState extends State<AccountPage> {
               : [],
         ),
         // body: Container(color: Colors.blue.shade100,),
-        body: NestedScrollView(
-          physics: const NeverScrollableScrollPhysics(),
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              SliverAppBar(
-                automaticallyImplyLeading: false, // if true, another back arrow appears at the top of the page
-                collapsedHeight: MediaQuery.of(context).size.longestSide / 6,
-                expandedHeight: MediaQuery.of(context).size.longestSide / 6,
-                flexibleSpace: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: padding),
-                  child: StreamBuilder(
-                    stream: Database().getUser(widget.uid),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasError) {
-                        return const Center(
-                          child: Text('An error has occurred'),
-                        );
-                      } else if (snapshot.hasData) {
-                        user = snapshot.data!;
-                        return Column(
-                          children: [
-                            ProfileHeader(
-                              user: user!,
-                              storage: Storage(),
-                              database: Database(),
-                              auth: Auth(),
-                            ),
-                          ],
-                        );
-                      } else {
-                        return const Center(
-                          child: CircularProgressIndicator(),
-                        );
-                      }
-                    },
+        body: (!isTablet || MediaQuery.of(context).orientation == Orientation.portrait)
+            ? _TabSection(
+                uid: widget.uid,
+                columns: columns,
+                isMyAccount: isMyAccount,
+                sliverAppBar:  SliverAppBar(
+                  automaticallyImplyLeading: false, // if true, another back arrow appears at the top of the page
+                  collapsedHeight: MediaQuery.of(context).size.longestSide / 6,
+                  expandedHeight: MediaQuery.of(context).size.longestSide / 6,
+                  flexibleSpace: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: padding),
+                    child: _ProfileHeaderWrapper(
+                      uid: widget.uid,
+                      direction: Axis.horizontal,
+                    ),
                   ),
                 ),
-              ),
-              SliverPersistentHeader(
-                delegate: _ScrollDelegate(TabBar(
-                  tabs: tabs,
-                )),
-                pinned: true,
-                floating: true,
+                tabs: tabs,
               )
-            ];
-          },
-          body: Padding(
-            padding: EdgeInsets.fromLTRB(padding / 2, padding / 3, padding / 2, 0),
-            // padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.shortestSide / 60),
-            child: TabBarView(
-              children: [
-                _SessionTab(
-                  uid: widget.uid,
-                  columns: columns,
-                ),
-                if (isMyAccount) const _ProposalTab(),
-                if (isMyAccount)
-                  _GoalTab(
-                    columns: columns,
-                  )
-              ],
-            ),
-          ),
-        ),
+            : Flex(
+                direction: Axis.horizontal,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          right: BorderSide(
+                            color: Colors.grey.shade300,
+                            width: 2.0,
+                          ),
+                        ),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: padding),
+                      child: _ProfileHeaderWrapper(
+                        uid: widget.uid,
+                        direction: Axis.vertical,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 5,
+                    child: _TabSection(
+                      uid: widget.uid,
+                      columns: columns,
+                      isMyAccount: isMyAccount,
+                      tabs: tabs,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -329,6 +310,92 @@ class _GoalTab extends StatelessWidget {
           );
         }
       },
+    );
+  }
+}
+
+class _ProfileHeaderWrapper extends StatelessWidget {
+  final String uid;
+  final Axis direction;
+
+  const _ProfileHeaderWrapper({required this.uid, required this.direction});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder(
+      stream: Database().getUser(uid),
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const Center(
+            child: Text('An error has occurred'),
+          );
+        } else if (snapshot.hasData && snapshot.data != null) {
+          return ProfileHeader(
+            user: snapshot.data!,
+            storage: Storage(),
+            database: Database(),
+            auth: Auth(),
+            direction: direction,
+          );
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
+    );
+  }
+}
+
+class _TabSection extends StatelessWidget {
+  final String uid;
+  final int columns;
+  final bool isMyAccount;
+  final Widget? sliverAppBar;
+  final List<Tab> tabs;
+
+  const _TabSection({
+    required this.uid,
+    required this.columns,
+    required this.isMyAccount,
+    this.sliverAppBar,
+    required this.tabs,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    double padding = MediaQuery.of(context).size.shortestSide / 30;
+    return NestedScrollView(
+      physics: const NeverScrollableScrollPhysics(),
+      headerSliverBuilder: (context, innerBoxIsScrolled) {
+        return [
+          if (sliverAppBar != null) sliverAppBar!,
+          SliverPersistentHeader(
+            delegate: _ScrollDelegate(TabBar(
+              tabs: tabs,
+            )),
+            pinned: true,
+            floating: true,
+          )
+        ];
+      },
+      body: Padding(
+        padding: EdgeInsets.fromLTRB(padding / 2, padding / 3, padding / 2, 0),
+        // padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.shortestSide / 60),
+        child: TabBarView(
+          children: [
+            _SessionTab(
+              uid: uid,
+              columns: columns,
+            ),
+            if (isMyAccount) const _ProposalTab(),
+            if (isMyAccount)
+              _GoalTab(
+                columns: columns,
+              )
+          ],
+        ),
+      ),
     );
   }
 }
