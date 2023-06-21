@@ -507,7 +507,7 @@ class Database {
       });
       return list;
     } on FirebaseException catch (fe) {
-      throw DatabaseException(fe.message);
+      return Future.error(DatabaseException(fe.message));// DatabaseException(fe.message);
     }
   }
 

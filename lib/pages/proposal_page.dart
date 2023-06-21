@@ -148,7 +148,7 @@ class _ProposalPageState extends State<ProposalPage> {
                     style: titleStyle,
                   ),
                 ),
-                PlaceTile.fromPlace(widget.proposal.place, context),
+                PlaceTile.fromPlace(place: widget.proposal.place, context: context, auth: Auth(), database: Database()),
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: padding / 4),
                   child: Text(

@@ -40,7 +40,7 @@ class _AccountPageState extends State<AccountPage> {
     // save padding entity for convenience
     double padding = MediaQuery.of(context).size.shortestSide / 30;
     // boolean to determine whether current user is the owner of the account page
-    bool isMyAccount = (widget.uid == Auth().currentUser!.uid);
+    bool isMyAccount = (widget.uid == widget.auth.currentUser!.uid);
     // define tabs
     List<Tab> tabs = isMyAccount
         ? const [Tab(text: 'Sessions'), Tab(text: 'Proposals'), Tab(text: 'Goals')]
@@ -60,7 +60,7 @@ class _AccountPageState extends State<AccountPage> {
                           content: Column(
                             children: [
                               StreamBuilder(
-                                  stream: Database().getUser(widget.uid),
+                                  stream: widget.database.getUser(widget.uid),
                                   builder: (context, snapshot) {
                                     if (snapshot.hasData && snapshot.data != null) {
                                       return ListTile(
@@ -89,10 +89,10 @@ class _AccountPageState extends State<AccountPage> {
                                                   MaterialPageRoute(
                                                     builder: (context) => EditProfilePage(
                                                       user: snapshot.data!,
-                                                      database: Database(),
-                                                      auth: Auth(),
-                                                      storage: Storage(),
-                                                      imagePicker: ImagePicker(),
+                                                      database: widget.database,
+                                                      auth: widget.auth,
+                                                      storage: widget.storage,
+                                                      imagePicker: widget.imagePicker,
                                                     ),
                                                   ),
                                                 );
@@ -109,7 +109,7 @@ class _AccountPageState extends State<AccountPage> {
                                 textColor: Colors.white,
                                 onTap: () async {
                                   ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                  await Auth().signOut();
+                                  await widget.auth.signOut();
                                 },
                               ),
                             ],
@@ -138,10 +138,16 @@ class _AccountPageState extends State<AccountPage> {
                     child: _ProfileHeaderWrapper(
                       uid: widget.uid,
                       direction: Axis.horizontal,
+                      database: widget.database,
+                      auth: widget.auth,
+                      storage: widget.storage,
                     ),
                   ),
                 ),
                 tabs: tabs,
+                database: widget.database,
+                auth: widget.auth,
+                storage: widget.storage,
               )
             : Flex(
                 direction: Axis.horizontal,
@@ -161,6 +167,9 @@ class _AccountPageState extends State<AccountPage> {
                       child: _ProfileHeaderWrapper(
                         uid: widget.uid,
                         direction: Axis.vertical,
+                        database: widget.database,
+                        auth: widget.auth,
+                        storage: widget.storage,
                       ),
                     ),
                   ),
@@ -171,6 +180,9 @@ class _AccountPageState extends State<AccountPage> {
                       columns: columns,
                       isMyAccount: isMyAccount,
                       tabs: tabs,
+                      database: widget.database,
+                      auth: widget.auth,
+                      storage: widget.storage,
                     ),
                   ),
                 ],
@@ -208,13 +220,14 @@ class _ScrollDelegate extends SliverPersistentHeaderDelegate {
 class _SessionTab extends StatelessWidget {
   final String uid;
   final int columns;
+  final Database database;
 
-  const _SessionTab({required this.uid, required this.columns});
+  const _SessionTab({required this.uid, required this.columns, required this.database});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database().getLatestSessionsByUser(uid),
+      stream: database.getLatestSessionsByUser(uid),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text(
@@ -253,12 +266,15 @@ class _SessionTab extends StatelessWidget {
 }
 
 class _ProposalTab extends StatelessWidget {
-  const _ProposalTab();
+  final Database database;
+  final Auth auth;
+
+  const _ProposalTab({required this.database, required this.auth});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database().getProposalsByUser(Auth().currentUser!.uid),
+      stream: database.getProposalsByUser(auth.currentUser!.uid),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text(
@@ -295,13 +311,15 @@ class _ProposalTab extends StatelessWidget {
 
 class _GoalTab extends StatelessWidget {
   final int columns;
+  final Database database;
+  final Auth auth;
 
-  const _GoalTab({required this.columns});
+  const _GoalTab({required this.columns, required this.database, required this.auth});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database().getGoals(Auth().currentUser!.uid, inProgressOnly: false),
+      stream: database.getGoals(auth.currentUser!.uid, inProgressOnly: false),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text(
@@ -343,13 +361,17 @@ class _GoalTab extends StatelessWidget {
 class _ProfileHeaderWrapper extends StatelessWidget {
   final String uid;
   final Axis direction;
+  final Database database;
+  final Storage storage;
+  final Auth auth;
 
-  const _ProfileHeaderWrapper({required this.uid, required this.direction});
+  const _ProfileHeaderWrapper(
+      {required this.uid, required this.direction, required this.database, required this.storage, required this.auth});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database().getUser(uid),
+      stream: database.getUser(uid),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Center(
@@ -358,9 +380,9 @@ class _ProfileHeaderWrapper extends StatelessWidget {
         } else if (snapshot.hasData && snapshot.data != null) {
           return ProfileHeader(
             user: snapshot.data!,
-            storage: Storage(),
-            database: Database(),
-            auth: Auth(),
+            storage: storage,
+            database: database,
+            auth: auth,
             direction: direction,
           );
         } else {
@@ -379,6 +401,9 @@ class _TabSection extends StatelessWidget {
   final bool isMyAccount;
   final Widget? sliverAppBar;
   final List<Tab> tabs;
+  final Database database;
+  final Auth auth;
+  final Storage storage;
 
   const _TabSection({
     required this.uid,
@@ -386,6 +411,9 @@ class _TabSection extends StatelessWidget {
     required this.isMyAccount,
     this.sliverAppBar,
     required this.tabs,
+    required this.database,
+    required this.auth,
+    required this.storage,
   });
 
   @override
@@ -407,17 +435,19 @@ class _TabSection extends StatelessWidget {
       },
       body: Padding(
         padding: EdgeInsets.fromLTRB(padding / 2, padding / 3, padding / 2, 0),
-        // padding: EdgeInsets.symmetric(horizontal: MediaQuery.of(context).size.shortestSide / 60),
         child: TabBarView(
           children: [
             _SessionTab(
               uid: uid,
               columns: columns,
+              database: database,
             ),
-            if (isMyAccount) const _ProposalTab(),
+            if (isMyAccount) _ProposalTab(database: database, auth: auth),
             if (isMyAccount)
               _GoalTab(
                 columns: columns,
+                database: database,
+                auth: auth,
               )
           ],
         ),
