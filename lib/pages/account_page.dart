@@ -3,16 +3,28 @@ import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/image_picker.dart';
 import 'package:progetto/app_logic/storage.dart';
+import 'package:progetto/components/forms/edit_profile_form.dart';
 import 'package:progetto/components/profile_header.dart';
 import 'package:progetto/components/tiles.dart';
 import 'package:progetto/pages/edit_profile_page.dart';
 
 import '../components/cards.dart';
+import '../model/user.dart';
 
 class AccountPage extends StatefulWidget {
   final String uid;
+  final Auth auth;
+  final Database database;
+  final Storage storage;
+  final ImagePicker imagePicker;
 
-  const AccountPage({super.key, required this.uid});
+  const AccountPage(
+      {super.key,
+      required this.uid,
+      required this.auth,
+      required this.database,
+      required this.storage,
+      required this.imagePicker});
 
   @override
   State<AccountPage> createState() => _AccountPageState();
@@ -56,21 +68,35 @@ class _AccountPageState extends State<AccountPage> {
                                         title: const Text('Edit profile'),
                                         iconColor: Colors.white,
                                         textColor: Colors.white,
-                                        onTap: () async {
-                                          ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                          await Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                              builder: (context) => EditProfilePage(
-                                                user: snapshot.data!,
-                                                database: Database(),
-                                                auth: Auth(),
-                                                storage: Storage(),
-                                                imagePicker: ImagePicker(),
-                                              ),
-                                            ),
-                                          );
-                                          setState(() {});
-                                        },
+                                        onTap: isTablet
+                                            ? () async {
+                                                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                await showDialog(
+                                                    context: context,
+                                                    builder: (context) {
+                                                      return _EditProfileDialog(
+                                                        user: snapshot.data!,
+                                                        auth: widget.auth,
+                                                        database: widget.database,
+                                                        storage: widget.storage,
+                                                        imagePicker: widget.imagePicker,
+                                                      );
+                                                    });
+                                              }
+                                            : () async {
+                                                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                await Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                    builder: (context) => EditProfilePage(
+                                                      user: snapshot.data!,
+                                                      database: Database(),
+                                                      auth: Auth(),
+                                                      storage: Storage(),
+                                                      imagePicker: ImagePicker(),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
                                       );
                                     } else {
                                       return Container();
@@ -103,7 +129,7 @@ class _AccountPageState extends State<AccountPage> {
                 uid: widget.uid,
                 columns: columns,
                 isMyAccount: isMyAccount,
-                sliverAppBar:  SliverAppBar(
+                sliverAppBar: SliverAppBar(
                   automaticallyImplyLeading: false, // if true, another back arrow appears at the top of the page
                   collapsedHeight: MediaQuery.of(context).size.longestSide / 6,
                   expandedHeight: MediaQuery.of(context).size.longestSide / 6,
@@ -394,6 +420,51 @@ class _TabSection extends StatelessWidget {
                 columns: columns,
               )
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EditProfileDialog extends StatefulWidget {
+  final User user;
+  final Auth auth;
+  final Storage storage;
+  final Database database;
+  final ImagePicker imagePicker;
+
+  const _EditProfileDialog(
+      {required this.user,
+      required this.auth,
+      required this.storage,
+      required this.database,
+      required this.imagePicker});
+
+  @override
+  State<_EditProfileDialog> createState() => _EditProfileDialogState();
+}
+
+class _EditProfileDialogState extends State<_EditProfileDialog> {
+  @override
+  Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height / 2;
+    var width = MediaQuery.of(context).size.width / 2;
+    MediaQuery.of(context).orientation == Orientation.portrait ? height *= 1.1 : width *= 1.2;
+    return Dialog(
+      child: Container(
+        padding: EdgeInsets.all(MediaQuery.of(context).size.shortestSide / 40),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(MediaQuery.of(context).size.shortestSide / 40),
+        ),
+        height: height,
+        width: width,
+        child: EditProfileForm(
+          user: widget.user,
+          auth: widget.auth,
+          storage: widget.storage,
+          database: widget.database,
+          imagePicker: widget.imagePicker,
+          direction: MediaQuery.of(context).orientation == Orientation.landscape ? Axis.horizontal : Axis.vertical,
         ),
       ),
     );

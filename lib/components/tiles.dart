@@ -3,6 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:progetto/app_logic/auth.dart';
+import 'package:progetto/app_logic/database.dart';
+import 'package:progetto/app_logic/image_picker.dart';
 import 'package:progetto/app_logic/location_handler.dart';
 import 'package:progetto/app_logic/storage.dart';
 import 'package:progetto/components/profile_picture.dart';
@@ -24,12 +27,7 @@ class Tile extends StatelessWidget {
   final Widget? trailing;
 
   const Tile(
-      {super.key,
-      required this.leading,
-      required this.title,
-      this.subtitle,
-      required this.onTap,
-      this.trailing});
+      {super.key, required this.leading, required this.title, this.subtitle, required this.onTap, this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -46,9 +44,9 @@ class Tile extends StatelessWidget {
         title: Text(title),
         subtitle: subtitle != null
             ? Text(
-          subtitle!,
-          style: const TextStyle(color: Colors.grey),
-        )
+                subtitle!,
+                style: const TextStyle(color: Colors.grey),
+              )
             : null,
         onTap: () {
           if (onTap != null) onTap!();
@@ -67,20 +65,24 @@ class Tile extends StatelessWidget {
 
 class UserTile extends Tile {
   UserTile(
-      {super.key,
-      required super.leading,
-      required super.title,
-      super.subtitle,
-      required super.onTap,
-      super.trailing});
+      {super.key, required super.leading, required super.title, super.subtitle, required super.onTap, super.trailing});
 
   static UserTile fromUser(User user, BuildContext context, Storage storage) {
     return UserTile(
-      leading: ProfilePicture(uid: user.uid, storage: storage,),
+      leading: ProfilePicture(
+        uid: user.uid,
+        storage: storage,
+      ),
       title: "${user.name} ${user.surname}",
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => AccountPage(uid: user.uid),
+          builder: (context) => AccountPage(
+            uid: user.uid,
+            auth: Auth(),
+            storage: Storage(),
+            database: Database(),
+            imagePicker: ImagePicker(),
+          ),
         ),
       ),
     );
@@ -104,12 +106,11 @@ class PlaceTile extends Tile {
         },
       ),
       title: place.name,
-      subtitle:
-          place.city != null || place.state != null || place.country != null
-              ? "${place.city != null ? "${place.city}, " : ""}"
-                  "${place.state != null ? "${place.state}, " : ""}"
-                  "${place.country != null ? "${place.country}" : ""}"
-              : null,
+      subtitle: place.city != null || place.state != null || place.country != null
+          ? "${place.city != null ? "${place.city}, " : ""}"
+              "${place.state != null ? "${place.state}, " : ""}"
+              "${place.country != null ? "${place.country}" : ""}"
+          : null,
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => PlacePage(place: place),
@@ -171,12 +172,7 @@ class PlaceTile extends Tile {
 
 class ProposalTile extends Tile {
   const ProposalTile(
-      {super.key,
-      required super.leading,
-      required super.title,
-      super.subtitle,
-      required super.onTap,
-      super.trailing});
+      {super.key, required super.leading, required super.title, super.subtitle, required super.onTap, super.trailing});
 
   static ProposalTile fromProposal(Proposal proposal, BuildContext context, {startable = false}) {
     return ProposalTile(
@@ -185,10 +181,8 @@ class ProposalTile extends Tile {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             String svg = snapshot.data!;
-            svg = svg.replaceAll("MONTH",
-                DateFormat("MMM").format(proposal.dateTime).toUpperCase());
-            svg = svg.replaceAll(
-                "DAY", DateFormat("d").format(proposal.dateTime));
+            svg = svg.replaceAll("MONTH", DateFormat("MMM").format(proposal.dateTime).toUpperCase());
+            svg = svg.replaceAll("DAY", DateFormat("d").format(proposal.dateTime));
             return SvgPicture.string(svg);
           } else {
             return const CircularProgressIndicator();
@@ -198,12 +192,11 @@ class ProposalTile extends Tile {
       title: proposal.place.name,
       subtitle: "Organizer: ${proposal.owner.name} ${proposal.owner.surname}",
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) => ProposalPage(proposal: proposal)));
+        Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProposalPage(proposal: proposal)));
       },
       trailing: LayoutBuilder(
         builder: (context, constraint) {
-          if (!startable){
+          if (!startable) {
             if (proposal.type == 'Public') {
               return Icon(
                 MdiIcons.lockOpen,
@@ -219,11 +212,11 @@ class ProposalTile extends Tile {
             }
           } else {
             return FilledButton(
-              onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          SessionPage(proposal: proposal, locationHandler:
-                            LocationHandler(),))),
+              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => SessionPage(
+                        proposal: proposal,
+                        locationHandler: LocationHandler(),
+                      ))),
               child: const Text("Start"),
             );
           }

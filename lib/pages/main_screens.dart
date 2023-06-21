@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:progetto/app_logic/database.dart';
+import 'package:progetto/app_logic/auth.dart';
+import 'package:progetto/app_logic/storage.dart';
+import 'package:progetto/app_logic/image_picker.dart';
 
-import '../app_logic/auth.dart';
 import 'home_page.dart';
 import 'search_page.dart';
 import 'account_page.dart';
@@ -19,7 +22,13 @@ class _MainScreensState extends State<MainScreens> {
     const HomePage(),
     const SearchPage(),
     const FriendsPage(),
-    AccountPage(uid: Auth().currentUser?.uid ?? '')
+    AccountPage(
+      uid: Auth().currentUser?.uid ?? '',
+      auth: Auth(),
+      database: Database(),
+      storage: Storage(),
+      imagePicker: ImagePicker(),
+    )
   ];
 
   @override

@@ -327,7 +327,7 @@ class _DataSectionState extends State<_DataSection> {
                   try {
                     if (_formKey.currentState!.validate()) {
                       widget.user.name = _nameController.text;
-                      widget.user.surname = _nameController.text;
+                      widget.user.surname = _surnameController.text;
                       widget.user.birthday =
                           _birthdayController.text == "" ? null : DateFormat.yMd().parse(_birthdayController.text);
                       widget.user.uid = widget.auth.currentUser!.uid;
