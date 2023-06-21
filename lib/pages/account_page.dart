@@ -36,21 +36,31 @@ class _AccountPageState extends State<AccountPage> {
     bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
     // define number of columns based on device orientation
     int columns;
-    (isTablet || MediaQuery.of(context).size.width > MediaQuery.of(context).size.height) ? columns = 2 : columns = 1;
+    (isTablet ||
+            MediaQuery.of(context).size.width >
+                MediaQuery.of(context).size.height)
+        ? columns = 2
+        : columns = 1;
     // save padding entity for convenience
     double padding = MediaQuery.of(context).size.shortestSide / 30;
     // boolean to determine whether current user is the owner of the account page
-    bool isMyAccount = (widget.uid == Auth().currentUser!.uid);
+    bool isMyAccount = (widget.uid == widget.auth.currentUser!.uid);
     // define tabs
     List<Tab> tabs = isMyAccount
-        ? const [Tab(text: 'Sessions'), Tab(text: 'Proposals'), Tab(text: 'Goals')]
+        ? const [
+            Tab(text: 'Sessions'),
+            Tab(text: 'Proposals'),
+            Tab(text: 'Goals')
+          ]
         : const [Tab(text: 'Sessions'), Tab(text: 'Proposals')];
 
     return DefaultTabController(
       length: tabs.length,
       child: Scaffold(
         appBar: AppBar(
-          title: isMyAccount ? const Text('My account') : const Text('Account details'),
+          title: isMyAccount
+              ? const Text('My account')
+              : const Text('Account details'),
           actions: isMyAccount
               ? [
                   IconButton(
@@ -60,9 +70,10 @@ class _AccountPageState extends State<AccountPage> {
                           content: Column(
                             children: [
                               StreamBuilder(
-                                  stream: Database().getUser(widget.uid),
+                                  stream: widget.database.getUser(widget.uid),
                                   builder: (context, snapshot) {
-                                    if (snapshot.hasData && snapshot.data != null) {
+                                    if (snapshot.hasData &&
+                                        snapshot.data != null) {
                                       return ListTile(
                                         leading: const Icon(Icons.edit),
                                         title: const Text('Edit profile'),
@@ -70,29 +81,36 @@ class _AccountPageState extends State<AccountPage> {
                                         textColor: Colors.white,
                                         onTap: isTablet
                                             ? () async {
-                                                ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                                                ScaffoldMessenger.of(context)
+                                                    .removeCurrentSnackBar();
                                                 await showDialog(
                                                     context: context,
                                                     builder: (context) {
                                                       return _EditProfileDialog(
                                                         user: snapshot.data!,
                                                         auth: widget.auth,
-                                                        database: widget.database,
+                                                        database:
+                                                            widget.database,
                                                         storage: widget.storage,
-                                                        imagePicker: widget.imagePicker,
+                                                        imagePicker:
+                                                            widget.imagePicker,
                                                       );
                                                     });
                                               }
                                             : () async {
-                                                ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                                await Navigator.of(context).push(
+                                                ScaffoldMessenger.of(context)
+                                                    .removeCurrentSnackBar();
+                                                await Navigator.of(context)
+                                                    .push(
                                                   MaterialPageRoute(
-                                                    builder: (context) => EditProfilePage(
+                                                    builder: (context) =>
+                                                        EditProfilePage(
                                                       user: snapshot.data!,
-                                                      database: Database(),
-                                                      auth: Auth(),
-                                                      storage: Storage(),
-                                                      imagePicker: ImagePicker(),
+                                                      database: widget.database,
+                                                      auth: widget.auth,
+                                                      storage: widget.storage,
+                                                      imagePicker:
+                                                          ImagePicker(),
                                                     ),
                                                   ),
                                                 );
@@ -108,8 +126,9 @@ class _AccountPageState extends State<AccountPage> {
                                 iconColor: Colors.white,
                                 textColor: Colors.white,
                                 onTap: () async {
-                                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
-                                  await Auth().signOut();
+                                  ScaffoldMessenger.of(context)
+                                      .removeCurrentSnackBar();
+                                  await widget.auth.signOut();
                                 },
                               ),
                             ],
@@ -124,13 +143,15 @@ class _AccountPageState extends State<AccountPage> {
               : [],
         ),
         // body: Container(color: Colors.blue.shade100,),
-        body: (!isTablet || MediaQuery.of(context).orientation == Orientation.portrait)
+        body: (!isTablet ||
+                MediaQuery.of(context).orientation == Orientation.portrait)
             ? _TabSection(
                 uid: widget.uid,
                 columns: columns,
                 isMyAccount: isMyAccount,
                 sliverAppBar: SliverAppBar(
-                  automaticallyImplyLeading: false, // if true, another back arrow appears at the top of the page
+                  automaticallyImplyLeading: false,
+                  // if true, another back arrow appears at the top of the page
                   collapsedHeight: MediaQuery.of(context).size.longestSide / 6,
                   expandedHeight: MediaQuery.of(context).size.longestSide / 6,
                   flexibleSpace: Padding(
@@ -138,10 +159,15 @@ class _AccountPageState extends State<AccountPage> {
                     child: _ProfileHeaderWrapper(
                       uid: widget.uid,
                       direction: Axis.horizontal,
+                      database: widget.database,
+                      auth: widget.auth,
+                      storage: widget.storage,
                     ),
                   ),
                 ),
                 tabs: tabs,
+                database: widget.database,
+                auth: widget.auth,
               )
             : Flex(
                 direction: Axis.horizontal,
@@ -161,6 +187,9 @@ class _AccountPageState extends State<AccountPage> {
                       child: _ProfileHeaderWrapper(
                         uid: widget.uid,
                         direction: Axis.vertical,
+                        database: widget.database,
+                        auth: widget.auth,
+                        storage: widget.storage,
                       ),
                     ),
                   ),
@@ -171,6 +200,8 @@ class _AccountPageState extends State<AccountPage> {
                       columns: columns,
                       isMyAccount: isMyAccount,
                       tabs: tabs,
+                      database: widget.database,
+                      auth: widget.auth,
                     ),
                   ),
                 ],
@@ -186,7 +217,8 @@ class _ScrollDelegate extends SliverPersistentHeaderDelegate {
   const _ScrollDelegate(this.tabBar);
 
   @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: Theme.of(context).colorScheme.background,
       child: tabBar,
@@ -208,13 +240,15 @@ class _ScrollDelegate extends SliverPersistentHeaderDelegate {
 class _SessionTab extends StatelessWidget {
   final String uid;
   final int columns;
+  final Database database;
 
-  const _SessionTab({required this.uid, required this.columns});
+  const _SessionTab(
+      {required this.uid, required this.columns, required this.database});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database().getLatestSessionsByUser(uid),
+      stream: database.getLatestSessionsByUser(uid),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text(
@@ -253,12 +287,15 @@ class _SessionTab extends StatelessWidget {
 }
 
 class _ProposalTab extends StatelessWidget {
-  const _ProposalTab();
+  final Database database;
+  final Auth auth;
+
+  const _ProposalTab({required this.database, required this.auth});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database().getProposalsByUser(Auth().currentUser!.uid),
+      stream: database.getProposalsByUser(auth.currentUser!.uid),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text(
@@ -295,13 +332,16 @@ class _ProposalTab extends StatelessWidget {
 
 class _GoalTab extends StatelessWidget {
   final int columns;
+  final Database database;
+  final Auth auth;
 
-  const _GoalTab({required this.columns});
+  const _GoalTab(
+      {required this.columns, required this.database, required this.auth});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database().getGoals(Auth().currentUser!.uid, inProgressOnly: false),
+      stream: database.getGoals(auth.currentUser!.uid, inProgressOnly: false),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Text(
@@ -322,7 +362,7 @@ class _GoalTab extends StatelessWidget {
           for (var goal in snapshot.data!) {
             goalList.add(GoalCard(
               goal,
-              database: Database(),
+              database: database,
             ));
           }
           return GridView.count(
@@ -343,13 +383,21 @@ class _GoalTab extends StatelessWidget {
 class _ProfileHeaderWrapper extends StatelessWidget {
   final String uid;
   final Axis direction;
+  final Database database;
+  final Auth auth;
+  final Storage storage;
 
-  const _ProfileHeaderWrapper({required this.uid, required this.direction});
+  const _ProfileHeaderWrapper(
+      {required this.uid,
+      required this.direction,
+      required this.database,
+      required this.auth,
+      required this.storage});
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Database().getUser(uid),
+      stream: database.getUser(uid),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Center(
@@ -358,9 +406,9 @@ class _ProfileHeaderWrapper extends StatelessWidget {
         } else if (snapshot.hasData && snapshot.data != null) {
           return ProfileHeader(
             user: snapshot.data!,
-            storage: Storage(),
-            database: Database(),
-            auth: Auth(),
+            storage: storage,
+            database: database,
+            auth: auth,
             direction: direction,
           );
         } else {
@@ -379,6 +427,8 @@ class _TabSection extends StatelessWidget {
   final bool isMyAccount;
   final Widget? sliverAppBar;
   final List<Tab> tabs;
+  final Database database;
+  final Auth auth;
 
   const _TabSection({
     required this.uid,
@@ -386,6 +436,8 @@ class _TabSection extends StatelessWidget {
     required this.isMyAccount,
     this.sliverAppBar,
     required this.tabs,
+    required this.database,
+    required this.auth,
   });
 
   @override
@@ -413,11 +465,14 @@ class _TabSection extends StatelessWidget {
             _SessionTab(
               uid: uid,
               columns: columns,
+              database: database,
             ),
-            if (isMyAccount) const _ProposalTab(),
+            if (isMyAccount) _ProposalTab(database: database, auth: auth),
             if (isMyAccount)
               _GoalTab(
                 columns: columns,
+                database: database,
+                auth: auth,
               )
           ],
         ),
@@ -449,12 +504,15 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height / 2;
     var width = MediaQuery.of(context).size.width / 2;
-    MediaQuery.of(context).orientation == Orientation.portrait ? height *= 1.1 : width *= 1.2;
+    MediaQuery.of(context).orientation == Orientation.portrait
+        ? height *= 1.1
+        : width *= 1.2;
     return Dialog(
       child: Container(
         padding: EdgeInsets.all(MediaQuery.of(context).size.shortestSide / 40),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(MediaQuery.of(context).size.shortestSide / 40),
+          borderRadius: BorderRadius.circular(
+              MediaQuery.of(context).size.shortestSide / 40),
         ),
         height: height,
         width: width,
@@ -464,7 +522,9 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
           storage: widget.storage,
           database: widget.database,
           imagePicker: widget.imagePicker,
-          direction: MediaQuery.of(context).orientation == Orientation.landscape ? Axis.horizontal : Axis.vertical,
+          direction: MediaQuery.of(context).orientation == Orientation.landscape
+              ? Axis.horizontal
+              : Axis.vertical,
         ),
       ),
     );

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-
+import 'package:firebase_auth/firebase_auth.dart' as auth_firebase;
 //import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/storage.dart';
@@ -17,11 +18,19 @@ import 'package:progetto/model/user.dart';
 import 'package:progetto/pages/account_page.dart';
 
 @GenerateNiceMocks(
-    [MockSpec<Database>(), MockSpec<Storage>(), MockSpec<Auth>()])
+    [MockSpec<Database>(), MockSpec<Storage>(), MockSpec<Auth>(), MockSpec<auth_firebase.User>()])
 import 'tiles_test.mocks.dart';
 
 main() {
   User user = User(uid: "xcvb", name: "Mario", surname: "Rossi");
+  late Auth auth;
+  late auth_firebase.User curUser;
+
+  setUp(() {
+    auth = MockAuth();
+    curUser = MockUser();
+    when(auth.currentUser).thenReturn(curUser);
+  });
 
   testWidgets('User tile', (tester) async {
     await tester.pumpWidget(MediaQuery(
@@ -29,7 +38,7 @@ main() {
         child: MaterialApp(home: Builder(builder: (BuildContext context) {
           return Scaffold(
               body: UserTile.fromUser(
-                  user, context, MockStorage(), MockDatabase(), MockAuth()));
+                  user, context, MockStorage(), MockDatabase(), auth));
         }))));
     final titleFinder = find.text('Mario Rossi');
     final imageFinder =
