@@ -79,7 +79,7 @@ class UserTile extends Tile {
           builder: (context) => AccountPage(
             uid: user.uid,
             auth: auth,
-            storage: Storage(),
+            storage: storage,
             database: database,
             imagePicker: ImagePicker(),
           ),

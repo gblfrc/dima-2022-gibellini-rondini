@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+
 //import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,8 +14,10 @@ import 'package:progetto/components/tiles.dart';
 import 'package:progetto/model/place.dart';
 import 'package:progetto/model/proposal.dart';
 import 'package:progetto/model/user.dart';
+import 'package:progetto/pages/account_page.dart';
 
-@GenerateNiceMocks([MockSpec<Database>(), MockSpec<Storage>(), MockSpec<Auth>()])
+@GenerateNiceMocks(
+    [MockSpec<Database>(), MockSpec<Storage>(), MockSpec<Auth>()])
 import 'tiles_test.mocks.dart';
 
 main() {
@@ -23,17 +26,24 @@ main() {
   testWidgets('User tile', (tester) async {
     await tester.pumpWidget(MediaQuery(
         data: const MediaQueryData(),
-        child: Builder(builder: (BuildContext context) {
-          return MaterialApp(
-              home: Scaffold(
-                  body: UserTile.fromUser(user, context, MockStorage(), MockDatabase(), MockAuth())));
-        })));
+        child: MaterialApp(home: Builder(builder: (BuildContext context) {
+          return Scaffold(
+              body: UserTile.fromUser(
+                  user, context, MockStorage(), MockDatabase(), MockAuth()));
+        }))));
     final titleFinder = find.text('Mario Rossi');
     final imageFinder =
         find.byWidgetPredicate((widget) => widget is ProfilePicture);
+    final tileFinder = find.byWidgetPredicate((widget) => widget is UserTile);
 
     expect(titleFinder, findsOneWidget);
     expect(imageFinder, findsOneWidget);
+
+    await tester.tap(tileFinder);
+    final accountPageFinder =
+        find.byWidgetPredicate((widget) => widget is AccountPage);
+    await tester.pumpAndSettle();
+    expect(accountPageFinder, findsOneWidget);
   });
 
   Place place0 = Place(
@@ -133,7 +143,9 @@ main() {
         })));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.text('Organizer: Mario Rossi');
-    await tester.pump(Duration(seconds: 2)); // Waits for the spinning animation to complete (the SVG image is ready)
+    await tester.pump(Duration(
+        seconds:
+            2)); // Waits for the spinning animation to complete (the SVG image is ready)
     //final calendarIconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
     final privacyIconFinder = find.byWidgetPredicate(
         (widget) => widget is Icon && widget.icon == MdiIcons.lockOpen);
@@ -157,7 +169,9 @@ main() {
         })));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.text('Organizer: Mario Rossi');
-    await tester.pump(Duration(seconds: 2)); // Waits for the spinning animation to complete (the SVG image is ready)
+    await tester.pump(Duration(
+        seconds:
+            2)); // Waits for the spinning animation to complete (the SVG image is ready)
     //final calendarIconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
     final privacyIconFinder = find.byWidgetPredicate(
         (widget) => widget is Icon && widget.icon == Icons.lock);
