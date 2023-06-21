@@ -240,23 +240,24 @@ class Database {
     }
   }
 
-  Future<List<User>> getFriends(String uid) async {
+  Stream<List<User>> getFriends(String uid) async* {
     try {
       final userDocRef = _database.collection("users").doc(uid);
-      final userSnapshot = await userDocRef.get();
-      final friendUids = userSnapshot.get("friends");
-      List<User> friends = [];
-      for (var fuid in friendUids) {
-        DocumentSnapshot friendDoc = await _database.collection('users').doc(fuid).get();
-        friends.add(
-          User(
-            name: friendDoc.get('name'),
-            surname: friendDoc.get('surname'),
-            uid: fuid,
-          ),
-        );
+      await for (DocumentSnapshot<Map<String, dynamic>> snapshot in userDocRef.snapshots()) {
+        List<User> friends = [];
+        for(String fuid in snapshot.get("friends")) {
+          DocumentReference friendRef = _database.collection("users").doc(fuid);
+          DocumentSnapshot friendDoc = await friendRef.get();
+          friends.add(
+            User(
+              name: friendDoc.get('name'),
+              surname: friendDoc.get('surname'),
+              uid: friendDoc.id,
+            ),
+          );
+        }
+        yield friends;
       }
-      return friends;
     } on FirebaseException catch (fe) {
       throw DatabaseException(fe.message);
     }
