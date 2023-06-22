@@ -160,7 +160,7 @@ class _HomePageState extends State<HomePage> {
                 FilledButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const CreateGoalPage(),
+                      builder: (context) => CreateGoalPage(database: Database(), auth: Auth()),
                     ),
                   ),
                   child: const Text("New goal"),

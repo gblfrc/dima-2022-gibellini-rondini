@@ -5,8 +5,10 @@ import '../app_logic/auth.dart';
 import '../app_logic/database.dart';
 
 class CreateGoalPage extends StatelessWidget {
+  final Database database;
+  final Auth auth;
 
-  const CreateGoalPage({super.key});
+  const CreateGoalPage({super.key, required this.database, required this.auth});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,7 @@ class CreateGoalPage extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          CreateGoalForm(width: width - 2 * padding, database: Database(), auth: Auth()),
+          CreateGoalForm(width: width - 2 * padding, database: database, auth: auth),
         ],
       )
     );

@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomApp(
       onLogged: const MainScreens(),
-      onNotLogged: const LoginPage(),
+      onNotLogged: LoginPage(database: Database(), auth: Auth()),
       auth: Auth(),
       storage: Storage(),
       database: Database(),

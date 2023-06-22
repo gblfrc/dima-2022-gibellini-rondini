@@ -7,7 +7,10 @@ import '../components/forms/registration_form.dart';
 
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final Database database;
+  final Auth auth;
+
+  const LoginPage({super.key, required this.database, required this.auth});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -49,13 +52,13 @@ class _LoginPageState extends State<LoginPage> {
                     child: _isLogin
                         ? LoginForm(
                             toggle: _toggleRegister,
-                            auth: Auth(),
+                            auth: widget.auth,
                             //errorCallback: displaySnackBar,
                           )
                         : RegistrationForm(
                             toggle: _toggleRegister,
-                            auth: Auth(),
-                            database: Database(),
+                            auth: widget.auth,
+                            database: widget.database,
                             //errorCallback: displaySnackBar,
                           )),
               ),
