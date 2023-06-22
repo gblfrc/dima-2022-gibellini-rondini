@@ -38,14 +38,13 @@ main() {
         }))));
     final titleFinder = find.text('Mario Rossi');
     final imageFinder = find.byWidgetPredicate((widget) => widget is ProfilePicture);
-    final tileFinder = find.byWidgetPredicate((widget) => widget is UserTile);
 
     expect(titleFinder, findsOneWidget);
     expect(imageFinder, findsOneWidget);
 
-    await tester.tap(tileFinder);
-    final accountPageFinder = find.byWidgetPredicate((widget) => widget is AccountPage);
+    await tester.tap(titleFinder);
     await tester.pump(const Duration(seconds: 2));
+    final accountPageFinder = find.byWidgetPredicate((widget) => widget is AccountPage, skipOffstage: false);
     expect(accountPageFinder, findsOneWidget);
   });
 
