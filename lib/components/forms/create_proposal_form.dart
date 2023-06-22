@@ -212,7 +212,8 @@ class CreateProposalFormState extends State<CreateProposalForm> {
           const SizedBox(
             height: 20,
           ),
-          Row(
+          Wrap(
+            direction: Axis.horizontal,
             children: [
               Text(
                 key: const Key('CreateProposalFormOpenToText'),
