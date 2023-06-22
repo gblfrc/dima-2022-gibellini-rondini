@@ -5,6 +5,7 @@ import 'package:progetto/components/custom_small_map.dart';
 import 'package:progetto/components/tiles.dart';
 
 import '../app_logic/database.dart';
+import '../app_logic/storage.dart';
 import '../model/place.dart';
 import '../model/proposal.dart';
 
@@ -12,12 +13,14 @@ class PlacePage extends StatelessWidget {
   final Place place;
   final Auth auth;
   final Database database;
+  final Storage storage;
 
   const PlacePage({
     super.key,
     required this.place,
     required this.auth,
     required this.database,
+    required this.storage,
   });
 
   @override
@@ -84,7 +87,7 @@ class PlacePage extends StatelessWidget {
                           for (int i = 0; i < snapshot.data!.length; i++) {
                             Proposal? current = snapshot.data![i];
                             tiles.add(
-                              ProposalTile.fromProposal(current!, context, key: Key('PlacePageProposalTile_$i')),
+                              ProposalTile.fromProposal(current!, context, key: Key('PlacePageProposalTile_$i'), auth: auth, database: database, storage: storage),
                             );
                           }
                           return ListView(

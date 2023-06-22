@@ -6,6 +6,7 @@ import 'package:progetto/components/tiles.dart';
 import 'package:progetto/pages/create_proposal_page.dart';
 import 'package:progetto/pages/session_page.dart';
 import '../app_logic/database.dart';
+import '../app_logic/storage.dart';
 import '../components/cards.dart';
 import '../app_logic/auth.dart';
 import 'create_goal_page.dart';
@@ -60,6 +61,9 @@ class _HomePageState extends State<HomePage> {
                           proposal,
                           context,
                           startable: true,
+                          auth: Auth(),
+                          database: Database(),
+                          storage: Storage(),
                         ));
                       }
                       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

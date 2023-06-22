@@ -36,7 +36,7 @@ class Tile extends StatelessWidget {
         contentPadding: EdgeInsets.all(MediaQuery.of(context).size.shortestSide / 50),
         leading: SizedBox(
           width: constraint.maxWidth / 6,
-          height: constraint.maxHeight / 14,
+          height: constraint.maxWidth / 6,
           child: Center(
             child: leading,
           ),
@@ -53,7 +53,7 @@ class Tile extends StatelessWidget {
         },
         trailing: SizedBox(
           width: constraint.maxWidth / 5,
-          height: constraint.maxHeight / 14,
+          height: constraint.maxWidth / 5,
           child: Center(
             child: trailing,
           ),
@@ -64,10 +64,16 @@ class Tile extends StatelessWidget {
 }
 
 class UserTile extends Tile {
-  UserTile(
-      {super.key, required super.leading, required super.title, super.subtitle, required super.onTap, super.trailing});
+  const UserTile({
+    super.key,
+    required super.leading,
+    required super.title,
+    super.subtitle,
+    required super.onTap,
+    super.trailing,
+  });
 
-  static UserTile fromUser(User user, BuildContext context, Storage storage, Database database, Auth auth) {
+  static UserTile fromUser(User user, BuildContext context, Storage storage, Database database, Auth auth, { Key? key}) {
     return UserTile(
       leading: ProfilePicture(
         uid: user.uid,
@@ -85,6 +91,7 @@ class UserTile extends Tile {
           ),
         ),
       ),
+      key: key,
     );
   }
 }
@@ -98,7 +105,12 @@ class PlaceTile extends Tile {
       required super.onTap,
       super.trailing});
 
-  static PlaceTile fromPlace({required Place place, required BuildContext context, required Auth auth, required Database database}) {
+  static PlaceTile fromPlace(
+      {required Place place,
+      required BuildContext context,
+      required Auth auth,
+      required Database database,
+      required Storage storage, Key? key}) {
     return PlaceTile(
       leading: LayoutBuilder(
         builder: (context, constraint) {
@@ -113,9 +125,15 @@ class PlaceTile extends Tile {
           : null,
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => PlacePage(place: place, auth: auth, database: database,),
+          builder: (context) => PlacePage(
+            place: place,
+            auth: auth,
+            database: database,
+            storage: storage,
+          ),
         ),
       ),
+      key: key,
     );
   }
 
@@ -174,7 +192,8 @@ class ProposalTile extends Tile {
   const ProposalTile(
       {super.key, required super.leading, required super.title, super.subtitle, required super.onTap, super.trailing});
 
-  static ProposalTile fromProposal(Proposal proposal, BuildContext context, {startable = false, Key? key}) {
+  static ProposalTile fromProposal(Proposal proposal, BuildContext context,
+      {startable = false, required Database database, required Auth auth, required Storage storage, Key? key}) {
     return ProposalTile(
       leading: FutureBuilder(
         future: rootBundle.loadString(calendarSvgPath),
@@ -192,7 +211,13 @@ class ProposalTile extends Tile {
       title: proposal.place.name,
       subtitle: "Organizer: ${proposal.owner.name} ${proposal.owner.surname}",
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProposalPage(proposal: proposal)));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => ProposalPage(
+                  proposal: proposal,
+                  database: database,
+                  auth: auth,
+                  storage: storage,
+                )));
       },
       trailing: LayoutBuilder(
         builder: (context, constraint) {

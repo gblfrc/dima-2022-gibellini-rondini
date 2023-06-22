@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth_firebase;
-//import 'package:flutter_svg/flutter_svg.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
@@ -17,8 +16,7 @@ import 'package:progetto/model/proposal.dart';
 import 'package:progetto/model/user.dart';
 import 'package:progetto/pages/account_page.dart';
 
-@GenerateNiceMocks(
-    [MockSpec<Database>(), MockSpec<Storage>(), MockSpec<Auth>(), MockSpec<auth_firebase.User>()])
+@GenerateNiceMocks([MockSpec<Database>(), MockSpec<Storage>(), MockSpec<Auth>(), MockSpec<auth_firebase.User>()])
 import 'tiles_test.mocks.dart';
 
 main() {
@@ -36,43 +34,35 @@ main() {
     await tester.pumpWidget(MediaQuery(
         data: const MediaQueryData(),
         child: MaterialApp(home: Builder(builder: (BuildContext context) {
-          return Scaffold(
-              body: UserTile.fromUser(
-                  user, context, MockStorage(), MockDatabase(), auth));
+          return Scaffold(body: UserTile.fromUser(user, context, MockStorage(), MockDatabase(), auth));
         }))));
     final titleFinder = find.text('Mario Rossi');
-    final imageFinder =
-        find.byWidgetPredicate((widget) => widget is ProfilePicture);
+    final imageFinder = find.byWidgetPredicate((widget) => widget is ProfilePicture);
     final tileFinder = find.byWidgetPredicate((widget) => widget is UserTile);
 
     expect(titleFinder, findsOneWidget);
     expect(imageFinder, findsOneWidget);
 
     await tester.tap(tileFinder);
-    final accountPageFinder =
-        find.byWidgetPredicate((widget) => widget is AccountPage);
-    await tester.pumpAndSettle();
+    final accountPageFinder = find.byWidgetPredicate((widget) => widget is AccountPage);
+    await tester.pump(const Duration(seconds: 2));
     expect(accountPageFinder, findsOneWidget);
   });
 
-  Place place0 = Place(
-      id: "qwerty",
-      name: "Parco Suardi",
-      coords: LatLng(45.9532, 9.420429),
-      type: "park");
+  Place place0 = Place(id: "qwerty", name: "Parco Suardi", coords: LatLng(45.9532, 9.420429), type: "park");
 
   testWidgets('Place tile - no second line', (tester) async {
     await tester.pumpWidget(MediaQuery(
         data: const MediaQueryData(),
         child: Builder(builder: (BuildContext context) {
           return MaterialApp(
-              home: Scaffold(body: PlaceTile.fromPlace(place: place0, context: context, auth: MockAuth(), database: MockDatabase())));
+              home: Scaffold(
+                  body: PlaceTile.fromPlace(
+                      place: place0, context: context, auth: MockAuth(), database: MockDatabase(), storage: MockStorage())));
         })));
     final titleFinder = find.text('Parco Suardi');
-    final subtitleFinder = find.byWidgetPredicate(
-        (widget) => widget is Tile && widget.subtitle == null);
-    final iconFinder = find.byWidgetPredicate(
-        (widget) => widget is Icon && widget.icon == Icons.park);
+    final subtitleFinder = find.byWidgetPredicate((widget) => widget is Tile && widget.subtitle == null);
+    final iconFinder = find.byWidgetPredicate((widget) => widget is Icon && widget.icon == Icons.park);
 
     expect(titleFinder, findsOneWidget);
     expect(subtitleFinder, findsOneWidget);
@@ -93,12 +83,13 @@ main() {
         data: const MediaQueryData(),
         child: Builder(builder: (BuildContext context) {
           return MaterialApp(
-              home: Scaffold(body: PlaceTile.fromPlace(place: place1, context: context, auth: MockAuth(), database: MockDatabase())));
+              home: Scaffold(
+                  body: PlaceTile.fromPlace(
+                      place: place1, context: context, auth: MockAuth(), database: MockDatabase(), storage: MockStorage())));
         })));
     final titleFinder = find.text('Liceo Mascheroni');
     final subtitleFinder = find.text('Bergamo, Lombardia, Italy');
-    final iconFinder = find.byWidgetPredicate(
-        (widget) => widget is Icon && widget.icon == Icons.school);
+    final iconFinder = find.byWidgetPredicate((widget) => widget is Icon && widget.icon == Icons.school);
 
     expect(titleFinder, findsOneWidget);
     expect(subtitleFinder, findsOneWidget);
@@ -106,11 +97,7 @@ main() {
   });
 
   Proposal proposal0 = Proposal(
-      dateTime: DateTime(2023, 6, 15, 15, 40, 43),
-      owner: user,
-      place: place0,
-      type: 'Friends',
-      participants: []);
+      dateTime: DateTime(2023, 6, 15, 15, 40, 43), owner: user, place: place0, type: 'Friends', participants: []);
 
   testWidgets('Proposal tile - Friends not startable', (tester) async {
     await tester.pumpWidget(MediaQuery(
@@ -118,14 +105,13 @@ main() {
         child: Builder(builder: (BuildContext context) {
           return MaterialApp(
               home: Scaffold(
-                  body: ProposalTile.fromProposal(proposal0, context)));
+                  body: ProposalTile.fromProposal(proposal0, context, auth: MockAuth(), database: MockDatabase(),storage: MockStorage())));
         })));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.text('Organizer: Mario Rossi');
     //await tester.pump(); // Waits for the spinning animation to complete (the SVG image is ready)
     // final calendarIconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
-    final privacyIconFinder = find.byWidgetPredicate(
-        (widget) => widget is Icon && widget.icon == Icons.lock);
+    final privacyIconFinder = find.byWidgetPredicate((widget) => widget is Icon && widget.icon == Icons.lock);
     final startButtonFinder = find.widgetWithText(FilledButton, "Start");
 
     expect(titleFinder, findsOneWidget);
@@ -136,11 +122,7 @@ main() {
   });
 
   Proposal proposal1 = Proposal(
-      dateTime: DateTime(2023, 6, 15, 15, 40, 43),
-      owner: user,
-      place: place0,
-      type: 'Public',
-      participants: []);
+      dateTime: DateTime(2023, 6, 15, 15, 40, 43), owner: user, place: place0, type: 'Public', participants: []);
 
   testWidgets('Proposal tile - Public not startable', (tester) async {
     await tester.pumpWidget(MediaQuery(
@@ -148,16 +130,13 @@ main() {
         child: Builder(builder: (BuildContext context) {
           return MaterialApp(
               home: Scaffold(
-                  body: ProposalTile.fromProposal(proposal1, context)));
+                  body: ProposalTile.fromProposal(proposal1, context, auth: MockAuth(), database: MockDatabase(),storage: MockStorage())));
         })));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.text('Organizer: Mario Rossi');
-    await tester.pump(Duration(
-        seconds:
-            2)); // Waits for the spinning animation to complete (the SVG image is ready)
+    await tester.pump(const Duration(seconds: 2)); // Waits for the spinning animation to complete (the SVG image is ready)
     //final calendarIconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
-    final privacyIconFinder = find.byWidgetPredicate(
-        (widget) => widget is Icon && widget.icon == MdiIcons.lockOpen);
+    final privacyIconFinder = find.byWidgetPredicate((widget) => widget is Icon && widget.icon == MdiIcons.lockOpen);
     final startButtonFinder = find.widgetWithText(FilledButton, "Start");
 
     expect(titleFinder, findsOneWidget);
@@ -174,16 +153,13 @@ main() {
           return MaterialApp(
               home: Scaffold(
                   body: ProposalTile.fromProposal(proposal0, context,
-                      startable: true)));
+                      auth: MockAuth(), database: MockDatabase(), storage: MockStorage(), startable: true)));
         })));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.text('Organizer: Mario Rossi');
-    await tester.pump(Duration(
-        seconds:
-            2)); // Waits for the spinning animation to complete (the SVG image is ready)
+    await tester.pump(const Duration(seconds: 2)); // Waits for the spinning animation to complete (the SVG image is ready)
     //final calendarIconFinder = find.byWidgetPredicate((widget) => widget is SvgPicture);
-    final privacyIconFinder = find.byWidgetPredicate(
-        (widget) => widget is Icon && widget.icon == Icons.lock);
+    final privacyIconFinder = find.byWidgetPredicate((widget) => widget is Icon && widget.icon == Icons.lock);
     final startButtonFinder = find.widgetWithText(FilledButton, "Start");
 
     expect(titleFinder, findsOneWidget);

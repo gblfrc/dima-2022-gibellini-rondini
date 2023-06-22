@@ -5,6 +5,7 @@ import 'package:mockito/mockito.dart';
 import 'package:network_image_mock/network_image_mock.dart';
 import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
+import 'package:progetto/app_logic/storage.dart';
 import 'package:progetto/app_logic/exceptions.dart';
 import 'package:progetto/components/custom_small_map.dart';
 import 'package:progetto/model/place.dart';
@@ -12,12 +13,18 @@ import 'package:progetto/model/proposal.dart';
 import 'package:flutter/material.dart';
 import 'package:progetto/pages/place_page.dart';
 
-@GenerateNiceMocks([MockSpec<Auth>(), MockSpec<Database>(), MockSpec<User>()])
+@GenerateNiceMocks([
+  MockSpec<Auth>(),
+  MockSpec<Database>(),
+  MockSpec<Storage>(),
+  MockSpec<User>(),
+])
 import 'place_page_test.mocks.dart';
 
 main() {
   late Auth mockAuth;
   late Database mockDatabase;
+  late Storage mockStorage;
   late User mockUser;
   late Place testPlace;
   late Proposal testProposal0;
@@ -34,6 +41,7 @@ main() {
   setUp(() {
     mockAuth = MockAuth();
     mockDatabase = MockDatabase();
+    mockStorage = MockStorage();
     mockUser = MockUser();
     testPlace = Place.fromJson({
       'id': 'test_place',
@@ -88,6 +96,7 @@ main() {
           place: place,
           auth: mockAuth,
           database: mockDatabase,
+          storage: mockStorage,
         ),
       ),
     );
@@ -276,5 +285,4 @@ main() {
     });
   });
 
-  // test on circular progress indicator
 }

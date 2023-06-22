@@ -49,7 +49,7 @@ class FriendsPage extends StatelessWidget {
                           List<Widget> trainings = [];
                           for (var proposal in snapshot.data!) {
                             trainings.add(
-                              ProposalTile.fromProposal(proposal!, context),
+                              ProposalTile.fromProposal(proposal!, context, auth: Auth(), database: Database(), storage: Storage()),
                             );
                           }
                           return Column(

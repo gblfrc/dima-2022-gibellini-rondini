@@ -290,8 +290,9 @@ class _SessionTab extends StatelessWidget {
 class _ProposalTab extends StatelessWidget {
   final Database database;
   final Auth auth;
+  final Storage storage;
 
-  const _ProposalTab({required this.database, required this.auth});
+  const _ProposalTab({required this.database, required this.auth, required this.storage});
 
   @override
   Widget build(BuildContext context) {
@@ -315,7 +316,7 @@ class _ProposalTab extends StatelessWidget {
           }
           List<Widget> proposalList = [];
           for (var proposal in snapshot.data!) {
-            proposalList.add(ProposalTile.fromProposal(proposal, context));
+            proposalList.add(ProposalTile.fromProposal(proposal, context, database: database, auth: auth, storage: storage));
           }
           return ListView(
             shrinkWrap: true,
@@ -469,7 +470,7 @@ class _TabSection extends StatelessWidget {
               columns: columns,
               database: database,
             ),
-            if (isMyAccount) _ProposalTab(database: database, auth: auth),
+            _ProposalTab(database: database, auth: auth, storage: storage,),
             if (isMyAccount)
               _GoalTab(
                 columns: columns,

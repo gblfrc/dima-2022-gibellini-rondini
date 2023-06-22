@@ -105,7 +105,8 @@ class _SearchPageState extends State<SearchPage> {
                   Expanded(
                     child: ListView.separated(
                       itemBuilder: (context, index) {
-                        return PlaceTile.fromPlace(place: placeList[index], context: context, auth: Auth(), database: Database());
+                        return PlaceTile.fromPlace(
+                            place: placeList[index], context: context, auth: Auth(), database: Database(), storage: Storage());
                       },
                       separatorBuilder: (context, index) {
                         // return const SizedBox(height: 10,);
@@ -132,8 +133,7 @@ class _SearchPageState extends State<SearchPage> {
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
                             Position position = snapshot.data!;
-                            _initialPosition = LatLng(
-                                position.latitude, position.longitude);
+                            _initialPosition = LatLng(position.latitude, position.longitude);
                             return CustomSmallMap(
                               mapController: _mapController,
                               options: MapOptions(
@@ -145,9 +145,7 @@ class _SearchPageState extends State<SearchPage> {
                                       e is MapEventFlingAnimationEnd ||
                                       e is MapEventMoveEnd ||
                                       e is MapEventRotateEnd) {
-                                    _updateProposalList(
-                                        _mapController.bounds!,
-                                        Auth().currentUser!.uid);
+                                    _updateProposalList(_mapController.bounds!, Auth().currentUser!.uid);
                                   }
                                 },
                               ),
@@ -169,8 +167,13 @@ class _SearchPageState extends State<SearchPage> {
                     flex: 3,
                     child: ListView(
                       children: proposalList
-                          .map((proposal) =>
-                              ProposalTile.fromProposal(proposal, context))
+                          .map((proposal) => ProposalTile.fromProposal(
+                                proposal,
+                                context,
+                                auth: Auth(),
+                                database: Database(),
+                                storage: Storage(),
+                              ))
                           .toList(),
                     ),
                   ),
@@ -190,8 +193,7 @@ class _SearchPageState extends State<SearchPage> {
     // get uid of currently logged user
     String? uid = Auth().currentUser?.uid;
     // get all users except the logged one
-    List<User> newList =
-        await SearchEngine().getUsersByName(name, excludeUid: uid!);
+    List<User> newList = await SearchEngine().getUsersByName(name, excludeUid: uid!);
     // call setState to update widget
     setState(() {
       userList = newList;
@@ -215,8 +217,7 @@ class _SearchPageState extends State<SearchPage> {
   */
   void _updateProposalList(LatLngBounds bounds, String uid) async {
     // get all proposals for logged user within boundaries of the map
-    List<Proposal> newList =
-        await Database().getProposalsWithinBounds(bounds, uid, after: DateTime.now());
+    List<Proposal> newList = await Database().getProposalsWithinBounds(bounds, uid, after: DateTime.now());
     // call setState to update widget
     setState(() {
       proposalList = newList;
@@ -229,24 +230,21 @@ class _SearchPageState extends State<SearchPage> {
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Location services are disabled. Please enable the services')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Location services are disabled. Please enable the services')));
       return false;
     }
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Location permissions are denied')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Location permissions are denied')));
         return false;
       }
     }
     if (permission == LocationPermission.deniedForever) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              'Location permissions are permanently denied, we cannot request permissions.')));
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permissions are permanently denied, we cannot request permissions.')));
       return false;
     }
     return true;
@@ -255,7 +253,6 @@ class _SearchPageState extends State<SearchPage> {
   Future<Position> _initPosition(BuildContext context) async {
     final hasPermission = await _handleLocationPermission(context);
     if (!hasPermission) return Future.error(Exception('Missing permissions'));
-    return Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+    return Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
   }
 }
