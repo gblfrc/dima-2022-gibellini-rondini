@@ -107,7 +107,10 @@ class _HomePageState extends State<HomePage> {
                         // For each session, we create a card and append it to the array of children
                         sessionCards.add(SessionCard(session: session!));
                       }
-                      return Column(
+                      return GridView.count(
+                        shrinkWrap: true,
+                        crossAxisCount: 1,
+                        childAspectRatio: 2.75,
                         children: sessionCards,
                       );
                     } else {
