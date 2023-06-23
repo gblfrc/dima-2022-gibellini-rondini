@@ -10,7 +10,11 @@ import 'account_page.dart';
 import 'friends_page.dart';
 
 class MainScreens extends StatefulWidget {
-  const MainScreens({super.key});
+  final Database database;
+  final Auth auth;
+  final Storage storage;
+
+  const MainScreens({super.key, required this.database, required this.auth, required this.storage});
 
   @override
   State<MainScreens> createState() => _MainScreensState();
@@ -18,21 +22,21 @@ class MainScreens extends StatefulWidget {
 
 class _MainScreensState extends State<MainScreens> {
   int _curScreen = 0;
-  var screens = [
-    const HomePage(),
-    const SearchPage(),
-    FriendsPage(database: Database(), auth: Auth(), storage: Storage(),),
-    AccountPage(
-      uid: Auth().currentUser?.uid ?? '',
-      auth: Auth(),
-      database: Database(),
-      storage: Storage(),
-      imagePicker: ImagePicker(),
-    )
-  ];
 
   @override
   Widget build(BuildContext context) {
+    var screens = [
+      HomePage(database: widget.database, auth: widget.auth, storage: widget.storage,),
+      SearchPage(database: widget.database, auth: widget.auth, storage: widget.storage,),
+      FriendsPage(database: widget.database, auth: widget.auth, storage: widget.storage,),
+      AccountPage(
+        uid: widget.auth.currentUser?.uid ?? '',
+        auth: widget.auth,
+        database: widget.database,
+        storage: widget.storage,
+        imagePicker: ImagePicker(),
+      )
+    ];
     return Scaffold(
       //appBar: AppBar(
       // Here we take the value from the MyHomePage object that was created by

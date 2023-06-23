@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:progetto/app_logic/location_handler.dart';
 import 'package:progetto/app_logic/search_engine.dart';
@@ -13,14 +12,17 @@ import '../app_logic/auth.dart';
 import 'create_goal_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final Database database;
+  final Auth auth;
+  final Storage storage;
+
+  const HomePage({super.key, required this.database, required this.auth, required this.storage});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final User? user = Auth().currentUser;
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +41,8 @@ class _HomePageState extends State<HomePage> {
         child: ListView(
           children: [
             StreamBuilder(
-                stream: Database().getProposalsWithinInterval(
-                  Auth().currentUser!.uid,
+                stream: widget.database.getProposalsWithinInterval(
+                  widget.auth.currentUser!.uid,
                   after: DateTime.now().add(const Duration(hours: -2)),
                   before: DateTime.now().add(const Duration(hours: 2)),
                 ),
@@ -62,9 +64,9 @@ class _HomePageState extends State<HomePage> {
                           proposal,
                           context,
                           startable: true,
-                          auth: Auth(),
-                          database: Database(),
-                          storage: Storage(),
+                          auth: widget.auth,
+                          database: widget.database,
+                          storage: widget.storage,
                         ));
                       }
                       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -85,7 +87,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.shortestSide / 50),
               child: StreamBuilder(
-                  stream: Database().getLatestSessionsByUser(Auth().currentUser!.uid, limit: 2),
+                  stream: widget.database.getLatestSessionsByUser(widget.auth.currentUser!.uid, limit: 2),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       return const Text(
@@ -127,7 +129,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.shortestSide / 40),
               child: StreamBuilder(
-                  stream: Database().getGoals(Auth().currentUser!.uid, inProgressOnly: true),
+                  stream: widget.database.getGoals(widget.auth.currentUser!.uid, inProgressOnly: true),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       return const Text(
@@ -148,7 +150,7 @@ class _HomePageState extends State<HomePage> {
                       for (var goal in snapshot.data!) {
                         goalList.add(GoalCard(
                           goal,
-                          database: Database(),
+                          database: widget.database,
                         ));
                       }
                       return Column(
@@ -167,7 +169,7 @@ class _HomePageState extends State<HomePage> {
                 FilledButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => CreateGoalPage(database: Database(), auth: Auth()),
+                      builder: (context) => CreateGoalPage(database: widget.database, auth: widget.auth),
                     ),
                   ),
                   child: const Text("New goal"),
@@ -204,8 +206,8 @@ class _HomePageState extends State<HomePage> {
           FloatingActionButton(
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => CreateProposalPage(
-                      auth: Auth(),
-                      database: Database(),
+                      auth: widget.auth,
+                      database: widget.database,
                       searchEngine: SearchEngine(),
                     ))),
             tooltip: 'New proposal',

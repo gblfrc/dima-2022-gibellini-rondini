@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomApp(
-      onLogged: const MainScreens(),
+      onLogged: MainScreens(database: Database(), auth: Auth(), storage: Storage(),),
       onNotLogged: LoginPage(database: Database(), auth: Auth()),
       auth: Auth(),
       storage: Storage(),

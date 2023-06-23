@@ -15,7 +15,11 @@ import '../model/proposal.dart';
 import '../model/user.dart';
 
 class SearchPage extends StatefulWidget {
-  const SearchPage({super.key});
+  final Database database;
+  final Auth auth;
+  final Storage storage;
+
+  const SearchPage({super.key, required this.database, required this.auth, required this.storage});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -68,7 +72,7 @@ class _SearchPageState extends State<SearchPage> {
                   Expanded(
                     child: ListView.separated(
                       itemBuilder: (context, index) {
-                        return UserTile.fromUser(userList[index], context, Storage(), Database(), Auth());
+                        return UserTile.fromUser(userList[index], context, widget.storage, widget.database, widget.auth);
                       },
                       separatorBuilder: (context, index) {
                         return const SizedBox(
@@ -106,7 +110,7 @@ class _SearchPageState extends State<SearchPage> {
                     child: ListView.separated(
                       itemBuilder: (context, index) {
                         return PlaceTile.fromPlace(
-                            place: placeList[index], context: context, auth: Auth(), database: Database(), storage: Storage());
+                            place: placeList[index], context: context, auth: widget.auth, database: widget.database, storage: widget.storage);
                       },
                       separatorBuilder: (context, index) {
                         // return const SizedBox(height: 10,);
@@ -145,7 +149,7 @@ class _SearchPageState extends State<SearchPage> {
                                       e is MapEventFlingAnimationEnd ||
                                       e is MapEventMoveEnd ||
                                       e is MapEventRotateEnd) {
-                                    _updateProposalList(_mapController.bounds!, Auth().currentUser!.uid);
+                                    _updateProposalList(_mapController.bounds!, widget.auth.currentUser!.uid);
                                   }
                                 },
                               ),
@@ -170,9 +174,9 @@ class _SearchPageState extends State<SearchPage> {
                           .map((proposal) => ProposalTile.fromProposal(
                                 proposal,
                                 context,
-                                auth: Auth(),
-                                database: Database(),
-                                storage: Storage(),
+                                auth: widget.auth,
+                                database: widget.database,
+                                storage: widget.storage,
                               ))
                           .toList(),
                     ),
@@ -191,7 +195,7 @@ class _SearchPageState extends State<SearchPage> {
   */
   void _updateUserList(String name) async {
     // get uid of currently logged user
-    String? uid = Auth().currentUser?.uid;
+    String? uid = widget.auth.currentUser?.uid;
     // get all users except the logged one
     List<User> newList = await SearchEngine().getUsersByName(name, excludeUid: uid!);
     // call setState to update widget
@@ -217,7 +221,7 @@ class _SearchPageState extends State<SearchPage> {
   */
   void _updateProposalList(LatLngBounds bounds, String uid) async {
     // get all proposals for logged user within boundaries of the map
-    List<Proposal> newList = await Database().getProposalsWithinBounds(bounds, uid, after: DateTime.now());
+    List<Proposal> newList = await widget.database.getProposalsWithinBounds(bounds, uid, after: DateTime.now());
     // call setState to update widget
     setState(() {
       proposalList = newList;
