@@ -17,6 +17,7 @@ import 'package:progetto/model/user.dart';
 import 'package:progetto/pages/account_page.dart';
 import 'package:progetto/pages/place_page.dart';
 import 'package:progetto/pages/proposal_page.dart';
+import 'package:progetto/pages/session_page.dart';
 
 @GenerateNiceMocks([
   MockSpec<Database>(),
@@ -202,18 +203,17 @@ main() {
     expect(proposalPageFinder, findsOneWidget);
   });
 
-  testWidgets('Proposal tile - Startable', (tester) async {
+  testWidgets('Proposal tile - Startable with tap on start', (tester) async {
     await tester.pumpWidget(MediaQuery(
         data: const MediaQueryData(),
-        child: Builder(builder: (BuildContext context) {
-          return MaterialApp(
-              home: Scaffold(
-                  body: ProposalTile.fromProposal(proposal0, context,
-                      auth: MockAuth(),
-                      database: MockDatabase(),
-                      storage: MockStorage(),
-                      startable: true)));
-        })));
+        child: MaterialApp(home: Builder(builder: (BuildContext context) {
+          return Scaffold(
+              body: ProposalTile.fromProposal(proposal0, context,
+                  auth: MockAuth(),
+                  database: MockDatabase(),
+                  storage: MockStorage(),
+                  startable: true));
+        }))));
     final titleFinder = find.text('Parco Suardi');
     final subtitleFinder = find.text('Organizer: Mario Rossi');
     await tester.pump(const Duration(
@@ -223,11 +223,17 @@ main() {
     final privacyIconFinder = find.byWidgetPredicate(
         (widget) => widget is Icon && widget.icon == Icons.lock);
     final startButtonFinder = find.widgetWithText(FilledButton, "Start");
+    final sessionPageFinder =
+        find.byWidgetPredicate((widget) => widget is SessionPage, skipOffstage: false);
 
     expect(titleFinder, findsOneWidget);
     expect(subtitleFinder, findsOneWidget);
     //expect(calendarIconFinder, findsOneWidget);
     expect(privacyIconFinder, findsNothing);
     expect(startButtonFinder, findsOneWidget);
+
+    await tester.tap(startButtonFinder);
+    await tester.pump(const Duration(seconds: 2));
+    expect(sessionPageFinder, findsOneWidget);
   });
 }

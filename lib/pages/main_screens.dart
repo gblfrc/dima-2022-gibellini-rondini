@@ -21,7 +21,7 @@ class _MainScreensState extends State<MainScreens> {
   var screens = [
     const HomePage(),
     const SearchPage(),
-    const FriendsPage(),
+    FriendsPage(database: Database(), auth: Auth(), storage: Storage(),),
     AccountPage(
       uid: Auth().currentUser?.uid ?? '',
       auth: Auth(),

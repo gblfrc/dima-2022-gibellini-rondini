@@ -7,7 +7,11 @@ import '../components/tiles.dart';
 import '../model/user.dart';
 
 class FriendsPage extends StatelessWidget {
-  const FriendsPage({super.key});
+  final Database database;
+  final Auth auth;
+  final Storage storage;
+
+  const FriendsPage({super.key, required this.database, required this.auth, required this.storage});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +24,7 @@ class FriendsPage extends StatelessWidget {
           bottom: const TabBar(
             tabs: [
               Tab(text: "Trainings"),
-              Tab(text: "Friend list"),
+              Tab(key: Key('FriendsTab'), text: "Friend list"),
             ],
           ),
         ),
@@ -30,7 +34,7 @@ class FriendsPage extends StatelessWidget {
               children: [
                 Padding(padding: EdgeInsets.all(padding)),
                 FutureBuilder(
-                    future: Database().getFriendProposalsAfterTimestamp(Auth().currentUser!.uid, after: DateTime.now()),
+                    future: database.getFriendProposalsAfterTimestamp(auth.currentUser!.uid, after: DateTime.now()),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
                         return const Text(
@@ -49,7 +53,7 @@ class FriendsPage extends StatelessWidget {
                           List<Widget> trainings = [];
                           for (var proposal in snapshot.data!) {
                             trainings.add(
-                              ProposalTile.fromProposal(proposal!, context, auth: Auth(), database: Database(), storage: Storage()),
+                              ProposalTile.fromProposal(proposal!, context, auth: auth, database: database, storage: storage),
                             );
                           }
                           return Column(
@@ -70,7 +74,7 @@ class FriendsPage extends StatelessWidget {
                 children: [
                   Padding(padding: EdgeInsets.all(padding)),
                   StreamBuilder(
-                      stream: Database().getFriends(Auth().currentUser!.uid),
+                      stream: database.getFriends(auth.currentUser!.uid),
                       builder: (context, snapshot) {
                         if (snapshot.hasError) {
                           return const Text(
@@ -90,7 +94,7 @@ class FriendsPage extends StatelessWidget {
                           return Column(
                               children: friends
                                   .map((friend) =>
-                                      UserTile.fromUser(friend, context, Storage(), Database(), Auth()))
+                                      UserTile.fromUser(friend, context, storage, database, auth))
                                   .toList());
                         } else {
                           return const Center(
