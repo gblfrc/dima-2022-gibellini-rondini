@@ -7,8 +7,11 @@ import 'package:mockito/mockito.dart';
 import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/storage.dart';
+import 'package:progetto/pages/account_page.dart';
+import 'package:progetto/pages/friends_page.dart';
 import 'package:progetto/pages/home_page.dart';
 import 'package:progetto/pages/main_screens.dart';
+import 'package:progetto/pages/search_page.dart';
 
 @GenerateNiceMocks([
   MockSpec<Database>(),
@@ -38,7 +41,22 @@ main() {
         }))));
 
     final homePageFinder = find.byWidgetPredicate((widget) => widget is HomePage);
+    final searchPageFinder = find.byWidgetPredicate((widget) => widget is SearchPage);
+    final friendsPageFinder = find.byWidgetPredicate((widget) => widget is FriendsPage);
+    final accountPageFinder = find.byWidgetPredicate((widget) => widget is AccountPage);
+    final searchPageButton = find.byIcon(Icons.search);
+    final friendsPageButton = find.byIcon(Icons.people);
+    final accountPageButton = find.byIcon(Icons.person);
 
     expect(homePageFinder, findsOneWidget);
+    await tester.tap(searchPageButton);
+    await tester.pumpAndSettle();
+    expect(searchPageFinder, findsOneWidget);
+    await tester.tap(friendsPageButton);
+    await tester.pumpAndSettle();
+    expect(friendsPageFinder, findsOneWidget);
+    await tester.tap(accountPageButton);
+    await tester.pump(const Duration(seconds: 2));
+    expect(accountPageFinder, findsOneWidget);
   });
 }
