@@ -35,10 +35,8 @@ class SessionCard extends StatelessWidget {
     String time = "";
     Duration duration = Duration(seconds: session.duration.round());
     String hours = duration.inHours.toString();
-    String minutes =
-        duration.inMinutes.remainder(60).toString().padLeft(2, "0");
-    String seconds =
-        duration.inSeconds.remainder(60).toString().padLeft(2, "0");
+    String minutes = duration.inMinutes.remainder(60).toString().padLeft(2, "0");
+    String seconds = duration.inSeconds.remainder(60).toString().padLeft(2, "0");
     if (session.duration < Duration.secondsPerHour) {
       time = "$minutes:$seconds";
     } else {
@@ -65,8 +63,7 @@ class SessionCard extends StatelessWidget {
                 ),
               ),
               child: Padding(
-                padding: EdgeInsets.all(
-                    min(max(constraint.maxHeight/ 9, 10), 30)),
+                padding: EdgeInsets.all(min(max(constraint.maxHeight / 9, 10), 25)),
                 child: Flex(
                   direction: Axis.horizontal,
                   children: [
@@ -76,42 +73,41 @@ class SessionCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                length,
-                                style: TextStyle(
-                                    height: 0,
-                                    // used to remove default padding
-                                    fontWeight: FontWeight.bold,
-                                    fontSize:
-                                        MediaQuery.of(context).textScaleFactor *
-                                            25),
-                              ),
-                              Text(
-                                date,
-                                key: const Key('DateText'),
-                                style: TextStyle(
-                                    height: 0,
-                                    //used to remove default padding
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize:
-                                        MediaQuery.of(context).textScaleFactor *
-                                            15),
-                              ),
-                            ],
+                          Flexible(
+                            fit: FlexFit.tight,
+                            child: Text(
+                              length,
+                              style: TextStyle(
+                                  height: 0,
+                                  // used to remove default padding
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: MediaQuery.of(context).textScaleFactor * 25),
+                            ),
                           ),
-                          Text(
-                            "TIME: $time",
-                            style: TextStyle(
-                                height: 0,
-                                //used to remove default padding
-                                fontWeight: FontWeight.bold,
-                                fontSize:
-                                    MediaQuery.of(context).textScaleFactor *
-                                        15),
+                          Flexible(
+                            fit: FlexFit.tight,
+
+                            child: Text(
+                              date,
+                              key: const Key('DateText'),
+                              style: TextStyle(
+                                  height: 0,
+                                  //used to remove default padding
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: MediaQuery.of(context).textScaleFactor * 15),
+                            ),
+                          ),
+                          const Spacer(),
+                          Flexible(
+                            child: Text(
+                              "TIME: $time",
+                              style: TextStyle(
+                                  height: 0,
+                                  //used to remove default padding
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: MediaQuery.of(context).textScaleFactor * 15),
+                            ),
                           ),
                         ],
                       ),
@@ -178,15 +174,9 @@ class _GoalCardState extends State<GoalCard> {
     }
     String date = "";
     if (goal.creationDate.year < DateTime.now().year) {
-      date = DateFormat("MMM d, y AT")
-          .add_Hm()
-          .format(goal.creationDate)
-          .toUpperCase();
+      date = DateFormat("MMM d, y AT").add_Hm().format(goal.creationDate).toUpperCase();
     } else {
-      date = DateFormat("MMM d AT")
-          .add_Hm()
-          .format(goal.creationDate)
-          .toUpperCase();
+      date = DateFormat("MMM d AT").add_Hm().format(goal.creationDate).toUpperCase();
     }
 
     return Card(
@@ -229,8 +219,7 @@ class _GoalCardState extends State<GoalCard> {
             Row(
               children: [
                 Padding(
-                  padding: EdgeInsets.all(
-                      max(MediaQuery.of(context).size.shortestSide / 30, 10)),
+                  padding: EdgeInsets.all(max(MediaQuery.of(context).size.shortestSide / 30, 10)),
                   child: Text(
                     "CREATED ON $date",
                     style: TextStyle(

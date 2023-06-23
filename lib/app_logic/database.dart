@@ -332,7 +332,7 @@ class Database {
         yield sessions;
       }
     } on FirebaseException catch (fe) {
-      throw DatabaseException(fe.message);
+      yield* Stream.error(DatabaseException(fe.message));
     }
   }
 
@@ -366,7 +366,7 @@ class Database {
         yield goals;
       }
     } on FirebaseException catch (fe) {
-      throw DatabaseException(fe.message);
+      yield* Stream.error(DatabaseException(fe.message));
     }
   }
 
@@ -459,7 +459,7 @@ class Database {
         yield proposals;
       }
     } on FirebaseException catch (fe) {
-      throw DatabaseException(fe.message);
+      yield* Stream.error(DatabaseException(fe.message));
     }
   }
   void addParticipantToProposal(Proposal proposal, String currentUserUid) async {
