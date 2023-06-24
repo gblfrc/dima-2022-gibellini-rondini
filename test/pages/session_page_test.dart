@@ -23,20 +23,20 @@ import 'package:progetto/pages/session_page.dart';
 ])
 import 'session_page_test.mocks.dart';
 
-class ErrorMockDatabase extends Mock implements Database {
+class ErrorMockDatabase extends Mock implements MockDatabase {
   @override
   Future<void> saveSession(
-      {required String uid,
-      required List<List<LatLng>> positions,
-      required double distance,
-      required double duration,
-      required DateTime startDT,
-      String? proposalId}) async {
+      {required double? distance,
+      required double? duration,
+      required List<List<LatLng>>? positions,
+      String? proposalId,
+      required DateTime? startDT,
+      required String? uid}) async {
     return Future.error(DatabaseException('test'));
   }
 }
 
-class CustomMockLocationHandler extends Mock implements LocationHandler {
+class CustomMockLocationHandler extends Mock implements MockLocationHandler {
   static Position testPosition0 = Position(
       longitude: 9.6,
       latitude: 45.7,
@@ -325,7 +325,9 @@ main() {
         await tester.tap(stopButtonFinder);
         await tester.pump(const Duration(seconds: 1));
         expect(find.byType(SnackBar), findsOneWidget);
-        expect(find.descendant(of: find.byType(SnackBar), matching: find.text('An error occurred when saving the session.')),
+        expect(
+            find.descendant(
+                of: find.byType(SnackBar), matching: find.text('An error occurred when saving the session.')),
             findsOneWidget);
         await tester.pump(const Duration(minutes: 1));
       });
