@@ -569,7 +569,7 @@ class Database {
           .where("dateTime", isGreaterThanOrEqualTo: after) // TODO: Add filter for completed proposals
           .get();
     } on FirebaseException catch (fe) {
-      throw DatabaseException(fe.message);
+      throw DatabaseException(fe.message); // TODO: Maybe it should be changed with return Stream.error(DatabaseException(...))
     }
     // convert data extracted from server into proposal objects
     List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs = proposalsDocs.docs + proposalsDocsOwned.docs;

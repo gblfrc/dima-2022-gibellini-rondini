@@ -48,14 +48,17 @@ class _HomePageState extends State<HomePage> {
                 ),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    ScaffoldMessenger.of(context)
-                        .showSnackBar(const SnackBar(content: Text('An error occurred while loading trainings.')));
+                    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(const SnackBar(content: Text('An error occurred while loading trainings.')));
+                    });
+                    return Container();
                   }
                   if (snapshot.hasData) {
                     // This returns true even if there are no elements in the list
                     if (snapshot.data!.isEmpty) {
                       // If there are no upcoming proposals, don't show anything
-                      return Container();
+                      return Container(key: const Key('NoProposalsContainer'));
                     } else {
                       List<Widget> proposalList = [];
                       for (var proposal in snapshot.data!) {
