@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart' as auth_firebase;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:progetto/app_logic/auth.dart';

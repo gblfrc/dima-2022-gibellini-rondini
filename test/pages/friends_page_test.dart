@@ -50,7 +50,7 @@ main() {
 
       when(database.getFriends(curUser.uid)).thenAnswer((realInvocation) {
         print("CALLED");
-        return Stream.fromIterable([]);
+        return Stream.fromIterable([[]]);
       });
     });
 
@@ -74,7 +74,7 @@ main() {
       await tester.pumpAndSettle();
       await tester.tap(friendsTabMatcher);
       await tester.pump(Duration(seconds: 2));
-      debugDumpApp();
+      //debugDumpApp();
       expect(noFriendsTextFinder, findsOneWidget);
     });
   });

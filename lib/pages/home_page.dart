@@ -182,6 +182,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButtonLocation: ExpandableFab.location,
       floatingActionButton: ExpandableFab(
+        key: const Key('FAB'),
         foregroundColor: buttonForegroundColor,
         backgroundColor: buttonBackgroundColor,
         closeButtonStyle: ExpandableFabCloseButtonStyle(
