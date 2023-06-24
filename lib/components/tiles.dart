@@ -73,7 +73,7 @@ class UserTile extends Tile {
     super.trailing,
   });
 
-  static UserTile fromUser(User user, BuildContext context, Storage storage, Database database, Auth auth, { Key? key}) {
+  static UserTile fromUser(User user, BuildContext context, Storage storage, Database database, Auth auth, {Key? key}) {
     return UserTile(
       leading: ProfilePicture(
         uid: user.uid,
@@ -110,7 +110,8 @@ class PlaceTile extends Tile {
       required BuildContext context,
       required Auth auth,
       required Database database,
-      required Storage storage, Key? key}) {
+      required Storage storage,
+      Key? key}) {
     return PlaceTile(
       leading: LayoutBuilder(
         builder: (context, constraint) {
@@ -241,6 +242,8 @@ class ProposalTile extends Tile {
                   builder: (context) => SessionPage(
                         proposal: proposal,
                         locationHandler: LocationHandler(),
+                        auth: auth,
+                        database: database,
                       ))),
               child: const Text("Start"),
             );

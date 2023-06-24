@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
@@ -775,6 +776,55 @@ main() {
     test('throws exception', () {
       when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
       expect(database.getLatestSessionsByUser('test'), emitsError(isA<DatabaseException>()));
+    });
+  });
+
+  group('save session', () {
+    test('correct saving, no proposal set', () {
+      when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
+      when(mockUserCollection.doc('test_uid')).thenReturn(mockReference0);
+      when(mockFirebaseFirestore.collection('sessions')).thenReturn(mockCollection);
+      when(mockCollection.doc()).thenReturn(mockReference1);
+      expect(
+          () => database.saveSession(
+              uid: 'test_uid',
+              positions: [
+                [LatLng(37.36, 122.07), LatLng(37.37, 122.08)],
+                [LatLng(37.39, 122.08), LatLng(37.40, 122.08)],
+              ],
+              distance: 20.5,
+              duration: 20.5,
+              startDT: DateTime.now()),
+          returnsNormally);
+    });
+    test('correct saving, proposal set', () {
+      CollectionReference<Map<String, dynamic>> mockProposalCollection = MockCollectionReference();
+      when(mockFirebaseFirestore.collection('users')).thenReturn(mockUserCollection);
+      when(mockUserCollection.doc('test_uid')).thenReturn(mockReference0);
+      when(mockFirebaseFirestore.collection('sessions')).thenReturn(mockCollection);
+      when(mockCollection.doc()).thenReturn(mockReference1);
+      when(mockFirebaseFirestore.collection('proposals')).thenReturn(mockProposalCollection);
+      when(mockProposalCollection.doc('test_proposal_id')).thenReturn(mockReference);
+      expect(
+          () => database.saveSession(
+              uid: 'test_uid',
+              positions: [
+                [LatLng(37.36, 122.07), LatLng(37.37, 122.08)],
+                [LatLng(37.39, 122.08), LatLng(37.40, 122.08)],
+              ],
+              distance: 20.5,
+              duration: 20.5,
+              startDT: DateTime.now(),
+              proposalId: 'test_proposal_id'),
+          returnsNormally);
+    });
+
+    test('throws exception', () {
+      when(mockFirebaseFirestore.collection('users')).thenThrow(FirebaseException(plugin: 'test', message: 'test'));
+      expect(
+          () => database.saveSession(
+              uid: 'test_uid', positions: [], distance: 20.5, duration: 20.5, startDT: DateTime.now()),
+          throwsA(isA<DatabaseException>()));
     });
   });
 

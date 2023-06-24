@@ -245,7 +245,7 @@ class Database {
       final userDocRef = _database.collection("users").doc(uid);
       await for (DocumentSnapshot<Map<String, dynamic>> snapshot in userDocRef.snapshots()) {
         List<User> friends = [];
-        for(String fuid in snapshot.get("friends")) {
+        for (String fuid in snapshot.get("friends")) {
           DocumentReference friendRef = _database.collection("users").doc(fuid);
           DocumentSnapshot friendDoc = await friendRef.get();
           friends.add(
@@ -333,6 +333,38 @@ class Database {
       }
     } on FirebaseException catch (fe) {
       yield* Stream.error(DatabaseException(fe.message));
+    }
+  }
+
+  Future<void> saveSession(
+      {required String uid,
+      required List<List<LatLng>> positions,
+      required double distance,
+      required double duration,
+      required DateTime startDT,
+      String? proposalId}) async {
+    try {
+      List<Map<String, List<GeoPoint>>> maps = [];
+      for (List<LatLng> array in positions) {
+        List<GeoPoint> geopoints = [];
+        for (LatLng position in array) {
+          geopoints.add(GeoPoint(position.latitude, position.longitude));
+        }
+        Map<String, List<GeoPoint>> map = {"values": geopoints};
+        maps.add(map);
+      }
+      final docUser = _database.collection("users").doc(uid);
+      await _database.collection('sessions').doc().set({
+        "userID": docUser,
+        "distance": distance,
+        "startDT": startDT,
+        "duration": duration,
+        "positions": maps,
+        "proposal":
+            proposalId != null ? _database.collection("proposals").doc(proposalId) : null
+      });
+    } on FirebaseException catch (fe){
+      throw DatabaseException(fe.message);
     }
   }
 
@@ -444,8 +476,8 @@ class Database {
           .collection("proposals")
           .where("owner", isEqualTo: ownerRef)
           .orderBy("dateTime", descending: false)
-      // limit query to parameter or to a very high number
-      // number could be even higher, but then it causes problems with Firestore
+          // limit query to parameter or to a very high number
+          // number could be even higher, but then it causes problems with Firestore
           .limit(limit ?? 10000);
       // process snapshots
       await for (var snapshot in proposalQuery.snapshots()) {
@@ -453,7 +485,7 @@ class Database {
         proposals = [];
         for (var doc in snapshot.docs) {
           // create a Proposal object for each document
-          Proposal? proposal = await _proposalFromFirestore(doc, currentUserUid: uid,excludeCurrentUser: false);
+          Proposal? proposal = await _proposalFromFirestore(doc, currentUserUid: uid, excludeCurrentUser: false);
           if (proposal != null) proposals.add(proposal);
         }
         yield proposals;
@@ -462,6 +494,7 @@ class Database {
       yield* Stream.error(DatabaseException(fe.message));
     }
   }
+
   void addParticipantToProposal(Proposal proposal, String currentUserUid) async {
     try {
       await _database.collection('proposals').doc(proposal.id).update({
@@ -507,7 +540,7 @@ class Database {
       });
       return list;
     } on FirebaseException catch (fe) {
-      return Future.error(DatabaseException(fe.message));// DatabaseException(fe.message);
+      return Future.error(DatabaseException(fe.message)); // DatabaseException(fe.message);
     }
   }
 

@@ -196,6 +196,8 @@ class _HomePageState extends State<HomePage> {
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => SessionPage(
                       locationHandler: LocationHandler(),
+                  auth: Auth(),
+                  database: Database(),
                     ))),
             tooltip: 'New session',
             heroTag: 'new-proposal-button',
