@@ -18,8 +18,10 @@ import 'package:progetto/model/place.dart';
 import 'package:progetto/model/proposal.dart';
 import 'package:progetto/model/session.dart';
 import 'package:progetto/model/user.dart';
+import 'package:progetto/pages/create_goal_page.dart';
 import 'package:progetto/pages/create_proposal_page.dart';
 import 'package:progetto/pages/home_page.dart';
+import 'package:progetto/pages/session_page.dart';
 
 @GenerateNiceMocks([
   MockSpec<Database>(),
@@ -51,10 +53,10 @@ main() {
         child: MaterialApp(home: Builder(builder: (BuildContext context) {
           return Scaffold(
               body: HomePage(
-                database: database,
-                auth: auth,
-                storage: MockStorage(),
-              ));
+            database: database,
+            auth: auth,
+            storage: MockStorage(),
+          ));
         })));
 
     when(auth.currentUser).thenReturn(curUser);
@@ -143,34 +145,66 @@ main() {
       expect(fabFinder, findsOneWidget);
     });
 
-    testWidgets('Home page - Tap on new private session', (tester) async {
+    testWidgets('Home page - Tap on new proposal', (tester) async {
       mockNetworkImagesFor(() async {
         await tester.pumpWidget(widget);
-        final mainFABFinder = find.byKey(const Key('FABIcon'), skipOffstage: false);
-        final newSessionFABFinder = find.byIcon(Icons.calendar_month);
-        final sessionPageFinder = find.byWidgetPredicate((widget) => widget is CreateProposalPage);
+        final mainFABFinder =
+            find.byKey(const Key('FABIcon'), skipOffstage: false);
+        final newProposalFABFinder = find.byKey(const Key('CreateProposalFAB'));
+        final newProposalPageFinder = find.byWidgetPredicate(
+            (widget) => widget is CreateProposalPage,
+            skipOffstage: false);
 
-        await tester.pump(Duration(seconds: 2));
+        await tester.pump(const Duration(seconds: 2));
         await tester.tap(mainFABFinder);
-        await tester.pump(Duration(seconds: 2));
-        //await tester.tap(newSessionFABFinder);
-        print(tester.element(newSessionFABFinder).renderObject?.paintBounds);
-        await tester.press(newSessionFABFinder);
-        await tester.pump(Duration(seconds: 2));
-        debugDumpApp();
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pump(const Duration(seconds: 2));
+        await tester.tap(newProposalFABFinder);
+        await tester.pump(const Duration(seconds: 2));
+
+        expect(newProposalPageFinder, findsOneWidget);
+      });
+    });
+
+    testWidgets('Home page - Tap on new session', (tester) async {
+      mockNetworkImagesFor(() async {
+        await tester.pumpWidget(widget);
+        final mainFABFinder =
+            find.byKey(const Key('FABIcon'), skipOffstage: false);
+        final newSessionFABFinder = find.byKey(const Key('NewSessionFAB'));
+        final sessionPageFinder =
+            find.byWidgetPredicate((widget) => widget is SessionPage, skipOffstage: false);
+
+        await tester.pump(const Duration(seconds: 2));
+        await tester.tap(mainFABFinder);
+        await tester.pump(const Duration(seconds: 2));
+        await tester.pump(const Duration(seconds: 2));
+        await tester.tap(newSessionFABFinder);
+        await tester.pump(const Duration(seconds: 2));
         expect(sessionPageFinder, findsOneWidget);
       });
     });
 
-    testWidgets('Home page - Tap on new proposal', (tester) async {
-      await tester.pumpWidget(widget);
-      final createProposalFABFinder = find.byKey(const Key('CreateProposalFAB'));
-      final sessionPageFinder = find.byWidgetPredicate((widget) => widget is CreateProposalPage);
+    testWidgets('Home page - Tap on New Goal button', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(800, 800));
+      mockNetworkImagesFor(() async {
+        await tester.pumpWidget(widget);
+        final createGoalButtonFinder =
+        find.byKey(const Key('CreateGoalButton'), skipOffstage: false);
+        final createGoalPageFinder =
+        find.byWidgetPredicate((widget) => widget is CreateGoalPage, skipOffstage: false);
 
-      await tester.tap(createProposalFABFinder);
-      await tester.pumpAndSettle();
+        await tester.pump(const Duration(seconds: 2));
+        await tester.scrollUntilVisible(createGoalButtonFinder, 100, scrollable: find
+            .descendant(
+            of: find.byKey(const Key('HomeListView')), matching: find.byType(Scrollable).first));
+        await tester.pump(const Duration(seconds: 2));
+        await tester.tap(createGoalButtonFinder);
+        await tester.pump(const Duration(seconds: 2));
 
-      expect(sessionPageFinder, findsOneWidget);
+        expect(createGoalPageFinder, findsOneWidget);
+      });
     });
   });
 

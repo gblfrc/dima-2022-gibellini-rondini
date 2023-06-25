@@ -33,12 +33,14 @@ class _HomePageState extends State<HomePage> {
     Color buttonForegroundColor = Colors.white;
     // main return statement
     return Scaffold(
+      key: const Key('HomeScaffold'),
       appBar: AppBar(
         title: const Text("Home page"),
       ),
       body: Padding(
         padding: EdgeInsets.all(MediaQuery.of(context).size.shortestSide / 30),
         child: ListView(
+          key: const Key('HomeListView'),
           children: [
             StreamBuilder(
                 stream: widget.database.getProposalsWithinInterval(
@@ -167,6 +169,7 @@ class _HomePageState extends State<HomePage> {
                   }),
             ),
             Column(
+              key: const Key("GoalColumn"),
               // Wrapping the button with a Column avoids the button to take 100% width
               children: [
                 FilledButton(
@@ -198,6 +201,7 @@ class _HomePageState extends State<HomePage> {
         child: const Icon(Icons.add, key: Key('FABIcon'),),
         children: [
           FloatingActionButton(
+            key: const Key('NewSessionFAB'),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => SessionPage(
                       locationHandler: LocationHandler(),
@@ -208,7 +212,7 @@ class _HomePageState extends State<HomePage> {
             heroTag: 'new-proposal-button',
             backgroundColor: buttonBackgroundColor,
             foregroundColor: buttonForegroundColor,
-            child: const Icon(Icons.directions_run, key: Key('NewSessionFAB')),
+            child: const Icon(Icons.directions_run),
           ),
           FloatingActionButton(
             key: const Key('CreateProposalFAB'),
