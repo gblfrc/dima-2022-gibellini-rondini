@@ -67,14 +67,15 @@ main() {
     testWidgets('Friends page - No friends', (tester) async {
       await tester.pumpWidget(widget);
 
-      final friendsTabMatcher = find.byKey(const Key('FriendsTab'));
+      final friendsTabFinder = find.byKey(const Key('FriendsTab'));
       final noFriendsTextFinder = find.text(
           'Use the Search section to find friends to add.', skipOffstage: false);
 
       await tester.pumpAndSettle();
-      await tester.tap(friendsTabMatcher);
+      await tester.tap(friendsTabFinder);
       await tester.pump(Duration(seconds: 2));
-      //debugDumpApp();
+      //await tester.ensureVisible(noFriendsTextFinder);
+      debugDumpApp();
       expect(noFriendsTextFinder, findsOneWidget);
     });
   });

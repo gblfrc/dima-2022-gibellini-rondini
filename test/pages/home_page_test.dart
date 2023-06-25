@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:network_image_mock/network_image_mock.dart';
 import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/exceptions.dart';
@@ -17,6 +18,7 @@ import 'package:progetto/model/place.dart';
 import 'package:progetto/model/proposal.dart';
 import 'package:progetto/model/session.dart';
 import 'package:progetto/model/user.dart';
+import 'package:progetto/pages/create_proposal_page.dart';
 import 'package:progetto/pages/home_page.dart';
 
 @GenerateNiceMocks([
@@ -139,6 +141,36 @@ main() {
       expect(sessionCardFinder, findsOneWidget);
       expect(goalCardFinder, findsNWidgets(2));
       expect(fabFinder, findsOneWidget);
+    });
+
+    testWidgets('Home page - Tap on new private session', (tester) async {
+      mockNetworkImagesFor(() async {
+        await tester.pumpWidget(widget);
+        final mainFABFinder = find.byKey(const Key('FABIcon'), skipOffstage: false);
+        final newSessionFABFinder = find.byIcon(Icons.calendar_month);
+        final sessionPageFinder = find.byWidgetPredicate((widget) => widget is CreateProposalPage);
+
+        await tester.pump(Duration(seconds: 2));
+        await tester.tap(mainFABFinder);
+        await tester.pump(Duration(seconds: 2));
+        //await tester.tap(newSessionFABFinder);
+        print(tester.element(newSessionFABFinder).renderObject?.paintBounds);
+        await tester.press(newSessionFABFinder);
+        await tester.pump(Duration(seconds: 2));
+        debugDumpApp();
+        expect(sessionPageFinder, findsOneWidget);
+      });
+    });
+
+    testWidgets('Home page - Tap on new proposal', (tester) async {
+      await tester.pumpWidget(widget);
+      final createProposalFABFinder = find.byKey(const Key('CreateProposalFAB'));
+      final sessionPageFinder = find.byWidgetPredicate((widget) => widget is CreateProposalPage);
+
+      await tester.tap(createProposalFABFinder);
+      await tester.pumpAndSettle();
+
+      expect(sessionPageFinder, findsOneWidget);
     });
   });
 

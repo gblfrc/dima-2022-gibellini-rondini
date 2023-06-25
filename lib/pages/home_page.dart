@@ -170,6 +170,7 @@ class _HomePageState extends State<HomePage> {
               // Wrapping the button with a Column avoids the button to take 100% width
               children: [
                 FilledButton(
+                  key: const Key('CreateGoalButton'),
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => CreateGoalPage(database: widget.database, auth: widget.auth),
@@ -194,22 +195,23 @@ class _HomePageState extends State<HomePage> {
         ),
         distance: 70,
         type: ExpandableFabType.left,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, key: Key('FABIcon'),),
         children: [
           FloatingActionButton(
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => SessionPage(
                       locationHandler: LocationHandler(),
-                  auth: Auth(),
-                  database: Database(),
+                  auth: widget.auth,
+                  database: widget.database,
                     ))),
             tooltip: 'New session',
             heroTag: 'new-proposal-button',
             backgroundColor: buttonBackgroundColor,
             foregroundColor: buttonForegroundColor,
-            child: const Icon(Icons.directions_run),
+            child: const Icon(Icons.directions_run, key: Key('NewSessionFAB')),
           ),
           FloatingActionButton(
+            key: const Key('CreateProposalFAB'),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => CreateProposalPage(
                       auth: widget.auth,

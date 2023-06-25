@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/auth.dart';
+import 'package:progetto/app_logic/location_handler.dart';
 import 'package:progetto/app_logic/storage.dart';
 import 'package:progetto/app_logic/image_picker.dart';
 
+import '../app_logic/search_engine.dart';
 import 'home_page.dart';
 import 'search_page.dart';
 import 'account_page.dart';
@@ -27,7 +29,7 @@ class _MainScreensState extends State<MainScreens> {
   Widget build(BuildContext context) {
     var screens = [
       HomePage(database: widget.database, auth: widget.auth, storage: widget.storage,),
-      SearchPage(database: widget.database, auth: widget.auth, storage: widget.storage,),
+      SearchPage(database: widget.database, auth: widget.auth, storage: widget.storage, searchEngine: SearchEngine(), locationHandler: LocationHandler(),),
       FriendsPage(database: widget.database, auth: widget.auth, storage: widget.storage,),
       AccountPage(
         uid: widget.auth.currentUser?.uid ?? '',

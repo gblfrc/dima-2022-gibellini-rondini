@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:progetto/app_logic/auth.dart';
 import 'package:progetto/app_logic/database.dart';
+import 'package:progetto/app_logic/location_handler.dart';
 import 'package:progetto/app_logic/search_engine.dart';
 
 import '../app_logic/storage.dart';
@@ -18,8 +19,10 @@ class SearchPage extends StatefulWidget {
   final Database database;
   final Auth auth;
   final Storage storage;
+  final SearchEngine searchEngine;
+  final LocationHandler locationHandler;
 
-  const SearchPage({super.key, required this.database, required this.auth, required this.storage});
+  const SearchPage({super.key, required this.database, required this.auth, required this.storage, required this.searchEngine, required this.locationHandler});
 
   @override
   State<SearchPage> createState() => _SearchPageState();
@@ -44,7 +47,7 @@ class _SearchPageState extends State<SearchPage> {
         appBar: AppBar(
           title: const Text('Search'),
           bottom: const TabBar(
-            tabs: [Tab(text: 'Users'), Tab(text: 'Places'), Tab(text: 'Map')],
+            tabs: [Tab(text: 'Users'), Tab(key: Key('PlaceTab'), text: 'Places'), Tab(key: Key('MapTab'), text: 'Map')],
           ),
         ),
         body: TabBarView(
@@ -63,6 +66,7 @@ class _SearchPageState extends State<SearchPage> {
                         child: Padding(
                           padding: EdgeInsets.fromLTRB(0, 0, 0, padding),
                           child: SearchBar(
+                            key: const Key('UserSearchBar'),
                             onChanged: _updateUserList,
                           ),
                         ),
@@ -100,6 +104,7 @@ class _SearchPageState extends State<SearchPage> {
                           padding: EdgeInsets.fromLTRB(0, 0, 0, padding),
                           child: SearchBar(
                             // Place searchbar
+                            key: const Key('PlaceSearchBar'),
                             onChanged: _updatePlaceList,
                           ),
                         ),
@@ -133,7 +138,7 @@ class _SearchPageState extends State<SearchPage> {
                   Flexible(
                     flex: 2,
                     child: FutureBuilder(
-                        future: _initPosition(context),
+                        future: widget.locationHandler.getCurrentPosition(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
                             Position position = snapshot.data!;
@@ -197,7 +202,7 @@ class _SearchPageState extends State<SearchPage> {
     // get uid of currently logged user
     String? uid = widget.auth.currentUser?.uid;
     // get all users except the logged one
-    List<User> newList = await SearchEngine().getUsersByName(name, excludeUid: uid!);
+    List<User> newList = await widget.searchEngine.getUsersByName(name, excludeUid: uid!);
     // call setState to update widget
     setState(() {
       userList = newList;
@@ -209,7 +214,7 @@ class _SearchPageState extends State<SearchPage> {
   */
   void _updatePlaceList(String name) async {
     // get all places given place name
-    List<Place> newList = await SearchEngine().getPlacesByName(name);
+    List<Place> newList = await widget.searchEngine.getPlacesByName(name);
     // call setState to update widget
     setState(() {
       placeList = newList;
@@ -228,7 +233,7 @@ class _SearchPageState extends State<SearchPage> {
     });
   }
 
-  Future<bool> _handleLocationPermission(BuildContext context) async {
+  /*Future<bool> _handleLocationPermission(BuildContext context) async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -258,5 +263,5 @@ class _SearchPageState extends State<SearchPage> {
     final hasPermission = await _handleLocationPermission(context);
     if (!hasPermission) return Future.error(Exception('Missing permissions'));
     return Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-  }
+  }*/
 }
