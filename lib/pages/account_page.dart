@@ -378,6 +378,7 @@ class _GoalTab extends StatelessWidget {
             shrinkWrap: true,
             crossAxisCount: columns,
             children: goalList,
+            childAspectRatio: 2.25,
           );
         } else {
           return const Center(

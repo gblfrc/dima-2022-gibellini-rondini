@@ -46,7 +46,7 @@ class _LoginFormState extends State<LoginForm> {
             children: [
               CustomFormField(
                 key: const Key('Username'),
-                text: 'Username',
+                text: 'Email',
                 controller: _controllerEmail,
               ),
               const SizedBox(
