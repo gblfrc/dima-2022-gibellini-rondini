@@ -53,13 +53,19 @@ class Database {
   * Throws a database exception if something wrong happens in the communication
   * with the database.
   */
-  void createUser({required String uid, required String name, required String surname, DateTime? birthday}) async {
+  void createUser(
+      {required String uid,
+      required String name,
+      required String surname,
+      DateTime? birthday}) async {
     try {
       await _database.collection("users").doc(uid).set(
         {
           "name": name,
           "surname": surname,
-          "birthday": birthday != null ? DateFormat('yyyy-MM-dd').format(birthday) : null,
+          "birthday": birthday != null
+              ? DateFormat('yyyy-MM-dd').format(birthday)
+              : null,
         },
       );
     } on FirebaseException {
@@ -80,11 +86,14 @@ class Database {
         {
           'name': user.name,
           'surname': user.surname,
-          'birthday': user.birthday != null ? DateFormat('yyyy-MM-dd').format(user.birthday!) : null,
+          'birthday': user.birthday != null
+              ? DateFormat('yyyy-MM-dd').format(user.birthday!)
+              : null,
         },
       );
     } on FirebaseException {
-      throw DatabaseException('An error occurred while updating user information.');
+      throw DatabaseException(
+          'An error occurred while updating user information.');
     }
   }
 
@@ -120,11 +129,15 @@ class Database {
   * document obtained from the server and some error occurs while parsing data,
   * a null object is returned.
   */
-  Future<List<Proposal?>> getFriendProposalsAfterTimestamp(String currentUserUid, {required DateTime after}) async {
+  Future<List<Proposal?>> getFriendProposalsAfterTimestamp(
+      String currentUserUid,
+      {required DateTime after}) async {
     try {
       // Get the list of users that have added the current user to their friends
-      final friendOfSnapshot =
-          await _database.collection("users").where("friends", arrayContains: currentUserUid).get();
+      final friendOfSnapshot = await _database
+          .collection("users")
+          .where("friends", arrayContains: currentUserUid)
+          .get();
       // Create list of document references for friends
       List<DocumentReference> friendOfDocRefs = [];
       for (var doc in friendOfSnapshot.docs) {
@@ -140,7 +153,8 @@ class Database {
       // Split friendOfDocRefs because whereIn clause accepts at most 10 elements
       List<List<DocumentReference>> splitRefs = [];
       for (int i = 0; i < friendOfDocRefs.length; i += 10) {
-        splitRefs.add(friendOfDocRefs.sublist(i, min(i + 10, friendOfDocRefs.length)));
+        splitRefs.add(
+            friendOfDocRefs.sublist(i, min(i + 10, friendOfDocRefs.length)));
       }
       // Create queries for each batch of split references
       for (int i = 0; i < splitRefs.length; i++) {
@@ -155,7 +169,8 @@ class Database {
       for (var future in futures) {
         await future.then((snapshot) async {
           for (var doc in snapshot.docs) {
-            Proposal? proposal = await _proposalFromFirestore(doc, currentUserUid: currentUserUid);
+            Proposal? proposal = await _proposalFromFirestore(doc,
+                currentUserUid: currentUserUid);
             if (proposal != null) proposals.add(proposal);
           }
         });
@@ -166,16 +181,25 @@ class Database {
     }
   }
 
-  Future<List<Proposal>> getProposalsWithinBounds(LatLngBounds bounds, String uid, {DateTime? after}) async {
+  Future<List<Proposal>> getProposalsWithinBounds(
+      LatLngBounds bounds, String uid,
+      {DateTime? after}) async {
     // collect hashes for the four corners and for the center
     List<String> hashes = [];
     var northEast = bounds.northEast ?? LatLng(bounds.north, bounds.east);
     var southWest = bounds.southWest ?? LatLng(bounds.south, bounds.west);
-    hashes.add(GeoHasher().encode(bounds.northWest.longitude, bounds.northWest.latitude, precision: 9));
-    hashes.add(GeoHasher().encode(northEast.longitude, northEast.latitude, precision: 9));
-    hashes.add(GeoHasher().encode(southWest.longitude, southWest.latitude, precision: 9));
-    hashes.add(GeoHasher().encode(bounds.southEast.longitude, bounds.southEast.latitude, precision: 9));
-    hashes.add(GeoHasher().encode(bounds.center.longitude, bounds.center.latitude, precision: 9));
+    hashes.add(GeoHasher().encode(
+        bounds.northWest.longitude, bounds.northWest.latitude,
+        precision: 9));
+    hashes.add(GeoHasher()
+        .encode(northEast.longitude, northEast.latitude, precision: 9));
+    hashes.add(GeoHasher()
+        .encode(southWest.longitude, southWest.latitude, precision: 9));
+    hashes.add(GeoHasher().encode(
+        bounds.southEast.longitude, bounds.southEast.latitude,
+        precision: 9));
+    hashes.add(GeoHasher()
+        .encode(bounds.center.longitude, bounds.center.latitude, precision: 9));
     // sort alphabetically
     hashes.sort();
     List<Proposal> newList = [];
@@ -184,14 +208,18 @@ class Database {
     try {
       futures.add(_database
           .collection("proposals")
-          .where('place.geohash', isGreaterThanOrEqualTo: hashes[0].substring(0, 6))
-          .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length - 1])
+          .where('place.geohash',
+              isGreaterThanOrEqualTo: hashes[0].substring(0, 6))
+          .where('place.geohash',
+              isLessThanOrEqualTo: hashes[hashes.length - 1])
           .where('type', isEqualTo: 'Friends')
           .get());
       futures.add(_database
           .collection("proposals")
-          .where('place.geohash', isGreaterThanOrEqualTo: hashes[0].substring(0, 6))
-          .where('place.geohash', isLessThanOrEqualTo: hashes[hashes.length - 1])
+          .where('place.geohash',
+              isGreaterThanOrEqualTo: hashes[0].substring(0, 6))
+          .where('place.geohash',
+              isLessThanOrEqualTo: hashes[hashes.length - 1])
           .where('type', isEqualTo: 'Public')
           .get());
     } on FirebaseException catch (fe) {
@@ -204,14 +232,16 @@ class Database {
           try {
             var placeGeoPoint = doc.data()['place']['coords'] as GeoPoint;
             var dateTime = (doc.data()['dateTime'] as Timestamp).toDate();
-            if (!bounds.contains(LatLng(placeGeoPoint.latitude, placeGeoPoint.longitude)) ||
+            if (!bounds.contains(
+                    LatLng(placeGeoPoint.latitude, placeGeoPoint.longitude)) ||
                 (after != null && dateTime.isBefore(after))) {
               continue;
             }
           } on Error {
             continue;
           }
-          Proposal? proposal = await _proposalFromFirestore(doc, currentUserUid: uid);
+          Proposal? proposal =
+              await _proposalFromFirestore(doc, currentUserUid: uid);
           if (proposal != null) {
             newList.add(proposal);
           }
@@ -223,7 +253,8 @@ class Database {
     return newList;
   }
 
-  Future<bool> isFriendOf({required String currentUserUid, required String friendUid}) async {
+  Future<bool> isFriendOf(
+      {required String currentUserUid, required String friendUid}) async {
     try {
       var snapshot = await _database
           .collection('users')
@@ -243,7 +274,8 @@ class Database {
   Stream<List<User>> getFriends(String uid) async* {
     try {
       final userDocRef = _database.collection("users").doc(uid);
-      await for (DocumentSnapshot<Map<String, dynamic>> snapshot in userDocRef.snapshots()) {
+      await for (DocumentSnapshot<Map<String, dynamic>> snapshot
+          in userDocRef.snapshots()) {
         List<User> friends = [];
         for (String fuid in snapshot.get("friends")) {
           DocumentReference friendRef = _database.collection("users").doc(fuid);
@@ -263,7 +295,8 @@ class Database {
     }
   }
 
-  void addFriend({required String currentUserUid, required String friendUid}) async {
+  void addFriend(
+      {required String currentUserUid, required String friendUid}) async {
     try {
       final docUser = _database.collection("users").doc(currentUserUid);
       await docUser.update(
@@ -276,7 +309,8 @@ class Database {
     }
   }
 
-  void removeFriend({required String currentUserUid, required String friendUid}) async {
+  void removeFriend(
+      {required String currentUserUid, required String friendUid}) async {
     try {
       final docUser = _database.collection("users").doc(currentUserUid);
       await docUser.update(
@@ -289,7 +323,8 @@ class Database {
     }
   }
 
-  Stream<List<Session?>> getLatestSessionsByUser(String uid, {int? limit}) async* {
+  Stream<List<Session?>> getLatestSessionsByUser(String uid,
+      {int? limit}) async* {
     List<Session?> sessions = [];
     Query<Map<String, dynamic>> sessionQuery;
     try {
@@ -315,7 +350,9 @@ class Database {
             List<List<LatLng>> positions = [];
             for (var sublist in (json['positions'] as List)) {
               var list = (sublist as Map)['values'] as List;
-              var segment = list.map((pos) => LatLng(pos.latitude, pos.longitude)).toList();
+              var segment = list
+                  .map((pos) => LatLng(pos.latitude, pos.longitude))
+                  .toList();
               positions.add(segment);
             }
             json['positions'] = positions;
@@ -360,24 +397,28 @@ class Database {
         "startDT": startDT,
         "duration": duration,
         "positions": maps,
-        "proposal":
-            proposalId != null ? _database.collection("proposals").doc(proposalId) : null
+        "proposal": proposalId != null
+            ? _database.collection("proposals").doc(proposalId)
+            : null
       });
-    } on FirebaseException catch (fe){
+    } on FirebaseException catch (fe) {
       throw DatabaseException(fe.message);
     }
   }
 
-  Stream<List<Goal>> getGoals(String uid, {required bool inProgressOnly}) async* {
+  Stream<List<Goal>> getGoals(String uid,
+      {required bool inProgressOnly}) async* {
     try {
       final userDocRef = _database.collection("users").doc(uid);
-      var goalQuery = _database.collection("goals").where("owner", isEqualTo: userDocRef);
+      var goalQuery =
+          _database.collection("goals").where("owner", isEqualTo: userDocRef);
       if (inProgressOnly) {
         goalQuery = goalQuery.where("completed", isEqualTo: false);
       }
       goalQuery = goalQuery.orderBy("createdAt", descending: true);
       /*return docUser.snapshots();*/
-      await for (QuerySnapshot<Map<String, dynamic>> snapshot in goalQuery.snapshots()) {
+      await for (QuerySnapshot<Map<String, dynamic>> snapshot
+          in goalQuery.snapshots()) {
         List<Goal> goals = [];
         for (QueryDocumentSnapshot<Map<String, dynamic>> doc in snapshot.docs) {
           Map<String, dynamic> json = doc.data();
@@ -448,7 +489,8 @@ class Database {
           "owner": _database.collection('users').doc(ownerId),
           "place": {
             "coords": GeoPoint(placeLatitude, placeLongitude),
-            "geohash": GeoHasher().encode(placeLatitude, placeLongitude, precision: 9),
+            "geohash":
+                GeoHasher().encode(placeLatitude, placeLongitude, precision: 9),
             "id": placeId,
             "latitude": placeLatitude,
             "longitude": placeLongitude,
@@ -485,7 +527,8 @@ class Database {
         proposals = [];
         for (var doc in snapshot.docs) {
           // create a Proposal object for each document
-          Proposal? proposal = await _proposalFromFirestore(doc, currentUserUid: uid, excludeCurrentUser: false);
+          Proposal? proposal = await _proposalFromFirestore(doc,
+              currentUserUid: uid, excludeCurrentUser: false);
           if (proposal != null) proposals.add(proposal);
         }
         yield proposals;
@@ -495,7 +538,8 @@ class Database {
     }
   }
 
-  void addParticipantToProposal(Proposal proposal, String currentUserUid) async {
+  void addParticipantToProposal(
+      Proposal proposal, String currentUserUid) async {
     try {
       await _database.collection('proposals').doc(proposal.id).update({
         'participants': FieldValue.arrayUnion([currentUserUid])
@@ -505,7 +549,8 @@ class Database {
     }
   }
 
-  void removeParticipantFromProposal(Proposal proposal, String currentUserUid) async {
+  void removeParticipantFromProposal(
+      Proposal proposal, String currentUserUid) async {
     try {
       await _database.collection('proposals').doc(proposal.id).update({
         'participants': FieldValue.arrayRemove([currentUserUid])
@@ -523,36 +568,48 @@ class Database {
     }
   }
 
-  Future<List<Proposal?>> getProposalsByPlace(Place place, String uid, {DateTime? after}) async {
+  Future<List<Proposal?>> getProposalsByPlace(Place place, String uid,
+      {DateTime? after}) async {
     try {
       List<Proposal?> list = [];
-      var future = _database.collection("proposals").where('place.id', isEqualTo: place.id).get();
+      var future = _database
+          .collection("proposals")
+          .where('place.id', isEqualTo: place.id)
+          .get();
       await future.then((snapshot) async {
         for (var doc in snapshot.docs) {
           try {
-            if (after != null && (doc.data()['dateTime'] as Timestamp).toDate().isBefore(after)) continue;
+            if (after != null &&
+                (doc.data()['dateTime'] as Timestamp).toDate().isBefore(after))
+              continue;
           } on Error {
             continue;
           }
-          Proposal? proposal = await _proposalFromFirestore(doc, currentUserUid: uid);
+          Proposal? proposal =
+              await _proposalFromFirestore(doc, currentUserUid: uid);
           if (proposal != null) list.add(proposal);
         }
       });
       return list;
     } on FirebaseException catch (fe) {
-      return Future.error(DatabaseException(fe.message)); // DatabaseException(fe.message);
+      return Future.error(
+          DatabaseException(fe.message)); // DatabaseException(fe.message);
     }
   }
 
   Stream<List<Proposal>> getProposalsWithinInterval(String currentUserUid,
       {required DateTime after, required DateTime before}) async* {
-    // sanity check on incoming parameters: "after" parameter must be before "before" parameter
-    if (!after.isBefore(before)) throw ArgumentError("'after' parameter must precede 'before' parameter");
-    // initialize lists
-    List<Proposal> proposals = [];
-    QuerySnapshot<Map<String, dynamic>> proposalsDocs; // Sessions proposed by others
-    QuerySnapshot<Map<String, dynamic>> proposalsDocsOwned; // Sessions proposed by the user
     try {
+      // sanity check on incoming parameters: "after" parameter must be before "before" parameter
+      if (!after.isBefore(before))
+        throw ArgumentError(
+            "'after' parameter must precede 'before' parameter");
+      // initialize lists
+      List<Proposal> proposals = [];
+      QuerySnapshot<Map<String, dynamic>>
+          proposalsDocs; // Sessions proposed by others
+      QuerySnapshot<Map<String, dynamic>>
+          proposalsDocsOwned; // Sessions proposed by the user
       // get reference to current user document
       final currentUserRef = _database.collection("users").doc(currentUserUid);
       // obtain proposals from the server
@@ -560,24 +617,30 @@ class Database {
           .collection("proposals")
           .where("participants", arrayContains: currentUserUid)
           .where("dateTime", isLessThanOrEqualTo: before)
-          .where("dateTime", isGreaterThanOrEqualTo: after) // TODO: Add filter for completed proposals
+          .where("dateTime",
+              isGreaterThanOrEqualTo:
+                  after) // TODO: Add filter for completed proposals
           .get();
       proposalsDocsOwned = await _database
           .collection("proposals")
           .where("owner", isEqualTo: currentUserRef)
           .where("dateTime", isLessThanOrEqualTo: before)
-          .where("dateTime", isGreaterThanOrEqualTo: after) // TODO: Add filter for completed proposals
+          .where("dateTime",
+              isGreaterThanOrEqualTo:
+                  after) // TODO: Add filter for completed proposals
           .get();
+      // convert data extracted from server into proposal objects
+      List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs =
+          proposalsDocs.docs + proposalsDocsOwned.docs;
+      for (QueryDocumentSnapshot<Map<String, dynamic>> doc in allDocs) {
+        Proposal? proposal = await _proposalFromFirestore(doc,
+            currentUserUid: currentUserUid, excludeCurrentUser: false);
+        if (proposal != null) proposals.add(proposal);
+      }
+      yield proposals;
     } on FirebaseException catch (fe) {
-      throw DatabaseException(fe.message); // TODO: Maybe it should be changed with return Stream.error(DatabaseException(...))
+      yield* Stream.error(DatabaseException(fe.message));
     }
-    // convert data extracted from server into proposal objects
-    List<QueryDocumentSnapshot<Map<String, dynamic>>> allDocs = proposalsDocs.docs + proposalsDocsOwned.docs;
-    for (QueryDocumentSnapshot<Map<String, dynamic>> doc in allDocs) {
-      Proposal? proposal = await _proposalFromFirestore(doc, currentUserUid: currentUserUid, excludeCurrentUser: false);
-      if (proposal != null) proposals.add(proposal);
-    }
-    yield proposals;
   }
 
   /*
@@ -586,8 +649,10 @@ class Database {
   * excludeUser to true. Returns null if current user is owner or is not friend
   * of the owner of the proposal.
   */
-  Future<Proposal?> _proposalFromFirestore(QueryDocumentSnapshot<Map<String, dynamic>> doc,
-      {required String currentUserUid, bool excludeCurrentUser = true}) async {
+  Future<Proposal?> _proposalFromFirestore(
+      QueryDocumentSnapshot<Map<String, dynamic>> doc,
+      {required String currentUserUid,
+      bool excludeCurrentUser = true}) async {
     try {
       // create convenience variables
       Map<String, dynamic> json = doc.data();

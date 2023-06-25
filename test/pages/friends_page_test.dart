@@ -69,7 +69,7 @@ main() {
 
       final friendsTabFinder = find.byKey(const Key('FriendsTab'));
       final noFriendsTextFinder = find.text(
-          'Use the Search section to find friends to add.', skipOffstage: false);
+          'You haven\'t added any friends yet.', skipOffstage: false);
 
       await tester.pumpAndSettle();
       await tester.tap(friendsTabFinder);
