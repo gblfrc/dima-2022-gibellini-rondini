@@ -309,7 +309,7 @@ class _DataSectionState extends State<_DataSection> {
                 isDense: true,
                 contentPadding: EdgeInsets.all(constraint.maxWidth / 20),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(constraint.maxWidth/ 30),
                 ),
                 hintText: "Birthday",
               ),

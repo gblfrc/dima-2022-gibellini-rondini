@@ -127,7 +127,7 @@ class _SessionPageState extends State<SessionPage> {
                       for (List<LatLng> posArray in _arrays)
                         Polyline(
                           points: posArray,
-                          color: Colors.blue,
+                          color: Theme.of(context).primaryColor,
                           strokeWidth: 7,
                         )
                     ],
@@ -138,9 +138,9 @@ class _SessionPageState extends State<SessionPage> {
                         // width: 50.0,
                         // height: 50.0,
                         point: _currentPosition!,
-                        builder: (ctx) => const Icon(
+                        builder: (ctx) => Icon(
                           Icons.circle,
-                          color: Colors.blue,
+                          color: Theme.of(context).primaryColor,
                           size: 30,
                         ),
                       ),

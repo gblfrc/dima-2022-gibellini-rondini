@@ -138,7 +138,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                 isDense: true,
                 contentPadding: EdgeInsets.all(constraint.maxWidth / 20),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(5),
+                  borderRadius: BorderRadius.circular(constraint.maxWidth / 30),
                 ),
                 hintText: "Birthday",
               ),
@@ -148,19 +148,23 @@ class _RegistrationFormState extends State<RegistrationForm> {
           const SizedBox(
             height: 6,
           ),
-          FilledButton(
-            key: const Key('RegistrationFormButton'),
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                createUserWithEmailAndPassword();
-              }
-            },
-            child: const Text(
-              'REGISTER',
-              style: TextStyle(
-                color: Colors.white,
+          Column(
+            children: [
+              FilledButton(
+                key: const Key('RegistrationFormButton'),
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    createUserWithEmailAndPassword();
+                  }
+                },
+                child: const Text(
+                  'REGISTER',
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
           Wrap(
             alignment: WrapAlignment.center,
@@ -186,7 +190,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     color: Colors.blue,
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ],

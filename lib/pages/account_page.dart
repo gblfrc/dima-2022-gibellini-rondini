@@ -379,6 +379,7 @@ class _GoalTab extends StatelessWidget {
             crossAxisCount: columns,
             childAspectRatio: 2.25,
             children: goalList,
+            childAspectRatio: 2.25,
           );
         } else {
           return const Center(

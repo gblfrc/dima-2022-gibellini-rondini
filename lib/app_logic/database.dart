@@ -490,7 +490,7 @@ class Database {
           "place": {
             "coords": GeoPoint(placeLatitude, placeLongitude),
             "geohash":
-                GeoHasher().encode(placeLatitude, placeLongitude, precision: 9),
+                GeoHasher().encode(placeLongitude, placeLatitude, precision: 9),
             "id": placeId,
             "latitude": placeLatitude,
             "longitude": placeLongitude,

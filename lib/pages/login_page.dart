@@ -44,7 +44,6 @@ class _LoginPageState extends State<LoginPage> {
               child: Container(
                 width: containerWidth,
                 decoration: BoxDecoration(
-                  //TODO: find a better color
                   color: Colors.yellow[100],
                 ),
                 child: Padding(
