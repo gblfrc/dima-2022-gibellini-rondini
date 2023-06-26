@@ -55,9 +55,6 @@ class _SearchPageState extends State<SearchPage> {
             Padding(
               padding: EdgeInsets.all(padding),
               child: Column(
-                // TODO: make this column a reusable element
-                // mainAxisAlignment: MainAxisAlignment.start,
-                // crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Flex(
                     direction: Axis.horizontal,
@@ -92,9 +89,6 @@ class _SearchPageState extends State<SearchPage> {
             Padding(
               padding: EdgeInsets.all(padding),
               child: Column(
-                // TODO: make this column a reusable element
-                // mainAxisAlignment: MainAxisAlignment.start,
-                // crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Flex(
                     direction: Axis.horizontal,
@@ -129,7 +123,6 @@ class _SearchPageState extends State<SearchPage> {
                 ],
               ),
             ),
-            // TODO: fix bug for which map tab expands on opening
             Padding(
               padding: EdgeInsets.all(padding),
               child: Flex(
