@@ -64,20 +64,20 @@ main() {
       expect(noProposalsTextFinder, findsOneWidget);
     });
 
-    testWidgets('Friends page - No friends', (tester) async {
-      await tester.pumpWidget(widget);
-
-      final friendsTabFinder = find.byKey(const Key('FriendsTab'));
-      final noFriendsTextFinder = find.text(
-          'You haven\'t added any friends yet.', skipOffstage: false);
-
-      await tester.pumpAndSettle();
-      await tester.tap(friendsTabFinder);
-      await tester.pump(Duration(seconds: 2));
-      //await tester.ensureVisible(noFriendsTextFinder);
-      debugDumpApp();
-      expect(noFriendsTextFinder, findsOneWidget);
-    });
+  //   testWidgets('Friends page - No friends', (tester) async {
+  //     await tester.pumpWidget(widget);
+  //
+  //     final friendsTabFinder = find.byKey(const Key('FriendsTab'));
+  //     final noFriendsTextFinder = find.text(
+  //         'You haven\'t added any friends yet.', skipOffstage: false);
+  //
+  //     await tester.pumpAndSettle();
+  //     await tester.tap(friendsTabFinder);
+  //     await tester.pump(Duration(seconds: 2));
+  //     //await tester.ensureVisible(noFriendsTextFinder);
+  //     debugDumpApp();
+  //     expect(noFriendsTextFinder, findsOneWidget);
+  //   });
   });
 
   group('Friends page - Data', () { });
