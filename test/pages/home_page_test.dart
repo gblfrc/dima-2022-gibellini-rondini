@@ -12,13 +12,13 @@ import 'package:progetto/app_logic/database.dart';
 import 'package:progetto/app_logic/exceptions.dart';
 import 'package:progetto/app_logic/storage.dart';
 import 'package:progetto/components/cards.dart';
+import 'package:progetto/components/forms/create_goal_form.dart';
 import 'package:progetto/components/tiles.dart';
 import 'package:progetto/model/goal.dart';
 import 'package:progetto/model/place.dart';
 import 'package:progetto/model/proposal.dart';
 import 'package:progetto/model/session.dart';
 import 'package:progetto/model/user.dart';
-import 'package:progetto/pages/create_goal_page.dart';
 import 'package:progetto/pages/create_proposal_page.dart';
 import 'package:progetto/pages/home_page.dart';
 import 'package:progetto/pages/session_page.dart';
@@ -129,7 +129,7 @@ main() {
 
     testWidgets('Home page', (tester) async {
       await tester.pumpWidget(widget);
-
+      //await tester.binding.setSurfaceSize(Size(1000, 1800));
       final proposalTileFinder =
           find.byWidgetPredicate((widget) => widget is ProposalTile);
       final sessionCardFinder =
@@ -193,7 +193,7 @@ main() {
         final createGoalButtonFinder =
         find.byKey(const Key('CreateGoalButton'), skipOffstage: false);
         final createGoalPageFinder =
-        find.byWidgetPredicate((widget) => widget is CreateGoalPage, skipOffstage: false);
+        find.byWidgetPredicate((widget) => widget is CreateGoalForm, skipOffstage: false);
 
         await tester.pump(const Duration(seconds: 2));
         await tester.scrollUntilVisible(createGoalButtonFinder, 100, scrollable: find

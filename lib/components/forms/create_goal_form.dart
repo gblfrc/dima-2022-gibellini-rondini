@@ -33,10 +33,7 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
 
   @override
   Widget build(BuildContext context) {
-    double width = MediaQuery.of(context).size.width;
-    double padding = width / 20;
-    return Padding(
-      padding: EdgeInsets.all(padding),
+    return Center(
       child: Form(
         key: _formKey,
         child: Column(
@@ -80,41 +77,44 @@ class _CreateGoalFormState extends State<CreateGoalForm> {
             const SizedBox(
               height: 8,
             ),
-            Flex(
-              direction: Axis.horizontal,
-              children: [
-                Flexible(
-                  flex: 5,
-                  child: CustomFormField(
-                    key: const Key('GoalTargetValue'),
-                    text: 'Target value',
-                    controller: _targetValueController,
-                    numericOnly: true,
-                    validator: (value) {
-                      if (value == null ||
-                          value.isEmpty ||
-                          num.tryParse(value) == null ||
-                          num.tryParse(value)! <= 0 ||
-                          (_type == "timeGoal") &&
-                              num.tryParse(value)! % 1 != 0) {
-                        return "Please insert a valid number";
-                      } else {
-                        return null;
-                      }
-                    },
+            Padding(
+              padding: const EdgeInsets.fromLTRB(25, 0, 25, 0),
+              child: Flex(
+                direction: Axis.horizontal,
+                children: [
+                  Flexible(
+                    flex: 5,
+                    child: CustomFormField(
+                      key: const Key('GoalTargetValue'),
+                      text: 'Target value',
+                      controller: _targetValueController,
+                      numericOnly: true,
+                      validator: (value) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            num.tryParse(value) == null ||
+                            num.tryParse(value)! <= 0 ||
+                            (_type == "timeGoal") &&
+                                num.tryParse(value)! % 1 != 0) {
+                          return "Please insert a valid number";
+                        } else {
+                          return null;
+                        }
+                      },
+                    ),
                   ),
-                ),
-                Flexible(
-                  flex: 1,
-                  fit: FlexFit.tight,
-                  child: Text(
-                    _type == "distanceGoal"
-                        ? "km"
-                        : (_type == "timeGoal" ? "min" : "km/h"),
-                    textAlign: TextAlign.center,
-                  ),
-                )
-              ],
+                  Flexible(
+                    flex: 1,
+                    fit: FlexFit.tight,
+                    child: Text(
+                      _type == "distanceGoal"
+                          ? "km"
+                          : (_type == "timeGoal" ? "min" : "km/h"),
+                      textAlign: TextAlign.center,
+                    ),
+                  )
+                ],
+              ),
             ),
             const SizedBox(
               height: 8,

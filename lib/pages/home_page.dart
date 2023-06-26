@@ -9,6 +9,7 @@ import '../app_logic/database.dart';
 import '../app_logic/storage.dart';
 import '../components/cards.dart';
 import '../app_logic/auth.dart';
+import '../components/forms/create_goal_form.dart';
 import 'create_goal_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -16,19 +17,29 @@ class HomePage extends StatefulWidget {
   final Auth auth;
   final Storage storage;
 
-  const HomePage({super.key, required this.database, required this.auth, required this.storage});
+  const HomePage(
+      {super.key,
+      required this.database,
+      required this.auth,
+      required this.storage});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-
   @override
   Widget build(BuildContext context) {
     // variables for usage in multiple occasions
-    TextStyle sectionTitleStyle =
-        TextStyle(fontSize: MediaQuery.of(context).textScaleFactor * 18, fontWeight: FontWeight.bold);
+    bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
+    // define number of columns based on device orientation
+    int columns;
+    (isTablet || MediaQuery.of(context).orientation == Orientation.landscape)
+        ? columns = 2
+        : columns = 1;
+    TextStyle sectionTitleStyle = TextStyle(
+        fontSize: MediaQuery.of(context).textScaleFactor * 18,
+        fontWeight: FontWeight.bold);
     Color buttonBackgroundColor = Theme.of(context).primaryColor;
     Color buttonForegroundColor = Colors.white;
     // main return statement
@@ -51,8 +62,9 @@ class _HomePageState extends State<HomePage> {
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(const SnackBar(content: Text('An error occurred while loading trainings.')));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          content: Text(
+                              'An error occurred while loading trainings.')));
                     });
                     return Container();
                   }
@@ -90,9 +102,12 @@ class _HomePageState extends State<HomePage> {
               style: sectionTitleStyle,
             ),
             Padding(
-              padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.shortestSide / 50),
+              padding: EdgeInsets.symmetric(
+                  vertical: MediaQuery.of(context).size.shortestSide / 50),
               child: StreamBuilder(
-                  stream: widget.database.getLatestSessionsByUser(widget.auth.currentUser!.uid, limit: 2),
+                  stream: widget.database.getLatestSessionsByUser(
+                      widget.auth.currentUser!.uid,
+                      limit: 2),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       return const Text(
@@ -116,7 +131,7 @@ class _HomePageState extends State<HomePage> {
                       }
                       return GridView.count(
                         shrinkWrap: true,
-                        crossAxisCount: 1,
+                        crossAxisCount: columns,
                         childAspectRatio: 2.75,
                         children: sessionCards,
                       );
@@ -132,9 +147,11 @@ class _HomePageState extends State<HomePage> {
               style: sectionTitleStyle,
             ),
             Padding(
-              padding: EdgeInsets.symmetric(vertical: MediaQuery.of(context).size.shortestSide / 40),
+              padding: EdgeInsets.symmetric(
+                  vertical: MediaQuery.of(context).size.shortestSide / 40),
               child: StreamBuilder(
-                  stream: widget.database.getGoals(widget.auth.currentUser!.uid, inProgressOnly: true),
+                  stream: widget.database.getGoals(widget.auth.currentUser!.uid,
+                      inProgressOnly: true),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       return const Text(
@@ -174,11 +191,33 @@ class _HomePageState extends State<HomePage> {
               children: [
                 FilledButton(
                   key: const Key('CreateGoalButton'),
-                  onPressed: () => Navigator.of(context).push(
+                  /*onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => CreateGoalPage(database: widget.database, auth: widget.auth),
+                      builder: (context) => CreateGoalPage(
+                          database: widget.database, auth: widget.auth),
                     ),
-                  ),
+                  ),*/
+                  onPressed: isTablet
+                      ? () async {
+                          await showDialog(
+                              context: context,
+                              builder: (context) {
+                                return _CreateGoalDialog(
+                                  auth: widget.auth,
+                                  database: widget.database,
+                                );
+                              });
+                        }
+                      : () async {
+                          await Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => CreateGoalPage(
+                                database: widget.database,
+                                auth: widget.auth,
+                              ),
+                            ),
+                          );
+                        },
                   child: const Text("New goal"),
                 ),
                 // GoalCard("Run for at least 20 km", false, 20, 10.18),
@@ -198,15 +237,18 @@ class _HomePageState extends State<HomePage> {
         ),
         distance: 70,
         type: ExpandableFabType.left,
-        child: const Icon(Icons.add, key: Key('FABIcon'),),
+        child: const Icon(
+          Icons.add,
+          key: Key('FABIcon'),
+        ),
         children: [
           FloatingActionButton(
             key: const Key('NewSessionFAB'),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                 builder: (context) => SessionPage(
                       locationHandler: LocationHandler(),
-                  auth: widget.auth,
-                  database: widget.database,
+                      auth: widget.auth,
+                      database: widget.database,
                     ))),
             tooltip: 'New session',
             heroTag: 'new-proposal-button',
@@ -229,6 +271,50 @@ class _HomePageState extends State<HomePage> {
             child: const Icon(Icons.calendar_month),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CreateGoalDialog extends StatefulWidget {
+  final Auth auth;
+  final Database database;
+
+  const _CreateGoalDialog({
+    required this.auth,
+    required this.database,
+  });
+
+  @override
+  State<_CreateGoalDialog> createState() => _CreateGoalDialogState();
+}
+
+class _CreateGoalDialogState extends State<_CreateGoalDialog> {
+  @override
+  Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height / 2;
+    var width = MediaQuery.of(context).size.width / 2;
+    MediaQuery.of(context).orientation == Orientation.portrait
+        ? height *= 0.7
+        : width *= 1.2;
+    return Dialog(
+      child: Container(
+        padding: EdgeInsets.all(MediaQuery.of(context).size.shortestSide / 40),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(
+              MediaQuery.of(context).size.shortestSide / 40),
+        ),
+        height: height,
+        width: width,
+        child: ListView(
+          children: [
+            CreateGoalForm(
+              width: width,
+              auth: widget.auth,
+              database: widget.database,
+            ),
+          ],
+        ),
       ),
     );
   }

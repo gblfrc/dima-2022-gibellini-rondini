@@ -54,7 +54,7 @@ class SessionCard extends StatelessWidget {
         builder: (context, constraint) {
           return SizedBox(
             width: constraint.maxWidth,
-            height: MediaQuery.of(context).size.longestSide / 6.5,
+            //height: MediaQuery.of(context).size.longestSide / 6.5,
             child: InkWell(
               // This widget creates a feedback animation when the user taps on the card
               onTap: () => Navigator.of(context).push(
