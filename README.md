@@ -2,7 +2,7 @@
 
 This repository contains the code and the deliverables realized as a university project for the course of Design and Implementation of Mobile Application (DIMA), held at [Politecnico di Milano](https://polimi.it) in fall 2022.
 
-This file aims at simply resuming how to correctly setup the application and providing the necessary basic insights in the application structure. For a deeper understanding of all the application features, please see the documentation deliverable.
+This file aims at simply resuming how to correctly setup the application and providing the necessary basic insights in the application structure. For a deeper understanding of all the application features, please see the [design document](deliverables/frunds_design_document.pdf).
 
 **DISCLAIMER:** The DIMA course is evaluated solely on the project that the candidates show the professor during the exam session. In addition, according to the rules for the 2022-23 edition of the course, the application topic had to be initially agreed upon with the professor. Given the relevance of the project in the course work, any form of plagiarism is highly discouraged and the authors DO NOT hold accountable for any unpleasant situation stemming thereof.
 
