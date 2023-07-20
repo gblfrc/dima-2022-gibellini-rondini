@@ -377,7 +377,7 @@ class _GoalTab extends StatelessWidget {
             key: const Key('AccountPageGoalTabGrid'),
             shrinkWrap: true,
             crossAxisCount: columns,
-            childAspectRatio: 2.20,
+            childAspectRatio: 2,
             children: goalList,
           );
         } else {
